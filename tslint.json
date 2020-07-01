@@ -1,0 +1,29 @@
+{
+    "defaultSeverity": "error",
+    "extends": "tslint-config-airbnb",
+    "jsRules": {},
+    "rules": {
+        "max-line-length": [true, 150],
+        "indent": [true, "spaces", 4],
+        "ter-indent": [true, 4, {
+            // disable that for switch "case" section
+            "SwitchCase": 1
+        }],
+        "linebreak-style": [true,"LF"],
+        "quotemark": [true, "single"],
+        "semicolon": [true,"always"],
+        "no-else-after-return": false,
+        "no-console": false,
+        "curly": true,
+        "triple-equals": true,
+        "no-string-throw": true,
+        "no-var-keyword": true,
+        "no-trailing-whitespace": true,
+        "variable-name": false,
+        "object-literal-key-quotes": [true,"as-needed"],
+        "import-name": [false], //so far it causes problems
+        "no-increment-decrement": false,
+        "align": false
+    },
+    "rulesDirectory": []
+}
