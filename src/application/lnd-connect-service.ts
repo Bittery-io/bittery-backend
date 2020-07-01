@@ -3,6 +3,7 @@ import * as https from 'https';
 const fs = require('fs');
 const util = require('util');
 import axios from 'axios';
+import { getProperty } from './property-service';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -55,13 +56,13 @@ export const getLndInfoStatus = async (macaroonHex: string, lndRestAddress: stri
 };
 
 export const getMacaroonHex = async (domain: string): Promise<string> => {
-    return (await readFile(`${process.env.BITTER_PAYER_INFRASTRUCTURE_PATH}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString('hex');
+    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString('hex');
 };
 
 export const getMacaroon = async (domain: string): Promise<string> => {
-    return (await readFile(`${process.env.BITTER_PAYER_INFRASTRUCTURE_PATH}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString();
+    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString();
 };
 
 export const getTls = async (domain: string): Promise<string> => {
-    return (await readFile(`${process.env.BITTER_PAYER_INFRASTRUCTURE_PATH}/volumes/lnd/${domain}/bitcoin/datadir/tls.cert`)).toString();
+    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/tls.cert`)).toString();
 };

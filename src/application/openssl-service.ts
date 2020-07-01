@@ -1,11 +1,12 @@
 import * as util from 'util';
+import { getProperty } from './property-service';
 
 const { exec } = require('child_process');
 const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
 
 export const getCertThumbprint = async (tlsCert: string): Promise<string> => {
-    const tlsCertFilePath: string = `${process.env.BITTER_PAYER_INFRASTRUCTURE_PATH}/custom-lnd-certs/tls.cert`;
+    const tlsCertFilePath: string = `${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/custom-lnd-certs/tls.cert`;
     await writeFile(tlsCertFilePath, Buffer.from(tlsCert, 'utf8'));
     return new Promise((resolve, reject) => {
         setTimeout(() => {

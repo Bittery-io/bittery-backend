@@ -8,7 +8,7 @@ export const getDomainLndFile = async (email: string, fileName: string): Promise
     const userDomain: UserDomain | undefined = await findUserDomain(email);
     if (userDomain) {
         return fs.readFileSync(path.resolve(
-            `${getProperty('BITTER_PAYER_INFRASTRUCTURE_PATH')}/volumes/lnd/${userDomain.userDomain}/bitcoin/datadir/${fileName}`));
+            `${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${userDomain.userDomain}/bitcoin/datadir/${fileName}`));
     } else {
         throw new Error(`Cannot get tls certificate for email ${email} because has not domain!`);
     }

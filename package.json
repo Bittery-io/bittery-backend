@@ -1,7 +1,7 @@
 {
-  "name": "bitter-payer-backend",
+  "name": "bittery-backend",
   "version": "1.0.0",
-  "description": "Bitter Payer backend",
+  "description": "Bittery backend",
   "main": "index.js",
   "scripts": {
     "compile": "tsc --declaration",
