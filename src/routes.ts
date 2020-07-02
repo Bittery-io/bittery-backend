@@ -6,7 +6,13 @@ import {
     getTlsCertificateFileApi,
     getUserLndApi, saveExistingLndApi,
 } from './interfaces/lnd-interface';
-import { confirmRegistrationApi, login, registerUser } from './interfaces/user-interface';
+import {
+    confirmRegistrationApi,
+    confirmResetPasswordApi, isLoggedApi,
+    login,
+    registerUser,
+    resetPasswordApi,
+} from './interfaces/user-interface';
 import { createUserBtcpayApi } from './interfaces/btcpay-interface';
 import { getUserBtcWalletApi } from './interfaces/btc-interface';
 import { getInvoicePdfApi, getInvoicesApi, saveInvoiceApi } from './interfaces/payments-interface';
@@ -24,9 +30,12 @@ lndRoutes.route('/files/macaroon').get(getAdminMacaroonFileApi);
 router.use('/lnd', lndRoutes);
 
 const userRoutes: Router = express.Router();
+userRoutes.route('/isLogged').get(isLoggedApi);
 userRoutes.route('/register').post(registerUser);
 userRoutes.route('/login').post(login);
 userRoutes.route('/register/confirm').post(confirmRegistrationApi);
+userRoutes.route('/password/reset').post(resetPasswordApi);
+userRoutes.route('/password/reset/confirm').post(confirmResetPasswordApi);
 router.use('/user', userRoutes);
 
 const btcpayRoutes: Router = express.Router();

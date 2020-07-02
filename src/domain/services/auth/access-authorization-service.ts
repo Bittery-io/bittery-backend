@@ -2,7 +2,6 @@ import express = require('express');
 import { getArrayProperty, getProperty } from '../../../application/property-service';
 import { Request, Response } from 'express-serve-static-core';
 import { getAccessTokenFromAuthorizationHeader } from './token-extractor-service';
-import { JwtToken } from '../../model/jwt-token';
 import { getJWTOauthFromDatabase } from '../../repository/authentication-repository';
 import jwt from 'jsonwebtoken';
 
@@ -30,15 +29,15 @@ const unauthorizedStatus = (req: Request, resp: Response): Response => {
     return resp.status(401).send();
 };
 
-const hasUserAccess = async (accessToken: string): Promise<boolean> => {
+export const verifyUserTokenAndGetUserEmail = async (jwtToken: string): Promise<string> => {
     try {
-        const userJwtToken: JwtToken = await getJWTOauthFromDatabase(accessToken);
         return new Promise((resolve, reject) => {
-            jwt.verify(userJwtToken.accessToken, getProperty('OAUTH2_TOKEN_CLIENT_SECRET'), (err, decoded) => {
-                if (err) {
-                    return resolve(false);
+            jwt.verify(jwtToken, getProperty('OAUTH2_TOKEN_CLIENT_SECRET'), (err, decoded) => {
+                if (decoded) {
+                    // @ts-ignore
+                    return resolve(decoded!.userId);
                 } else {
-                    return resolve(true);
+                    return reject(`JWT verification ${jwtToken} failed!`);
                 }
             });
         });
@@ -46,6 +45,17 @@ const hasUserAccess = async (accessToken: string): Promise<boolean> => {
         const errorMessage: string = `Authorization error: ${err}`;
         console.log(errorMessage);
         throw new Error(errorMessage);
+    }
+};
+
+const hasUserAccess = async (jwtToken: string): Promise<boolean> => {
+    try {
+        const userEmail: string = await verifyUserTokenAndGetUserEmail(jwtToken);
+        const jwtInDb: string | undefined = getJWTOauthFromDatabase(userEmail);
+        // This gives the possibility to user be logged on single device over time
+        return jwtInDb !== undefined && (jwtInDb! === jwtToken);
+    } catch (err) {
+        return false;
     }
 };
 

@@ -1,0 +1,5 @@
+export enum PasswordResetErrorType {
+    PASSWORDS_NOT_MATCH,
+    PASSWORD_INCORRECT,
+    CAPTCHA_VALIDATION_FAILED,
+}

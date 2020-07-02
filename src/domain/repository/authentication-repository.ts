@@ -1,12 +1,15 @@
 import { InMemoryDatabase } from '../../application/db/in-memory-database';
-import { JwtToken } from '../model/jwt-token';
 
-const IN_MEMORY_DATABASE: InMemoryDatabase<string, JwtToken> = new InMemoryDatabase<string, JwtToken>();
+const IN_MEMORY_DATABASE: InMemoryDatabase<string, string> = new InMemoryDatabase<string, string>();
 
-export const storeJWTOauthInDatabase = (accessToken: string, jwtToken: JwtToken) => {
-    IN_MEMORY_DATABASE.setEntry(accessToken, jwtToken);
+export const storeJWTOauthInDatabase = (userEmail: string, jwtToken: string) => {
+    IN_MEMORY_DATABASE.setEntry(userEmail, jwtToken);
 };
 
-export const getJWTOauthFromDatabase = (accessToken: string): JwtToken => {
-    return IN_MEMORY_DATABASE.getValue(accessToken);
+export const getJWTOauthFromDatabase = (userEmail: string): string | undefined => {
+    try {
+        return IN_MEMORY_DATABASE.getValue(userEmail);
+    } catch (err) {
+        return undefined;
+    }
 };

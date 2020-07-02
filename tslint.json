@@ -18,7 +18,7 @@
         "triple-equals": true,
         "no-string-throw": true,
         "no-var-keyword": true,
-        "no-trailing-whitespace": true,
+        "no-trailing-whitespace": false,
         "variable-name": false,
         "object-literal-key-quotes": [true,"as-needed"],
         "import-name": [false], //so far it causes problems

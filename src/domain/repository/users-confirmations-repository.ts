@@ -15,6 +15,13 @@ export const userConfirmationExists = async (userEmail: string): Promise<boolean
     return result.rows[0].exists;
 };
 
+export const unconfirmedUserConfirmationExists = async (userEmail: string, signUpKey: string): Promise<boolean> => {
+    const result = await dbPool.query(`SELECT EXISTS(SELECT 1 FROM USERS_CONFIRMATIONS WHERE USER_EMAIL = $1
+                                        AND CONFIRMED = FALSE AND SIGN_UP_KEY = $2)`,
+        [userEmail, signUpKey]);
+    return result.rows[0].exists;
+};
+
 export const confirmUserIfSignUpKeyValid = async (userEmail: string, signUpKey: string): Promise<void> => {
     await dbPool.query(`UPDATE USERS_CONFIRMATIONS SET CONFIRMED = TRUE, CONFIRMATION_DATE = $1 WHERE
                                        USER_EMAIL = $2 AND SIGN_UP_KEY = $3`,

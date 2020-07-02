@@ -1,4 +1,4 @@
-import { validatePassword } from './password-service';
+import { verifyPassword } from './password-service';
 import { User } from '../../model/user/user';
 import { findUser } from '../../repository/user-repository';
 import { UserLoginErrorType } from './user-login-error-type';
@@ -19,16 +19,16 @@ export const loginUser = async (loginUserDto: LoginUserDto): Promise<string> => 
 
 const validateUserPassword = async (encodePassword: string, plainPassword: string) => {
     try {
-        await validatePassword(encodePassword, plainPassword);
+        await verifyPassword(encodePassword, plainPassword);
     } catch (err) {
         throw new UserLoginException(err.message, UserLoginErrorType.INCORRECT_PASSWORD);
     }
 };
 
-const getUser = async (username: string): Promise<User> => {
-    const user: User | undefined = await findUser(username);
+const getUser = async (userEmail: string): Promise<User> => {
+    const user: User | undefined = await findUser(userEmail);
     if (!user) {
-        throw new UserLoginException(`User with username: ${username}, does not exist.`, UserLoginErrorType.USER_NOT_EXISTS);
+        throw new UserLoginException(`User with email: ${userEmail}, does not exist.`, UserLoginErrorType.USER_NOT_EXISTS);
     }
     return user;
 };

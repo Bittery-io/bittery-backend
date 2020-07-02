@@ -16,7 +16,7 @@ export const getLndUrl = async (domain: string): Promise<string | undefined> => 
             httpsAgent: new https.Agent({
                 rejectUnauthorized: false,
             }),
-            timeout: 5000,
+            timeout: 3000,
         });
         return res.data.uris[0];
     } catch (err) {
@@ -34,7 +34,7 @@ export const getCustomLndUrl = async (macaroonHex: string, lndRestAddress: strin
             httpsAgent: new https.Agent({
                 ca: [tlsCert],
             }),
-            timeout: 10000,
+            timeout: 6000,
         });
         return res.data.uris[0];
     } catch (err) {

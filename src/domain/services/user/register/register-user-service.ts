@@ -1,5 +1,5 @@
 import { validateEmailAddress } from '../../validation/email-validation-service';
-import { encodePassword, validatePlainPassword, validatePlainPasswords } from '../password-service';
+import { encodePassword } from '../password-service';
 import {
     insertUser,
     setUserActiveFlag,
@@ -15,12 +15,14 @@ import { validateAndThrowExceptionInCaseOfErrorWithCode } from '../../utils/vali
 import {
     confirmUserIfSignUpKeyValid,
     saveUserConfirmation,
+    unconfirmedUserConfirmationExists,
     userConfirmationExists,
 } from '../../../repository/users-confirmations-repository';
 import { UserConfirmation } from '../../../model/user/user-confirmation';
 import { ConfirmRegistrationDto } from '../../../../interfaces/dto/confirm-registration-dto';
 import { sendRegistrationEmail } from '../../../../application/mail-service';
 import { verifyCaptcha } from '../../../../application/recaptcha-service';
+import { validatePlainPassword, validatePlainPasswords } from '../../validation/password-validation-service';
 
 export const registerNewUser = async (registerUserDto: RegisterUserDto): Promise<void> => {
     if (await verifyCaptcha(registerUserDto.captchaCode)) {
@@ -47,7 +49,7 @@ export const registerNewUser = async (registerUserDto: RegisterUserDto): Promise
         await checkIfUserNotExistsAndRegister(registerUserDto);
     } else {
         throw new UserRegisterException(`Captcha validation for user ${registerUserDto.email} failed!`,
-            UserRegistrationErrorType.USERNAME_ALREADY_TAKEN);
+            UserRegistrationErrorType.CAPTCHA_VALIDATION_FAILED);
     }
 };
 
@@ -108,7 +110,13 @@ const registerUserDtoToUser = (userId: string, registerUserDto: RegisterUserDto,
     );
 };
 
-export const confirmUserRegistration = async (confirmRegistrationDto: ConfirmRegistrationDto) => {
-    await confirmUserIfSignUpKeyValid(confirmRegistrationDto.email, confirmRegistrationDto.signUpKey);
-    await setUserActiveFlag(confirmRegistrationDto.email, true);
+export const confirmUserRegistration = async (confirmRegistrationDto: ConfirmRegistrationDto): Promise<void> => {
+    const validConfirmationExists: boolean = await unconfirmedUserConfirmationExists(confirmRegistrationDto.email, confirmRegistrationDto.signUpKey);
+    if (validConfirmationExists) {
+        await confirmUserIfSignUpKeyValid(confirmRegistrationDto.email, confirmRegistrationDto.signUpKey);
+        await setUserActiveFlag(confirmRegistrationDto.email, true);
+    } else {
+        throw new UserRegisterException(`There is unconfirmed user confirmation for email ${confirmRegistrationDto.email}
+        and sign up key ${confirmRegistrationDto.signUpKey}`, UserRegistrationErrorType.NO_CONFIRMATION_ENTRY_EXIST);
+    }
 };

@@ -1,5 +1,5 @@
 import { Request } from 'express-serve-static-core';
-import { getJWTOauthFromDatabase } from '../../repository/authentication-repository';
+import { verifyUserTokenAndGetUserEmail } from './access-authorization-service';
 
 export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: string | undefined): string => {
     if (authorizationHeader) {
@@ -13,5 +13,6 @@ export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: strin
 
 export const getUserEmailFromAccessTokenInAuthorizationHeader = async (req: Request): Promise<string> => {
     const accessToken: string = getAccessTokenFromAuthorizationHeader(req.headers.authorization!);
-    return getJWTOauthFromDatabase(accessToken).userEmail;
+    // @ts-ignore
+    return (await verifyUserTokenAndGetUserEmail(accessToken));
 };

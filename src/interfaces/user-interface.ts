@@ -8,6 +8,9 @@ import { loginUser } from '../domain/services/user/login-user-service';
 import { AccessTokenDto } from './dto/access-token-dto';
 import { UserLoginException } from '../domain/services/user/user-login-exception';
 import { ConfirmRegistrationDto } from './dto/confirm-registration-dto';
+import { confirmResetPassword, resetPassword } from '../domain/services/user/password-service';
+import { PasswordResetConfirmDto } from './dto/password-reset-confirm-dto';
+import { PasswordResetDto } from './dto/password-reset-dto';
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -22,6 +25,10 @@ export const registerUser = async (req: Request, res: Response) => {
         console.log('Registration failed. ', err);
         return res.status(500).send(new ErrorDto('Unexpected server error'));
     }
+};
+
+export const isLoggedApi = async (req: Request, res: Response) => {
+    return res.sendStatus(200);
 };
 
 export const confirmRegistrationApi = async (req: Request, res: Response) => {
@@ -50,6 +57,34 @@ export const login = async (req: Request, res: Response) => {
         if (err instanceof UserLoginException) {
             return res.status(401).send(new ErrorDto(err.message, err.clientErrorCode));
         }
+        return res.status(500).send(new ErrorDto('Unexpected server error'));
+    }
+};
+
+export const resetPasswordApi = async (req: Request, res: Response) => {
+    const passwordResetDto: PasswordResetDto = req.body;
+    try {
+        await resetPassword(passwordResetDto);
+        return res.sendStatus(200);
+    } catch (err) {
+        console.log(`Reset password e-mail for user failed ${passwordResetDto.email} sent!`, err);
+        if (err instanceof UserLoginException) {
+            return res.status(401).send(new ErrorDto(err.message, err.clientErrorCode));
+        }
+        return res.status(500).send(new ErrorDto('Unexpected server error'));
+    }
+};
+
+export const confirmResetPasswordApi = async (req: Request, res: Response) => {
+    const passwordResetConfirmDto: PasswordResetConfirmDto = req.body;
+    try {
+        await confirmResetPassword(passwordResetConfirmDto);
+        console.log(`Successfully confirmed password reset for user ${passwordResetConfirmDto.email}
+                    and password reset key ${passwordResetConfirmDto.passwordResetKey}`);
+        return res.sendStatus(200);
+    } catch (err) {
+        console.log(`Password reset confirmation failed for user ${passwordResetConfirmDto.email}
+                        and password reset key ${passwordResetConfirmDto.passwordResetKey}`, err);
         return res.status(500).send(new ErrorDto('Unexpected server error'));
     }
 };

@@ -21,6 +21,11 @@ export const setUserActiveFlag = async (userEmail: string, active: boolean): Pro
     await dbPool.query(query, [active, userEmail]);
 };
 
+export const updateUserPassword = async (userEmail: string, encodedPassword: string): Promise<void> => {
+    const query: string = 'UPDATE USERS SET PASSWORD = $1 WHERE EMAIL = $2';
+    await dbPool.query(query, [encodedPassword, userEmail]);
+};
+
 export const findUser = async (email: string): Promise<User | undefined> => {
     const query: string = `SELECT * FROM USERS WHERE EMAIL = $1`;
     const result = await dbPool.query(query, [email]);
