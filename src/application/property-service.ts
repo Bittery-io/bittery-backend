@@ -7,7 +7,7 @@ export const getNumberProperty = (propertyName: string): number => {
 };
 
 export const getBooleanProperty = (propertyName: string): boolean => {
-    return Boolean(process.env[`${propertyName}`]);
+    return JSON.parse(process.env[`${propertyName}`]!);
 };
 
 export const getArrayProperty = (propertyName: string): string[] => {

@@ -4,13 +4,13 @@ import { findUser } from '../../repository/user-repository';
 import { UserLoginErrorType } from './user-login-error-type';
 import { LoginUserDto } from '../../../interfaces/dto/login-user-dto';
 import { UserLoginException } from './user-login-exception';
-import { generateAndSaveNewAccessTokenForUser } from '../auth/users-authentication-service';
+import { generateAndSaveNewJwtForUser } from '../auth/users-authentication-service';
 
 export const loginUser = async (loginUserDto: LoginUserDto): Promise<string> => {
     const user: User = await getUser(loginUserDto.email);
     if (user.active) {
         await validateUserPassword(user.encodedPassword, loginUserDto.password);
-        return generateAndSaveNewAccessTokenForUser(user.email);
+        return generateAndSaveNewJwtForUser(user.email);
     } else {
         throw new UserLoginException(`Login failed. User ${loginUserDto.email} registered but is not active!`,
             UserLoginErrorType.USER_NOT_ACTIVE);

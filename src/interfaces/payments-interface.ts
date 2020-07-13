@@ -5,13 +5,19 @@ import { ErrorDto } from './dto/error-dto';
 import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-type';
 import { SaveInvoiceDto } from './dto/save-invoice-dto';
 import { getInvoicePdf, getInvoices, saveInvoice } from '../domain/services/payments/invoice-service';
+import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-exception';
+import { getBooleanProperty } from '../application/property-service';
 
 export const saveInvoiceApi = async (req: Request, res: Response): Promise<Response> => {
     const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(req);
     try {
-        const saveInvoiceDto: SaveInvoiceDto = req.body;
-        await saveInvoice(userEmail, saveInvoiceDto);
-        return res.status(200).send();
+        if (getBooleanProperty('CREATE_INVOICE_ENABLED')) {
+            const saveInvoiceDto: SaveInvoiceDto = req.body;
+            await saveInvoice(userEmail, saveInvoiceDto);
+            return res.status(200).send();
+        } else {
+            return res.status(500).send(new ErrorDto('Maintenance: Creating invoice feature currently disabled'));
+        }
     } catch (err) {
         if (err instanceof LndCreateException) {
             return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
@@ -29,7 +35,7 @@ export const getInvoicesApi = async (req: Request, res: Response): Promise<Respo
         const invoices: object[] = await getInvoices(userEmail);
         return res.status(200).send(invoices);
     } catch (err) {
-        if (err instanceof LndCreateException) {
+        if (err instanceof UserBtcpayException) {
             return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
         }
         console.log(`Failed to get invoices for user ${userEmail}`, err);

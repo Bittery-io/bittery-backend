@@ -4,6 +4,7 @@ import { Request, Response } from 'express-serve-static-core';
 import { getAccessTokenFromAuthorizationHeader } from './token-extractor-service';
 import { getJWTOauthFromDatabase } from '../../repository/authentication-repository';
 import jwt from 'jsonwebtoken';
+import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
 
 export const authorizeRequest = async (req: Request, resp: Response, next: express.NextFunction): Promise<Response | void> => {
     return shouldNotAuthorizeRequest(req.path) ?
@@ -27,25 +28,6 @@ const unauthorizedStatus = (req: Request, resp: Response): Response => {
     const authorization: string = req.headers!.authorization!;
     console.log(`Can not authorize selected path ${req.path} with Authorization header: ${authorization}`);
     return resp.status(401).send();
-};
-
-export const verifyUserTokenAndGetUserEmail = async (jwtToken: string): Promise<string> => {
-    try {
-        return new Promise((resolve, reject) => {
-            jwt.verify(jwtToken, getProperty('OAUTH2_TOKEN_CLIENT_SECRET'), (err, decoded) => {
-                if (decoded) {
-                    // @ts-ignore
-                    return resolve(decoded!.userId);
-                } else {
-                    return reject(`JWT verification ${jwtToken} failed!`);
-                }
-            });
-        });
-    } catch (err) {
-        const errorMessage: string = `Authorization error: ${err}`;
-        console.log(errorMessage);
-        throw new Error(errorMessage);
-    }
 };
 
 const hasUserAccess = async (jwtToken: string): Promise<boolean> => {

@@ -6,7 +6,7 @@ import { UserLndDto } from '../../../interfaces/dto/user-lnd-dto';
 import { getProperty } from '../../../application/property-service';
 import { getLndConnectUri } from './lnd-zap-connection-uri-service';
 import { domainExists, findUserDomain, insertUserDomain } from '../../repository/user-domains-repository';
-import { getCustomLndUrl, getLndInfoStatus, getLndUrl } from '../../../application/lnd-connect-service';
+import { getCustomLndUrl, getLndInfo, getLndUrl } from '../../../application/lnd-connect-service';
 import { generateNextLndPortToUse } from './lnd-port-generator-service';
 import { insertUserLnd, userHasLnd } from '../../repository/user-lnds-repository';
 import { SaveUserLndDto } from '../../../interfaces/dto/save-user-lnd-dto';
@@ -45,16 +45,10 @@ export const addExistingUserLnd = async (userEmail: string, saveUserLndDto: Save
     const userEmailHasLnd: boolean = await userHasLnd(userEmail);
     const userEmailHasCustomLnd: boolean = await userHasCustomLnd(userEmail);
     if (!userEmailHasLnd && !userEmailHasCustomLnd) {
-        let status: number = 0;
-        try {
-            status = await getLndInfoStatus(saveUserLndDto.macaroonHex,
-                saveUserLndDto.lndRestAddress,
-                saveUserLndDto.tlsCertFileText);
-        } catch (err) {
-            console.log(`Get custom lnd info failed for user ${userEmail}!`, err);
-            status = err.status;
-        }
-        if (status === 200) {
+        const lndInfo: any | undefined = await getLndInfo(saveUserLndDto.macaroonHex,
+            saveUserLndDto.lndRestAddress,
+            saveUserLndDto.tlsCertFileText);
+        if (lndInfo) {
             const tlsCertThumbprint: string = await getCertThumbprint(saveUserLndDto.tlsCertFileText);
             await insertCustomLnd(new CustomLnd(
                 userEmail,
@@ -64,6 +58,9 @@ export const addExistingUserLnd = async (userEmail: string, saveUserLndDto: Save
                 tlsCertThumbprint,
             ));
             console.log(`Saved custom LND for user ${userEmail}`);
+        } else {
+            throw new LndCreateException(`Cannot add user ${userEmailHasLnd} LND because getting node info failed.`,
+                LndCreationErrorType.GETTING_LND_INFO_FAILED);
         }
     } else {
         throw new LndCreateException(`Cannot add user ${userEmailHasLnd} LND because already has

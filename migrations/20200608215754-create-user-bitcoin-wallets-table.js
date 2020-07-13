@@ -47,7 +47,7 @@ exports.up = function(db) {
       primaryKey: true,
     },
     root_public_key: {type: 'string', length: 500, notNull: true},
-    bip: {type: 'string', length: 10, notNull: true},
+    type: {type: 'string', length: 20, notNull: true},
     creation_date: { type: 'timestamp', timezone: true, notNull: true },
   });
 };

@@ -1,5 +1,5 @@
 import { Request } from 'express-serve-static-core';
-import { verifyUserTokenAndGetUserEmail } from './access-authorization-service';
+import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
 
 export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: string | undefined): string => {
     if (authorizationHeader) {
@@ -13,6 +13,5 @@ export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: strin
 
 export const getUserEmailFromAccessTokenInAuthorizationHeader = async (req: Request): Promise<string> => {
     const accessToken: string = getAccessTokenFromAuthorizationHeader(req.headers.authorization!);
-    // @ts-ignore
-    return (await verifyUserTokenAndGetUserEmail(accessToken));
+    return await verifyUserTokenAndGetUserEmail(accessToken);
 };

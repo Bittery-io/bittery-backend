@@ -1,7 +1,7 @@
 import { UserConfirmation } from '../model/user/user-confirmation';
 import { dbPool } from '../../application/db/db';
 
-export const saveUserConfirmation = async (userConfirmation: UserConfirmation): Promise<void> => {
+export const insertUserConfirmation = async (userConfirmation: UserConfirmation): Promise<void> => {
     await dbPool.query(`
                 INSERT INTO USERS_CONFIRMATIONS(USER_EMAIL, SIGN_UP_KEY, MESSAGE_ID, CONFIRMED, CREATION_DATE)
                 VALUES ($1, $2, $3, $4, $5)`,

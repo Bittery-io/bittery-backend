@@ -33,3 +33,4 @@ node_modules/
 *.txt
 local-scripts/db-migrate-local.sh
 local-scripts/db-migrate-down-local.sh
+docker-compose

@@ -43,16 +43,22 @@ export const getCustomLndUrl = async (macaroonHex: string, lndRestAddress: strin
     }
 };
 
-export const getLndInfoStatus = async (macaroonHex: string, lndRestAddress: string, tlsCert: string): Promise<number> => {
-    const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
-        headers: {
-            'Grpc-Metadata-macaroon': macaroonHex,
-        },
-        httpsAgent: new https.Agent({
-            ca: [tlsCert],
-        }),
-    });
-    return res.status;
+export const getLndInfo = async (macaroonHex: string, lndRestAddress: string, tlsCert: string): Promise<any | undefined> => {
+    try {
+        const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
+            headers: {
+                'Grpc-Metadata-macaroon': macaroonHex,
+            },
+            httpsAgent: new https.Agent({
+                ca: [tlsCert],
+            }),
+        });
+        return res.data;
+    } catch (err) {
+        console.log(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
+        return undefined;
+    }
+
 };
 
 export const getMacaroonHex = async (domain: string): Promise<string> => {

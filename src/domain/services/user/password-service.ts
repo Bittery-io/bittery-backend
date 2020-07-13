@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { getProperty } from '../../../application/property-service';
+import { getNumberProperty, getProperty } from '../../../application/property-service';
 import { sendResetPasswordEmail } from '../../../application/mail-service';
 import { generateUuid } from '../utils/id-generator-service';
 import {
@@ -15,6 +15,10 @@ import { updateUserPassword, userExists } from '../../repository/user-repository
 import { PasswordResetErrorType } from '../../model/user/password-reset-error-type';
 import { PasswordResetDto } from '../../../interfaces/dto/password-reset-dto';
 import { verifyCaptcha } from '../../../application/recaptcha-service';
+import { insertNotification, notificationsLimitNotExceededForUser } from '../../repository/notifications-repository';
+import { Notification } from '../../model/notification/notification';
+import { NotificationTypeEnum } from '../../model/notification/notification-type-enum';
+import { NotificationReasonEnum } from '../../model/notification/notification-reason-enum';
 
 export const encodePassword = (password: string): string => {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(Number(getProperty('ENCRYPTION_PASSWORD_SALT_ROUNDS'))));
@@ -27,23 +31,45 @@ export const verifyPassword = async (encodedPassword: string, password: string):
 };
 
 export const resetPassword = async (passwordResetDto: PasswordResetDto): Promise<void> => {
-    const isUserExist: boolean = await userExists(passwordResetDto.email);
-    if (isUserExist) {
-        const resetPasswordKey: string = generateUuid();
-        const messageId: string | undefined = await sendResetPasswordEmail(passwordResetDto.email, resetPasswordKey);
-        if (messageId) {
-            await insertPasswordReset(new PasswordReset(
+    if (await verifyCaptcha(passwordResetDto.captchaCode)) {
+        const isUserExist: boolean = await userExists(passwordResetDto.email);
+        if (isUserExist) {
+            const limitNotExceededForUser: boolean = await notificationsLimitNotExceededForUser(
                 passwordResetDto.email,
-                resetPasswordKey,
-                false,
-                messageId,
-                new Date().toUTCString(),
-            ));
+                NotificationTypeEnum.EMAIL,
+                getNumberProperty('PASSWORD_RESET_EMAIL_HOURS_MEASURE_PERIOD_HOURS'),
+                getNumberProperty('PASSWORD_RESET_EMAIL_MEASURE_PERIOD_LIMIT'));
+            if (limitNotExceededForUser) {
+                const resetPasswordKey: string = generateUuid();
+                const messageId: string | undefined = await sendResetPasswordEmail(passwordResetDto.email, resetPasswordKey);
+                if (messageId) {
+                    const sendDate: string = new Date().toUTCString();
+                    await insertPasswordReset(new PasswordReset(
+                        passwordResetDto.email,
+                        resetPasswordKey,
+                        false,
+                        messageId,
+                        sendDate,
+                    ));
+                    await insertNotification(new Notification(
+                        passwordResetDto.email,
+                        messageId,
+                        NotificationTypeEnum.EMAIL,
+                        NotificationReasonEnum.REGISTRATION,
+                        sendDate,
+                    ));
+                } else {
+                    throw new Error(`Failed to reset password for user ${passwordResetDto.email} because of mail sending problem.`);
+                }
+            } else {
+                throw new Error(`Failed to reset password for user ${passwordResetDto.email} because of notification limit exceeded 
+                    ${getNumberProperty('PASSWORD_RESET_EMAIL_MEASURE_PERIOD_LIMIT')}/${getNumberProperty('PASSWORD_RESET_EMAIL_HOURS_MEASURE_PERIOD_HOURS')} hours`);
+            }
         } else {
-            throw new Error(`Failed to reset password for user ${passwordResetDto.email} because of mail sending problem.`);
+            console.log(`Failed to reset password for email ${passwordResetDto.email} because there is no registered user!!!`);
         }
     } else {
-        console.log(`Failed to reset password for email ${passwordResetDto.email} because there is no registered user!!!`);
+        throw new Error(`Failed to reset password for user ${passwordResetDto.email} because of captcha verification failed.`);
     }
 };
 

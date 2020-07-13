@@ -3,12 +3,12 @@ import { UserBitcoinWallet } from '../model/btc/user-bitcoin-wallet';
 
 export const insertUserBitcoinWallet = async (userBitcoinWallet: UserBitcoinWallet): Promise<void> => {
     await dbPool.query(`
-                INSERT INTO USER_BITCOIN_WALLETS(USER_EMAIL, STORE_ID, ROOT_PUBLIC_KEY, BIP, CREATION_DATE)
+                INSERT INTO USER_BITCOIN_WALLETS(USER_EMAIL, STORE_ID, ROOT_PUBLIC_KEY, TYPE, CREATION_DATE)
                 VALUES ($1, $2, $3, $4, $5)`,
         [userBitcoinWallet.userEmail,
             userBitcoinWallet.storeId,
             userBitcoinWallet.rootPublicKey,
-            userBitcoinWallet.bip,
+            userBitcoinWallet.type,
             userBitcoinWallet.creationDate]);
 };
 

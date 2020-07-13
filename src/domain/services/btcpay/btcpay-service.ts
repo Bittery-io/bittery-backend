@@ -11,31 +11,37 @@ import { UserDomain } from '../../model/lnd/user-domain';
 import { getDevelopmentHostName, isDevelopmentEnv } from '../../../application/property-utils-service';
 import { findCustomLnd } from '../../repository/custom-lnds-repository';
 import { CustomLnd } from '../../model/lnd/custom-lnd';
+import { UserBitcoinWalletTypeEnum } from '../../model/btc/user-bitcoin-wallet-type-enum';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
         const userDomain: UserDomain | undefined = await findUserDomain(userEmail);
-        let userDomainName: string;
-        if (isDevelopmentEnv()) {
-            userDomainName = getDevelopmentHostName();
-        } else {
-            userDomainName = userDomain!.userDomain;
-        }
+        const userDomainName: string = isDevelopmentEnv() ? getDevelopmentHostName() : userDomain!.userDomain;
         const customLnd: CustomLnd | undefined = await findCustomLnd(userEmail);
+        if (!createUserBtcpayDto.bip49RootPublicKey && !createUserBtcpayDto.electrumMasterPublicKey) {
+            throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because no master public key provided`,
+                CreateUserBtcpayErrorType.NO_MASTER_PUBLIC_KEY_PROVIDED);
+        }
+        const masterPublicKey: string = createUserBtcpayDto.bip49RootPublicKey ?
+            createUserBtcpayDto.bip49RootPublicKey! :
+            createUserBtcpayDto.electrumMasterPublicKey!;
+        const userBitcoinWalletTypeEnum: UserBitcoinWalletTypeEnum = createUserBtcpayDto.bip49RootPublicKey ?
+            UserBitcoinWalletTypeEnum.BIP_49 :
+            UserBitcoinWalletTypeEnum.ELECTRUM;
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
-            userEmail, userDomainName!, createUserBtcpayDto.bip49RootPublicKey, customLnd);
+            userEmail, userDomainName!, masterPublicKey, customLnd);
         await insertUserBtcpayDetails(userBtcpayDetails);
         await insertUserBitcoinWallet(new UserBitcoinWallet(
             userEmail,
             userBtcpayDetails.storeId,
-            createUserBtcpayDto.bip49RootPublicKey,
-            'bip49',
+            masterPublicKey,
+            userBitcoinWalletTypeEnum,
             new Date().toDateString(),
         ));
         console.log(`Successfully created user btcpay services for user with email ${userEmail}`);
     } else {
         console.log(`Successfully created user btcpay services for user with email ${userEmail}`);
-        throw new CreateUserBtcpayException('Failed to create user BTCPAY services because are already created',
+        throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because are already created`,
             CreateUserBtcpayErrorType.USER_ALREADY_HAS_BTCPAY);
     }
 };

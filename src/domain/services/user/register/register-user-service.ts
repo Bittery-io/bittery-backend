@@ -14,7 +14,7 @@ import { UserRegisterException } from '../../../model/user/user-register-excepti
 import { validateAndThrowExceptionInCaseOfErrorWithCode } from '../../utils/validate-and-throw-exception-service';
 import {
     confirmUserIfSignUpKeyValid,
-    saveUserConfirmation,
+    insertUserConfirmation,
     unconfirmedUserConfirmationExists,
     userConfirmationExists,
 } from '../../../repository/users-confirmations-repository';
@@ -23,6 +23,10 @@ import { ConfirmRegistrationDto } from '../../../../interfaces/dto/confirm-regis
 import { sendRegistrationEmail } from '../../../../application/mail-service';
 import { verifyCaptcha } from '../../../../application/recaptcha-service';
 import { validatePlainPassword, validatePlainPasswords } from '../../validation/password-validation-service';
+import { insertNotification } from '../../../repository/notifications-repository';
+import { Notification } from '../../../model/notification/notification';
+import { NotificationTypeEnum } from '../../../model/notification/notification-type-enum';
+import { NotificationReasonEnum } from '../../../model/notification/notification-reason-enum';
 
 export const registerNewUser = async (registerUserDto: RegisterUserDto): Promise<void> => {
     if (await verifyCaptcha(registerUserDto.captchaCode)) {
@@ -83,12 +87,20 @@ const sendConfirmationEmailAndSaveInDb = async (registerUserDto: RegisterUserDto
     const signUpKey: string = generateUuid();
     const messageId: string | undefined = await sendRegistrationEmail(registerUserDto.email, signUpKey);
     if (messageId) {
-        await saveUserConfirmation(new UserConfirmation(
+        const sendDate: string = new Date().toUTCString();
+        await insertUserConfirmation(new UserConfirmation(
             registerUserDto.email,
             signUpKey,
             false,
             messageId,
-            new Date().toUTCString(),
+            sendDate,
+        ));
+        await insertNotification(new Notification(
+            registerUserDto.email,
+            messageId,
+            NotificationTypeEnum.EMAIL,
+            NotificationReasonEnum.REGISTRATION,
+            sendDate,
         ));
     } else {
         throw new UserRegisterException('Failed to register because email sending failed!',

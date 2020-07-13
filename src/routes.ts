@@ -9,7 +9,7 @@ import {
 import {
     confirmRegistrationApi,
     confirmResetPasswordApi, isLoggedApi,
-    login,
+    login, refreshTokenApi,
     registerUser,
     resetPasswordApi,
 } from './interfaces/user-interface';
@@ -33,6 +33,7 @@ const userRoutes: Router = express.Router();
 userRoutes.route('/isLogged').get(isLoggedApi);
 userRoutes.route('/register').post(registerUser);
 userRoutes.route('/login').post(login);
+userRoutes.route('/refreshToken').post(refreshTokenApi);
 userRoutes.route('/register/confirm').post(confirmRegistrationApi);
 userRoutes.route('/password/reset').post(resetPasswordApi);
 userRoutes.route('/password/reset/confirm').post(confirmResetPasswordApi);

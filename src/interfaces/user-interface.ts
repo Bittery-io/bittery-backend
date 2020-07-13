@@ -11,13 +11,20 @@ import { ConfirmRegistrationDto } from './dto/confirm-registration-dto';
 import { confirmResetPassword, resetPassword } from '../domain/services/user/password-service';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm-dto';
 import { PasswordResetDto } from './dto/password-reset-dto';
+import { getNewJwtToken } from '../domain/services/user/refresh-token-service';
+import { getAccessTokenFromAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
+import { getBooleanProperty } from '../application/property-service';
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
-        const registerUserDto: RegisterUserDto = req.body;
-        await registerNewUser(registerUserDto);
-        console.log(`User ${registerUserDto.email} registered successfully`);
-        return res.sendStatus(204);
+        if (getBooleanProperty('REGISTRATION_ENABLED')) {
+            const registerUserDto: RegisterUserDto = req.body;
+            await registerNewUser(registerUserDto);
+            console.log(`User ${registerUserDto.email} registered successfully`);
+            return res.sendStatus(204);
+        } else {
+            return res.status(500).send(new ErrorDto('Maintenance: Registration currently disabled'));
+        }
     } catch (err) {
         if (err instanceof UserRegisterException) {
             return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
@@ -48,16 +55,30 @@ export const confirmRegistrationApi = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const loginUserDto: LoginUserDto = req.body;
-        const accessToken: string = await loginUser(loginUserDto);
-        console.log(`ECMR user ${loginUserDto.email} logged successfully`);
-        return res.send(new AccessTokenDto(accessToken));
+        if (getBooleanProperty('LOGIN_ENABLED')) {
+            const loginUserDto: LoginUserDto = req.body;
+            const accessToken: string = await loginUser(loginUserDto);
+            console.log(`ECMR user ${loginUserDto.email} logged successfully`);
+            return res.send(new AccessTokenDto(accessToken));
+        } else {
+            return res.status(500).send(new ErrorDto('Maintenance: Login possibility currently disabled'));
+        }
     } catch (err) {
         console.log('Login failed. ', err);
         if (err instanceof UserLoginException) {
             return res.status(401).send(new ErrorDto(err.message, err.clientErrorCode));
         }
         return res.status(500).send(new ErrorDto('Unexpected server error'));
+    }
+};
+
+export const refreshTokenApi = async (req: Request, res: Response) => {
+    try {
+        const accessToken: string = getAccessTokenFromAuthorizationHeader(req.headers.authorization!);
+        return res.send(new AccessTokenDto(getNewJwtToken(accessToken)));
+    } catch (err) {
+        console.log('Refreshing token failed.', err);
+        return res.status(401).send(new ErrorDto(err.message));
     }
 };
 
@@ -68,9 +89,6 @@ export const resetPasswordApi = async (req: Request, res: Response) => {
         return res.sendStatus(200);
     } catch (err) {
         console.log(`Reset password e-mail for user failed ${passwordResetDto.email} sent!`, err);
-        if (err instanceof UserLoginException) {
-            return res.status(401).send(new ErrorDto(err.message, err.clientErrorCode));
-        }
         return res.status(500).send(new ErrorDto('Unexpected server error'));
     }
 };
