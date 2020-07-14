@@ -21,10 +21,10 @@ exports.up = function(db) {
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'users_email',
+        name: 'notifications_user_email_fk',
         table: 'users',
         rules: {
-          onDelete: 'SET NULL',
+          onDelete: 'RESTRICT',
           onUpdate: 'RESTRICT'
         },
         mapping: 'email'

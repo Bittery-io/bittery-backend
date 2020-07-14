@@ -16,7 +16,20 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('user_lnds', {
-    user_domain: { type: 'string', length: 500, primaryKey: true },
+    user_domain: {
+      type: 'string',
+      length: 500,
+      primaryKey: true,
+      foreignKey: {
+        name: 'user_lnds_user_domain_fk',
+        table: 'user_domains',
+        rules: {
+          onDelete: 'SET NULL',
+          onUpdate: 'RESTRICT'
+        },
+        mapping: 'user_domain'
+      },
+    },
     lnd_port: { type: 'integer', notNull: true, unique: true }
   });
 };

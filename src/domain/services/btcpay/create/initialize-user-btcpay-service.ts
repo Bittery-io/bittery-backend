@@ -18,6 +18,7 @@ export const initializeBtcpayServices = async (
         userEmail: string,
         userDomain: string,
         bip49RootPublicKey: string,
+        paymentExpirationMinutes: number,
         customLnd?: CustomLnd): Promise<UserBtcpayDetails> => {
     console.log(`Initializing btcpay services for user domain ${userDomain}`);
     const browser = await getBrowser();
@@ -37,6 +38,7 @@ export const initializeBtcpayServices = async (
         lndAddress = generateBtcPayLndAddress(userDomain);
     }
     await addLndNodeToStore(storeId, lndAddress, page);
+    await setExpirationMinutesToStore(storeId, String(paymentExpirationMinutes), page);
     const pairingCode: string = await getBtcpayPairingCode(userDomain, storeId, page);
     const btcpayUserAuthToken: BtcpayUserAuthToken = await generateApiToken(pairingCode);
     return new UserBtcpayDetails(userEmail, storeId, btcpayUserAuthToken);
@@ -79,9 +81,7 @@ export const loginToBtcpay = async (page: any): Promise<void> => {
 
 const getBtcpayPairingCode = async (storeName: string, storeId: string, page: any): Promise<string> => {
     const tokenName = `${storeName}-${new Date().getTime()}`;
-    await page.goto(
-        `${getProperty('BTCPAY_URL')}/stores/${storeId}/Tokens/Create`,
-    );
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}/Tokens/Create`);
     await page.waitForSelector('input#Label');
     await page.waitForSelector('[type="submit"]');
     await page.type('#Label', tokenName);
@@ -108,9 +108,7 @@ const getBtcpayPairingCode = async (storeName: string, storeId: string, page: an
 };
 
 const createStore = async (storeName: string, page: any): Promise<string> => {
-    await page.goto(
-        `${getProperty('BTCPAY_URL')}/stores/create`,
-    );
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/create`);
     await page.waitForSelector('input#Name');
     await page.waitForSelector('[type="submit"]');
     await page.type('#Name', storeName);
@@ -120,14 +118,12 @@ const createStore = async (storeName: string, page: any): Promise<string> => {
     await page.waitForSelector('input#Id');
     const element = await page.$('#Id');
     const storeId = await page.evaluate((element: any) => element.value, element);
-    console.log(`Store ${storeName} created! New Id: ${storeId}`);
+    console.log(`Store ${storeName} created! New Id: ${storeId}, name: ${storeName}`);
     return storeId;
 };
 
 const addLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: any): Promise<void> => {
-    await page.goto(
-        `${getProperty('BTCPAY_URL')}/stores/${storeId}`,
-    );
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
     await page.waitForSelector('a#Modify-LightningBTC');
     await page.click('a#Modify-LightningBTC');
     await page.waitForSelector('input#lightningurl');
@@ -138,10 +134,20 @@ const addLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: an
     console.log(`Added btcpay lnd address for store with id ${storeId}`);
 };
 
+const setExpirationMinutesToStore = async (storeId: string, paymentExpirationMinutes: string, page: any): Promise<void> => {
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
+    await page.waitForSelector('input#InvoiceExpiration');
+    // @ts-ignore
+    await page.evaluate(() => document.getElementById('InvoiceExpiration').value = '');
+    await page.type('#InvoiceExpiration', paymentExpirationMinutes);
+    await page.waitForSelector('button[type="submit"]');
+    await page.click('[type="submit"]');
+    await page.waitForSelector('div.alert.alert-success.alert-dismissible');
+    console.log(`Set invoice expiration time ${paymentExpirationMinutes} minutes for store ${storeId}`);
+};
+
 export const addBtcRootPublicKeyToStore = async (storeId: string, page: any, browser: any, bip49RootPublicKey: string): Promise<void> => {
-    await page.goto(
-        `${getProperty('BTCPAY_URL')}/stores/${storeId}`,
-    );
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
     await page.waitForSelector('a#ModifyBTC');
     await page.click('a#ModifyBTC');
     await page.waitForSelector('input#DerivationScheme');

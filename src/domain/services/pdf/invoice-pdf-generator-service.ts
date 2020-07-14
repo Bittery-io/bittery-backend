@@ -110,8 +110,8 @@ export const generateInvoicePdf = async (invoice: Invoice): Promise<Buffer> => {
         paddingTop: 0.5 * pdf.cm,
     });
     doc.cell('Open the link for direct payment widget');
-    doc.cell(`http://localhost:8080/#/invoices/${invoice.id}`, {
-        link: `http://localhost:8080/#/invoices/${invoice.id}`,
+    doc.cell(`http://localhost:8080/invoices/${invoice.id}`, {
+        link: `http://localhost:8080/invoices/${invoice.id}`,
         color: 0x0074D9,
         fontSize: 16,
         textAlign: 'left',

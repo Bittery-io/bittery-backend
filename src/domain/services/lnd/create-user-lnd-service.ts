@@ -18,21 +18,20 @@ import { generateUuid } from '../utils/id-generator-service';
 import { getMd5 } from '../utils/checksum-service';
 import { LndStatusEnum } from '../../model/lnd/lnd-status-enum';
 import { CustomLndDto } from '../../../interfaces/dto/custom-lnd-dto';
+import { findUserRtl, insertUserRtl } from '../../repository/user-rtl-repository';
+import { UserRtl } from '../../model/lnd/rtl/user-rtl';
 
 export const createUserLnd = async (userEmail: string): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
-        let md5Domain: string;
         const domain: string = generateUuid();
-        if (isDevelopmentEnv()) {
-            md5Domain = getDevelopmentHostName();
-        } else {
-            md5Domain = getMd5(domain);
-        }
+        const rtlOneTimePassword: string = generateUuid();
+        const md5Domain: string = isDevelopmentEnv() ? getDevelopmentHostName() : getMd5(domain);
         if (!await domainExists(md5Domain)) {
             const lndPort: number = await generateNextLndPortToUse();
-            await createUserLndNode(md5Domain, String(lndPort));
+            await createUserLndNode(md5Domain, String(lndPort), rtlOneTimePassword);
             await insertUserDomain(new UserDomain(userEmail, md5Domain));
             await insertUserLnd(md5Domain, lndPort);
+            await insertUserRtl(md5Domain, rtlOneTimePassword);
         } else {
             throw new Error('It should not happen but cannot create domain because it already exists!');
         }
@@ -74,6 +73,7 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
     if (userDomain) {
         if (await userHasLnd(userEmail)) {
             const lndUrl: string | undefined = await getLndUrl(userDomain.userDomain);
+            const userRtl: UserRtl | undefined = await findUserRtl(userEmail);
             const lndStatus: LndStatusEnum = lndUrl ? LndStatusEnum.WORKING : LndStatusEnum.STOPPED;
             const lndRestAddress: string = `https://${userDomain.userDomain}:445/lnd-rest/btc/`;
             return new UserLndDto(
@@ -82,6 +82,7 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
                 await getLndConnectUri(userDomain.userDomain),
                 lndUrl ? lndUrl : 'Connection to node failed.',
                 lndStatus,
+                userRtl!.rtlInitPassword,
             );
         } else {
             console.log(`Cannot return user lnd for user ${userEmail} because has no Bittery lnd!`);

@@ -12,8 +12,8 @@ export const userWithGivenEmailExists = async (email: string): Promise<boolean> 
 };
 
 export const insertUser = async (user: User): Promise<void> => {
-    const query: string = 'INSERT INTO USERS(EMAIL, PASSWORD, ACTIVE) VALUES($1, $2, $3)';
-    await dbPool.query(query, [user.email, user.encodedPassword, user.active]);
+    const query: string = 'INSERT INTO USERS(EMAIL, PASSWORD, ACTIVE, CREATION_DATE) VALUES($1, $2, $3, $4)';
+    await dbPool.query(query, [user.email, user.encodedPassword, user.active, user.creationDate]);
 };
 
 export const setUserActiveFlag = async (userEmail: string, active: boolean): Promise<void> => {
@@ -34,5 +34,6 @@ export const findUser = async (email: string): Promise<User | undefined> => {
             result.rows[0].email,
             result.rows[0].password,
             result.rows[0].active,
+            result.rows[0].creation_date,
         ) : undefined;
 };

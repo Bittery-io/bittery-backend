@@ -6,7 +6,7 @@ const domain = 'mail.bittery.io';
 const mg = mailgun({ domain, apiKey, host: 'api.eu.mailgun.net' });
 
 export const sendRegistrationEmail = async (toEmail: string, signUpKey: string): Promise<string | undefined> => {
-    const url = `${getProperty('CLIENT_URL_ADDRESS')}/#/register/confirm?signUpKey=${signUpKey}&email=${toEmail}`;
+    const url = `${getProperty('CLIENT_URL_ADDRESS')}/register/confirm?signUpKey=${signUpKey}&email=${toEmail}`;
     const body: string = `
     <html>
     <body>
@@ -41,7 +41,7 @@ export const sendRegistrationEmail = async (toEmail: string, signUpKey: string):
 };
 
 export const sendResetPasswordEmail = async (toEmail: string, resetPasswordEmail: string): Promise<string | undefined> => {
-    const url = `${getProperty('CLIENT_URL_ADDRESS')}/#/password/reset/confirm?resetKey=${resetPasswordEmail}&email=${toEmail}`;
+    const url = `${getProperty('CLIENT_URL_ADDRESS')}/password/reset/confirm?resetKey=${resetPasswordEmail}&email=${toEmail}`;
     const body: string = `
     <html>
     <body>

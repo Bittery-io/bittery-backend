@@ -21,10 +21,10 @@ exports.up = function(db) {
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'user_wallets_user_users_email',
+        name: 'user_bitcoin_wallets_user_email_fk',
         table: 'users',
         rules: {
-          onDelete: 'SET NULL',
+          onDelete: 'RESTRICT',
           onUpdate: 'RESTRICT'
         },
         mapping: 'email'
@@ -36,10 +36,10 @@ exports.up = function(db) {
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'user_wallets_user_btcpay_details_store_id',
+        name: 'user_bitcoin_wallets_store_id_fk',
         table: 'user_btcpay_details',
         rules: {
-          onDelete: 'SET NULL',
+          onDelete: 'RESTRICT',
           onUpdate: 'RESTRICT'
         },
         mapping: 'store_id'

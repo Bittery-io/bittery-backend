@@ -119,6 +119,7 @@ const registerUserDtoToUser = (userId: string, registerUserDto: RegisterUserDto,
         registerUserDto.email,
         encodedPassword,
         false,
+        new Date().toUTCString(),
     );
 };
 

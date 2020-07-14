@@ -19,6 +19,7 @@ exports.up = function(db) {
     email: { type: 'string', length: 500, primaryKey: true },
     password: { type: 'string', length: 500, notNull: true },
     active: { type: 'boolean', notNull: true },
+    creation_date: { type: 'timestamp', timezone: true, notNull: true },
   });
 };
 

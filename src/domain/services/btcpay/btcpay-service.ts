@@ -12,6 +12,7 @@ import { getDevelopmentHostName, isDevelopmentEnv } from '../../../application/p
 import { findCustomLnd } from '../../repository/custom-lnds-repository';
 import { CustomLnd } from '../../model/lnd/custom-lnd';
 import { UserBitcoinWalletTypeEnum } from '../../model/btc/user-bitcoin-wallet-type-enum';
+import { getNumberProperty } from '../../../application/property-service';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -29,7 +30,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
             UserBitcoinWalletTypeEnum.BIP_49 :
             UserBitcoinWalletTypeEnum.ELECTRUM;
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
-            userEmail, userDomainName!, masterPublicKey, customLnd);
+            userEmail, userDomainName!, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), customLnd);
         await insertUserBtcpayDetails(userBtcpayDetails);
         await insertUserBitcoinWallet(new UserBitcoinWallet(
             userEmail,

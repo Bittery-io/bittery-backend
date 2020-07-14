@@ -21,17 +21,17 @@ exports.up = function(db) {
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'users_email',
+        name: 'custom_lnds_user_email_fk',
         table: 'users',
         rules: {
-          onDelete: 'SET NULL',
+          onDelete: 'RESTRICT',
           onUpdate: 'RESTRICT'
         },
         mapping: 'email'
       },
       primaryKey: true,
     },
-    lnd_rest_address: { type: 'string', length: 1000, notNull: true },
+    lnd_rest_address: { type: 'string', length: 200, notNull: true },
     macaroon_hex: { type: 'string', length: 1000, notNull: true },
     tls_cert: { type: 'string', length: 2000, notNull: true },
     tls_cert_thumbprint: { type: 'string', length: 300, notNull: true },

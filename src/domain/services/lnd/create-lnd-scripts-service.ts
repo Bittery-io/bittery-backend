@@ -2,11 +2,12 @@ import { getProperty } from '../../../application/property-service';
 
 const { exec } = require('child_process');
 
-export const createUserLndNode = async (domainName: string, lndPort: string): Promise<void> => {
+export const createUserLndNode = async (domainName: string, lndPort: string, rtlInitPassword: string): Promise<void> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             console.log(`Starting adding LND services for domain ${domainName} and lnd port ${lndPort}`);
-            exec(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/add-user.sh ${domainName} ${lndPort}`, (error: any, stdout: any, stderr: any) => {
+            // tslint:disable-next-line:max-line-length
+            exec(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/add-user.sh ${domainName} ${lndPort} ${rtlInitPassword}`, (error: any, stdout: any, stderr: any) => {
                 if (error) {
                     console.log(`1/3 Error adding LND services for domain ${domainName} and lnd port ${lndPort}: ${error.message}`);
                     reject('Failed adding user LND services');
