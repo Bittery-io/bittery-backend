@@ -32,7 +32,7 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
         const invoice: Invoice =  await getBtcpayInvoice(userBtcpayDetails.btcpayUserAuthToken, invoiceId);
-        return await generateInvoicePdf(invoice);
+        return await generateInvoicePdf(invoice, userEmail);
     } else {
         throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not btcpay yet!`,
             UserBtcpayErrorType.USER_HAS_NOT_BTCPAY);

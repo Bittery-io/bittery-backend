@@ -3,11 +3,12 @@ import * as path from 'path';
 const fs = require('fs');
 import * as pdf from 'pdfjs';
 import { Invoice } from 'btcpay';
-import {  formatDateWithoutTime } from '../utils/date-service';
+import { addMinutes, formatDateWithTime, minutesToDays } from '../utils/date-service';
+import { getNumberProperty, getProperty } from '../../../application/property-service';
 const logoSrc = fs.readFileSync(path.resolve(__dirname, 'BITTERY.jpg'));
-const font = fs.readFileSync(path.resolve(__dirname, 'AlegreyaSans-Regular.ttf'));
+const font = fs.readFileSync(path.resolve(__dirname, 'Lato-Regular.ttf'));
 // @ts-ignore
-export const generateInvoicePdf = async (invoice: Invoice): Promise<Buffer> => {
+export const generateInvoicePdf = async (invoice: Invoice, userEmail: string): Promise<Buffer> => {
     // keep 19 cm width
     const logo = new pdf.Image(logoSrc);
     const doc = new pdf.Document({
@@ -21,11 +22,14 @@ export const generateInvoicePdf = async (invoice: Invoice): Promise<Buffer> => {
         textAlign: 'right',
         alignment: 'right',
         color: 0x0074D9,
-        fontSize: 22,
+        fontSize: 18,
     }).add('- better Bitcoin payments');
 
-    doc.cell().text({ textAlign: 'left', fontSize: 20 }).add(`Invoice ${invoice.id}`);
-    doc.cell({ paddingBottom: 1 * pdf.cm }).text(`Invoice date: ${formatDateWithoutTime(invoice.invoiceTime)}`);
+    doc.cell().text({ textAlign: 'left' }).add(`Invoice: ${invoice.id}`);
+    doc.cell().text(`Invoice date: ${formatDateWithTime(invoice.invoiceTime)}`);
+    const btcpayPaymentExpirationMinutes: number = getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES');
+    doc.cell().text(`Payment due date : ${formatDateWithTime(addMinutes(invoice.invoiceTime, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES')))}`);
+    doc.cell({ paddingBottom: 0.5 * pdf.cm }).text(`Valid: ${minutesToDays(btcpayPaymentExpirationMinutes)} days`);
 
     const partiesTable = doc.table({
         widths: [5 * pdf.cm, 9 * pdf.cm, 5 * pdf.cm],
@@ -40,15 +44,15 @@ export const generateInvoicePdf = async (invoice: Invoice): Promise<Buffer> => {
         }
 
         const row2 = partiesTable.row();
-        row2.cell('');
+        row2.cell(`Email: ${userEmail}`, { fontSize: 10 });
         row2.cell('');
         if (invoice.buyer.name) {
-            row2.cell(invoice.buyer.name!);
+            row2.cell(invoice.buyer.name, { fontSize: 10 }!);
         }
     };
     addParties();
     doc.cell({
-        paddingBottom: 1 * pdf.cm,
+        paddingBottom: 0.5 * pdf.cm,
     });
 
     const itemsTable = doc.table({
@@ -76,45 +80,53 @@ export const generateInvoicePdf = async (invoice: Invoice): Promise<Buffer> => {
     addRow(1, description, invoice.price.toFixed(2), invoice.btcPrice);
 
     doc.cell('Payment methods', {
-        fontSize: 20,
+        fontSize: 16,
         paddingTop: 0.5 * pdf.cm,
     });
+    doc.cell('Possible payments methods');
 
-    doc.cell('BTC ₿', {
-        fontSize: 16,
+    doc.cell('BTC [on-chain]', {
+        paddingTop: 0.3 * pdf.cm,
+        fontSize: 14,
+        paddingLeft: 0.5 * pdf.cm,
     });
     doc.cell('Payment address', {
-        fontSize: 14,
+        fontSize: 12,
+        paddingLeft: 0.5 * pdf.cm,
     });
-    doc.cell(invoice.bitcoinAddress);
+    doc.cell(invoice.bitcoinAddress, {  fontSize: 10, paddingLeft: 0.5 * pdf.cm });
     const lightningInfoType = invoice.cryptoInfo.filter(info => info.paymentType === 'LightningLike')[0];
     if (lightningInfoType) {
-        doc.cell('BTC Lightning Network', {
-            paddingTop: 0.5 * pdf.cm,
-            fontSize: 16,
+        doc.cell('BTC [Lightning Network]', {
+            paddingTop: 0.3 * pdf.cm,
+            fontSize: 14,
+            paddingLeft: 0.5 * pdf.cm,
         });
         doc.cell('Payment address', {
-            fontSize: 14,
+            fontSize: 12,
+            paddingLeft: 0.5 * pdf.cm,
         });
-        doc.cell(lightningInfoType.address);
+        doc.cell(lightningInfoType.address, { fontSize: 10,  paddingLeft: 0.5 * pdf.cm  });
 
-        doc.cell('Lightning Node info', {
-            fontSize: 14,
+        doc.cell('Lightning Node address', {
+            fontSize: 12,
+            paddingLeft: 0.5 * pdf.cm,
         });
 
-        doc.cell('039ac5cf32c9c1692b7986ce6717049d9bbcc1f70c724eff0aad01b2b502eebd65@192.168.1.2:9777');
+        doc.cell('039ac5cf32c9c1692b7986ce6717049d9bbcc1f70c724eff0aad01b2b502eebd65@192.168.1.2:9777', { fontSize: 10, paddingLeft: 0.5 * pdf.cm });
     }
 
     doc.cell('Payment widget', {
-        fontSize: 20,
+        fontSize: 16,
         paddingTop: 0.5 * pdf.cm,
     });
-    doc.cell('Open the link for direct payment widget');
-    doc.cell(`http://localhost:8080/invoices/${invoice.id}`, {
-        link: `http://localhost:8080/invoices/${invoice.id}`,
+    doc.cell('Direct payment widget URL');
+    doc.cell(`${getProperty('CLIENT_URL_ADDRESS')}/invoices/${invoice.id}`, {
+        link: `${getProperty('CLIENT_URL_ADDRESS')}/invoices/${invoice.id}`,
         color: 0x0074D9,
-        fontSize: 16,
+        fontSize: 14,
         textAlign: 'left',
+        paddingLeft: 0.5 * pdf.cm,
     });
     doc.footer().pageNumber((curr: any, total: any) => `${curr}/${total}`, { textAlign: 'center' });
     // doc.pipe(fs.createWriteStream('output.pdf'));
