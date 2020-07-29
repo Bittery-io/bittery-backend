@@ -1,5 +1,4 @@
 import { UserDomain } from '../../model/lnd/user-domain';
-import { createUserLndNode } from './create-lnd-scripts-service';
 import { LndCreateException } from '../../model/lnd/lnd-create-exception';
 import { LndCreationErrorType } from '../../model/lnd/lnd-creation-error-type';
 import { UserLndDto } from '../../../interfaces/dto/user-lnd-dto';
@@ -20,6 +19,9 @@ import { LndStatusEnum } from '../../model/lnd/lnd-status-enum';
 import { CustomLndDto } from '../../../interfaces/dto/custom-lnd-dto';
 import { findUserRtl, insertUserRtl } from '../../repository/user-rtl-repository';
 import { UserRtl } from '../../model/lnd/rtl/user-rtl';
+import { runInTransaction } from '../../../application/db/db-transaction';
+import { PoolClient } from 'pg';
+import { createUserLndNode } from '../../../application/infrastructure-invoke-service-client-service';
 
 export const createUserLnd = async (userEmail: string): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -29,9 +31,11 @@ export const createUserLnd = async (userEmail: string): Promise<void> => {
         if (!await domainExists(md5Domain)) {
             const lndPort: number = await generateNextLndPortToUse();
             await createUserLndNode(md5Domain, String(lndPort), rtlOneTimePassword);
-            await insertUserDomain(new UserDomain(userEmail, md5Domain));
-            await insertUserLnd(md5Domain, lndPort);
-            await insertUserRtl(md5Domain, rtlOneTimePassword);
+            await runInTransaction(async (client: PoolClient) => {
+                await insertUserDomain(client, new UserDomain(userEmail, md5Domain));
+                await insertUserLnd(client, md5Domain, lndPort);
+                await insertUserRtl(client, md5Domain, rtlOneTimePassword);
+            });
         } else {
             throw new Error('It should not happen but cannot create domain because it already exists!');
         }

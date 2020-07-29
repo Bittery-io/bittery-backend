@@ -27,6 +27,8 @@ import { insertNotification } from '../../../repository/notifications-repository
 import { Notification } from '../../../model/notification/notification';
 import { NotificationTypeEnum } from '../../../model/notification/notification-type-enum';
 import { NotificationReasonEnum } from '../../../model/notification/notification-reason-enum';
+import { runInTransaction } from '../../../../application/db/db-transaction';
+import { PoolClient } from 'pg';
 
 export const registerNewUser = async (registerUserDto: RegisterUserDto): Promise<void> => {
     if (await verifyCaptcha(registerUserDto.captchaCode)) {
@@ -88,20 +90,22 @@ const sendConfirmationEmailAndSaveInDb = async (registerUserDto: RegisterUserDto
     const messageId: string | undefined = await sendRegistrationEmail(registerUserDto.email, signUpKey);
     if (messageId) {
         const sendDate: string = new Date().toUTCString();
-        await insertUserConfirmation(new UserConfirmation(
-            registerUserDto.email,
-            signUpKey,
-            false,
-            messageId,
-            sendDate,
-        ));
-        await insertNotification(new Notification(
-            registerUserDto.email,
-            messageId,
-            NotificationTypeEnum.EMAIL,
-            NotificationReasonEnum.REGISTRATION,
-            sendDate,
-        ));
+        await runInTransaction(async (client: PoolClient) => {
+            await insertUserConfirmation(client, new UserConfirmation(
+                registerUserDto.email,
+                signUpKey,
+                false,
+                messageId,
+                sendDate,
+            ));
+            await insertNotification(client, new Notification(
+                registerUserDto.email,
+                messageId,
+                NotificationTypeEnum.EMAIL,
+                NotificationReasonEnum.REGISTRATION,
+                sendDate,
+            ));
+        });
     } else {
         throw new UserRegisterException('Failed to register because email sending failed!',
             UserRegistrationErrorType.CONFIRMATION_EMAIL_SENT_FAILED);

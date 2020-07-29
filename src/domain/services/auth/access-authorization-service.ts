@@ -3,7 +3,6 @@ import { getArrayProperty, getProperty } from '../../../application/property-ser
 import { Request, Response } from 'express-serve-static-core';
 import { getAccessTokenFromAuthorizationHeader } from './token-extractor-service';
 import { getJWTOauthFromDatabase } from '../../repository/authentication-repository';
-import jwt from 'jsonwebtoken';
 import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
 
 export const authorizeRequest = async (req: Request, resp: Response, next: express.NextFunction): Promise<Response | void> => {

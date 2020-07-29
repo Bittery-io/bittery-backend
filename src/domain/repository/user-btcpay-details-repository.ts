@@ -1,9 +1,10 @@
 import { dbPool } from '../../application/db/db';
 import { UserBtcpayDetails } from '../model/btcpay/user-btcpay-details';
 import { BtcpayUserAuthToken } from '../model/btcpay/btcpay-user-auth-token';
+import { PoolClient } from 'pg';
 
-export const insertUserBtcpayDetails = async (userBtcpayDetails: UserBtcpayDetails): Promise<void> => {
-    await dbPool.query(`
+export const insertUserBtcpayDetails = async (client: PoolClient, userBtcpayDetails: UserBtcpayDetails): Promise<void> => {
+    await client.query(`
                 INSERT INTO USER_BTCPAY_DETAILS(STORE_ID, btcpay_user_merchant_token, btcpay_user_private_key, user_email)
                 VALUES ($1, $2, $3, $4)`,
         [userBtcpayDetails.storeId,

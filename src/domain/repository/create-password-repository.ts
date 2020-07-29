@@ -1,9 +1,10 @@
 import { dbPool } from '../../application/db/db';
 import { PasswordReset } from '../model/user/password-reset';
 import { getProperty } from '../../application/property-service';
+import { PoolClient } from 'pg';
 
-export const insertPasswordReset = async (passwordReset: PasswordReset): Promise<void> => {
-    await dbPool.query(`
+export const insertPasswordReset = async (client: PoolClient, passwordReset: PasswordReset): Promise<void> => {
+    await client.query(`
                 INSERT INTO PASSWORD_RESETS(USER_EMAIL, PASSWORD_RESET_KEY, RESET_DONE, MESSAGE_ID, CREATION_DATE, RESET_DONE_DATE)
                 VALUES ($1, $2, $3, $4, $5, $6)`,
         [passwordReset.userEmail, passwordReset.passwordResetKey, passwordReset.resetDone,
@@ -26,8 +27,8 @@ export const findUnconfirmedValidPasswordReset = async (userEmail: string, passw
         ) : undefined;
 };
 
-export const updateConfirmPasswordResetWithResetDone = async (userEmail: string, passwordResetKey: string): Promise<void> => {
-    await dbPool.query(`UPDATE PASSWORD_RESETS SET RESET_DONE = TRUE, RESET_DONE_DATE = $1
+export const updateConfirmPasswordResetWithResetDone = async (client: PoolClient, userEmail: string, passwordResetKey: string): Promise<void> => {
+    await client.query(`UPDATE PASSWORD_RESETS SET RESET_DONE = TRUE, RESET_DONE_DATE = $1
                                     WHERE USER_EMAIL = $2 AND PASSWORD_RESET_KEY = $3`,
         [new Date(), userEmail, passwordResetKey]);
 };

@@ -19,6 +19,8 @@ import { insertNotification, notificationsLimitNotExceededForUser } from '../../
 import { Notification } from '../../model/notification/notification';
 import { NotificationTypeEnum } from '../../model/notification/notification-type-enum';
 import { NotificationReasonEnum } from '../../model/notification/notification-reason-enum';
+import { runInTransaction } from '../../../application/db/db-transaction';
+import { Pool, PoolClient } from 'pg';
 
 export const encodePassword = (password: string): string => {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(Number(getProperty('ENCRYPTION_PASSWORD_SALT_ROUNDS'))));
@@ -44,20 +46,22 @@ export const resetPassword = async (passwordResetDto: PasswordResetDto): Promise
                 const messageId: string | undefined = await sendResetPasswordEmail(passwordResetDto.email, resetPasswordKey);
                 if (messageId) {
                     const sendDate: string = new Date().toUTCString();
-                    await insertPasswordReset(new PasswordReset(
-                        passwordResetDto.email,
-                        resetPasswordKey,
-                        false,
-                        messageId,
-                        sendDate,
-                    ));
-                    await insertNotification(new Notification(
-                        passwordResetDto.email,
-                        messageId,
-                        NotificationTypeEnum.EMAIL,
-                        NotificationReasonEnum.REGISTRATION,
-                        sendDate,
-                    ));
+                    await runInTransaction(async (client: PoolClient) => {
+                        await insertPasswordReset(client, new PasswordReset(
+                            passwordResetDto.email,
+                            resetPasswordKey,
+                            false,
+                            messageId,
+                            sendDate,
+                        ));
+                        await insertNotification(client, new Notification(
+                            passwordResetDto.email,
+                            messageId,
+                            NotificationTypeEnum.EMAIL,
+                            NotificationReasonEnum.REGISTRATION,
+                            sendDate,
+                        ));
+                    });
                 } else {
                     throw new Error(`Failed to reset password for user ${passwordResetDto.email} because of mail sending problem.`);
                 }
@@ -95,8 +99,10 @@ export const confirmResetPassword = async (passwordResetConfirmDto: PasswordRese
             passwordResetConfirmDto.email, passwordResetConfirmDto.passwordResetKey);
         if (passwordReset) {
             const encodedPassword: string = encodePassword(passwordResetConfirmDto.password);
-            await updateUserPassword(passwordReset.userEmail, encodedPassword);
-            await updateConfirmPasswordResetWithResetDone(passwordReset.userEmail, passwordResetConfirmDto.passwordResetKey);
+            await runInTransaction(async (client: PoolClient) => {
+                await updateUserPassword(client, passwordReset.userEmail, encodedPassword);
+                await updateConfirmPasswordResetWithResetDone(client, passwordReset.userEmail, passwordResetConfirmDto.passwordResetKey);
+            });
         } else {
             throw new Error(`Cannot confirm password reset because no active password reset request
                             found for key ${passwordResetConfirmDto.passwordResetKey} and email ${passwordResetConfirmDto.email}`);

@@ -1,5 +1,6 @@
 import { dbPool } from '../../application/db/db';
 import { User } from '../model/user/user';
+import { PoolClient } from 'pg';
 
 export const userExists = async (email: string): Promise<boolean> => {
     const result = await dbPool.query('SELECT EXISTS(SELECT 1 FROM USERS WHERE EMAIL = $1)', [email]);
@@ -21,9 +22,9 @@ export const setUserActiveFlag = async (userEmail: string, active: boolean): Pro
     await dbPool.query(query, [active, userEmail]);
 };
 
-export const updateUserPassword = async (userEmail: string, encodedPassword: string): Promise<void> => {
+export const updateUserPassword = async (client: PoolClient, userEmail: string, encodedPassword: string): Promise<void> => {
     const query: string = 'UPDATE USERS SET PASSWORD = $1 WHERE EMAIL = $2';
-    await dbPool.query(query, [encodedPassword, userEmail]);
+    await client.query(query, [encodedPassword, userEmail]);
 };
 
 export const findUser = async (email: string): Promise<User | undefined> => {

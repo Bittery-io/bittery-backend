@@ -12,6 +12,7 @@ export AUTH_EXCLUDED_URLS="['/auth/refreshToken','/user/register','/user/login',
 export RTL_URL=/rtl
 export BTCPAY_URL=http://localhost
 export SUDO_PASS=http://localhost
+
 npm run lint
 npm run compile
 npm run start

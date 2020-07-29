@@ -1,8 +1,9 @@
 import { dbPool } from '../../application/db/db';
 import { UserBitcoinWallet } from '../model/btc/user-bitcoin-wallet';
+import { PoolClient } from 'pg';
 
-export const insertUserBitcoinWallet = async (userBitcoinWallet: UserBitcoinWallet): Promise<void> => {
-    await dbPool.query(`
+export const insertUserBitcoinWallet = async (client: PoolClient, userBitcoinWallet: UserBitcoinWallet): Promise<void> => {
+    await client.query(`
                 INSERT INTO USER_BITCOIN_WALLETS(USER_EMAIL, STORE_ID, ROOT_PUBLIC_KEY, TYPE, CREATION_DATE)
                 VALUES ($1, $2, $3, $4, $5)`,
         [userBitcoinWallet.userEmail,

@@ -1,8 +1,9 @@
 import { dbPool } from '../../application/db/db';
 import { UserRtl } from '../model/lnd/rtl/user-rtl';
+import { PoolClient } from 'pg';
 
-export const insertUserRtl = async (userDomain: string, rtlInitPassword: string): Promise<void> => {
-    await dbPool.query(`
+export const insertUserRtl = async (client: PoolClient, userDomain: string, rtlInitPassword: string): Promise<void> => {
+    await client.query(`
         INSERT INTO USER_RTLS(USER_DOMAIN, RTL_INIT_PASSWORD) VALUES($1, $2)`, [userDomain, rtlInitPassword]);
 };
 

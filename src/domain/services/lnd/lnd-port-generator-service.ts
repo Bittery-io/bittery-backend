@@ -1,23 +1,27 @@
 import { findCurrentHighestLndPort } from '../../repository/user-lnds-repository';
-
-const excludedPorts: number[] = [8080, 8000, 9000, 5432];
+import { isPortFreeToUse } from '../../../application/infrastructure-invoke-service-client-service';
 
 export const generateNextLndPortToUse = async (): Promise<number> => {
-    const currentHighestLndPort: number | undefined = await findCurrentHighestLndPort();
-    if (currentHighestLndPort) {
-        if (currentHighestLndPort === 65535) {
-            throw new Error('Fuck me. No more ports to use for LND all are used!');
-        } else {
-            let nextLndPortToUse: number = currentHighestLndPort + 1;
-            let isPortNotOk: boolean = true;
-            while (isPortNotOk) {
-                isPortNotOk = excludedPorts.filter(port => port === currentHighestLndPort).length > 0;
-                nextLndPortToUse = currentHighestLndPort + 1;
-            }
-            return nextLndPortToUse;
-        }
+    let currentHighestLndPort: number | undefined = await findCurrentHighestLndPort();
+    if (!currentHighestLndPort) {
+        // should start from 1025 but later +1 so 1024
+        currentHighestLndPort = 1024;
+    }
+    if (currentHighestLndPort === 65535) {
+        throw new Error('Fuck me. No more ports to use for LND all are used!');
     } else {
-        // Just not taking first 1024 addresses
-        return 1025;
+        let nextLndPortToUse: number = currentHighestLndPort + 1;
+        let isPortFree: boolean = true;
+        while (isPortFree) {
+            isPortFree = await isPortFreeToUse(nextLndPortToUse);
+            if (isPortFree) {
+                console.log(`Next generated LND port ${nextLndPortToUse} is free to use!`);
+                break;
+            } else {
+                nextLndPortToUse = currentHighestLndPort + 1;
+                console.log(`Next generated LND port ${nextLndPortToUse - 1} is busy, trying next one: ${nextLndPortToUse}`);
+            }
+        }
+        return nextLndPortToUse;
     }
 };

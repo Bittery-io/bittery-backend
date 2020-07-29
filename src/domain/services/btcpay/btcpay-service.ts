@@ -13,6 +13,8 @@ import { findCustomLnd } from '../../repository/custom-lnds-repository';
 import { CustomLnd } from '../../model/lnd/custom-lnd';
 import { UserBitcoinWalletTypeEnum } from '../../model/btc/user-bitcoin-wallet-type-enum';
 import { getNumberProperty } from '../../../application/property-service';
+import { runInTransaction } from '../../../application/db/db-transaction';
+import { PoolClient } from 'pg';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -31,14 +33,16 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
             UserBitcoinWalletTypeEnum.ELECTRUM;
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
             userEmail, userDomainName!, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), customLnd);
-        await insertUserBtcpayDetails(userBtcpayDetails);
-        await insertUserBitcoinWallet(new UserBitcoinWallet(
-            userEmail,
-            userBtcpayDetails.storeId,
-            masterPublicKey,
-            userBitcoinWalletTypeEnum,
-            new Date().toDateString(),
-        ));
+        await runInTransaction(async (client: PoolClient) => {
+            await insertUserBtcpayDetails(client, userBtcpayDetails);
+            await insertUserBitcoinWallet(client, new UserBitcoinWallet(
+                userEmail,
+                userBtcpayDetails.storeId,
+                masterPublicKey,
+                userBitcoinWalletTypeEnum,
+                new Date().toDateString(),
+            ));
+        });
         console.log(`Successfully created user btcpay services for user with email ${userEmail}`);
     } else {
         console.log(`Successfully created user btcpay services for user with email ${userEmail}`);

@@ -1,7 +1,8 @@
 import { dbPool } from '../../application/db/db';
+import { PoolClient } from 'pg';
 
-export const insertUserLnd = async (userDomain: string, lndPort: number): Promise<void> => {
-    await dbPool.query(`
+export const insertUserLnd = async (client: PoolClient, userDomain: string, lndPort: number): Promise<void> => {
+    await client.query(`
         INSERT INTO USER_LNDS(USER_DOMAIN, LND_PORT) VALUES($1, $2)`, [userDomain, lndPort]);
 };
 

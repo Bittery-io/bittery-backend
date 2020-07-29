@@ -1,9 +1,10 @@
 import { dbPool } from '../../application/db/db';
 import { Notification } from '../model/notification/notification';
 import { NotificationTypeEnum } from '../model/notification/notification-type-enum';
+import { PoolClient } from 'pg';
 
-export const insertNotification = async (notification: Notification): Promise<void> => {
-    await dbPool.query(`
+export const insertNotification = async (client: PoolClient, notification: Notification): Promise<void> => {
+    await client.query(`
                 INSERT INTO NOTIFICATIONS(USER_EMAIL, NOTIFICATION_ID, NOTIFICATION_TYPE, NOTIFICATION_REASON,
                                           NOTIFICATION_SEND_DATE)
                 VALUES ($1, $2, $3, $4, $5)`,
