@@ -1,6 +1,7 @@
 import { getProperty } from './property-service';
 const { exec } = require('child_process');
 import axios from 'axios';
+import { logError, logInfo } from './logging-service';
 
 export const createUserLndNode = async (domainName: string, lndPort: string, rtlInitPassword: string): Promise<void> => {
     const invokeServerHost: string = await getInvokeServerHost();
@@ -13,9 +14,9 @@ export const createUserLndNode = async (domainName: string, lndPort: string, rtl
             // timeout after minute
             timeout: 60000,
         });
-        console.log('Creating user lnd node succeed with http response: ', res.status);
+        logInfo(`Creating user lnd node succeed with http response: ${res.status}`);
     } catch (err) {
-        console.log('Creating user lnd node failed with error!', err.message);
+        logError('Creating user lnd node failed with error!', err.message);
         throw new Error(err.message);
     }
 };
@@ -24,10 +25,10 @@ export const isPortFreeToUse = async (port: number): Promise<boolean> => {
     const invokeServerHost: string = await getInvokeServerHost();
     try {
         await axios.get(`http://${invokeServerHost}:${getProperty('INVOKE_SERVER_PORT')}/is-port-free/${port}`);
-        console.log(`Got successful port ${port} free response from infrastructure service!`);
+        logInfo(`Got successful port ${port} free response from infrastructure service!`);
         return true;
     } catch (err) {
-        console.log(`Got port ${port} busy response from infrastructure service!`);
+        logError(`Got port ${port} busy response from infrastructure service!`);
         return false;
     }
 };
@@ -37,13 +38,12 @@ const getInvokeServerHostInDocker = async (): Promise<string> => {
         setTimeout(() => {
             exec(`ip route show | awk '/default/ {print $3}'`,
                 (error: any, stdout: any, stderr: any) => {
-                    console.log('dostalem kurwa zwrotke: ', error, stdout, stderr);
                     if (error) {
-                        console.log('Error getting host ip from docker container', error);
+                        logError('Error getting host ip from docker container', error);
                         reject('Error getting host ip from docker container');
                     }
                     if (stderr) {
-                        console.log('Stderr getting host ip from docker container', stderr);
+                        logError('Stderr getting host ip from docker container', stderr);
                         reject('Stderr getting host ip from docker container');
                     }
                     const address: string = stdout.replace(/(\r\n|\n|\r)/gm, '');

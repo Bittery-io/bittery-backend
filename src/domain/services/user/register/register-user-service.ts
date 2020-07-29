@@ -29,6 +29,7 @@ import { NotificationTypeEnum } from '../../../model/notification/notification-t
 import { NotificationReasonEnum } from '../../../model/notification/notification-reason-enum';
 import { runInTransaction } from '../../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
+import { logError, logInfo } from '../../../../application/logging-service';
 
 export const registerNewUser = async (registerUserDto: RegisterUserDto): Promise<void> => {
     if (await verifyCaptcha(registerUserDto.captchaCode)) {
@@ -66,12 +67,12 @@ const checkIfUserNotExistsAndRegister = async (registerUserDto: RegisterUserDto)
         // If user exists and confirmation exists means the account is used
         if (await userConfirmationExists(registerUserDto.email)) {
             errorMessage = `Register user failed because user '${registerUserDto.email}' already exists.`;
-            console.log(errorMessage);
+            logError(errorMessage);
             throw new UserRegisterException(errorMessage, UserRegistrationErrorType.USERNAME_ALREADY_TAKEN);
         } else {
             // User could register but email failed to send so check this situation and resend email only
             await sendConfirmationEmailAndSaveInDb(registerUserDto);
-            console.log(`User ${registerUserDto.email} was registered but registration email resent.`);
+            logInfo(`User ${registerUserDto.email} was registered but registration email resent.`);
             return;
         }
     }
@@ -82,7 +83,7 @@ const checkIfUserNotExistsAndRegister = async (registerUserDto: RegisterUserDto)
     }
     await saveNewEcmrUser(registerUserDto);
     await sendConfirmationEmailAndSaveInDb(registerUserDto);
-    console.log(`User ${registerUserDto.email} registered.`);
+    logInfo(`User ${registerUserDto.email} registered.`);
 };
 
 const sendConfirmationEmailAndSaveInDb = async (registerUserDto: RegisterUserDto): Promise<void> => {

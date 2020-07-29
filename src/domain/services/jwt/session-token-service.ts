@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { getProperty } from '../../../application/property-service';
+import { logError } from '../../../application/logging-service';
 
 export const generateToken = (id: string, secret: string): string => {
     return jwt.sign(
@@ -27,7 +28,7 @@ export const verifyUserTokenAndGetUserEmail = async (jwtToken: string): Promise<
         });
     } catch (err) {
         const errorMessage: string = `Authorization error: ${err}`;
-        console.log(errorMessage);
+        logError(errorMessage);
         throw new Error(errorMessage);
     }
 };
@@ -38,7 +39,7 @@ export const decodeTokenAndGetEmail = (jwtToken: string): string | undefined => 
         // @ts-ignore
         return jwtTokenDecoded!.userId;
     } catch (err) {
-        console.log('Error decoding jwt token!');
+        logError('Error decoding jwt token!');
         return undefined;
     }
 };

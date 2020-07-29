@@ -15,6 +15,7 @@ import { UserBitcoinWalletTypeEnum } from '../../model/btc/user-bitcoin-wallet-t
 import { getNumberProperty } from '../../../application/property-service';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
+import { logError, logInfo } from '../../../application/logging-service';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -43,9 +44,9 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
                 new Date().toDateString(),
             ));
         });
-        console.log(`Successfully created user btcpay services for user with email ${userEmail}`);
+        logInfo(`Successfully created user btcpay services for user with email ${userEmail}`);
     } else {
-        console.log(`Successfully created user btcpay services for user with email ${userEmail}`);
+        logError(`Successfully created user btcpay services for user with email ${userEmail}`);
         throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because are already created`,
             CreateUserBtcpayErrorType.USER_ALREADY_HAS_BTCPAY);
     }

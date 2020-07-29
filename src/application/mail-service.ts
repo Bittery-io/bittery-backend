@@ -1,4 +1,5 @@
 import { getProperty } from './property-service';
+import { logError, logInfo } from './logging-service';
 const mailgun = require('mailgun-js');
 
 const apiKey = getProperty('MAILGUN_API_KEY');
@@ -43,11 +44,10 @@ export const sendRegistrationEmail = async (toEmail: string, signUpKey: string):
     };
     try {
         const sendResponse = await mg.messages().send(data);
-        console.log(sendResponse);
-        console.log(`Successfully sent registration email to ${toEmail}`);
+        logInfo(`Successfully sent registration email to ${toEmail}. ${sendResponse}`);
         return sendResponse.id;
     } catch (err) {
-        console.log(`Sending registration email to ${toEmail} failed!`, err);
+        logError(`Sending registration email to ${toEmail} failed!`, err);
         return undefined;
     }
 };
@@ -78,11 +78,10 @@ export const sendResetPasswordEmail = async (toEmail: string, resetPasswordEmail
     };
     try {
         const sendResponse = await mg.messages().send(data);
-        console.log(sendResponse);
-        console.log(`Successfully sent password reset email to ${toEmail}`);
+        logInfo(`Successfully sent password reset email to ${toEmail}. ${sendResponse}`);
         return sendResponse.id;
     } catch (err) {
-        console.log(`Sending password reset email to ${toEmail} failed!`, err);
+        logError(`Sending password reset email to ${toEmail} failed!`, err);
         return undefined;
     }
 };

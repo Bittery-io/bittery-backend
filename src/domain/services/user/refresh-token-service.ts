@@ -2,6 +2,7 @@ import { getJWTOauthFromDatabase } from '../../repository/authentication-reposit
 import { decodeTokenAndGetEmail } from '../jwt/session-token-service';
 import { generateAndSaveNewJwtForUser } from '../auth/users-authentication-service';
 import { RefreshTokenException } from './refresh-token-exception';
+import { logInfo } from '../../../application/logging-service';
 
 export const getNewJwtToken = (jwtToken: string): string => {
     const userEmail: string | undefined = decodeTokenAndGetEmail(jwtToken);
@@ -9,7 +10,7 @@ export const getNewJwtToken = (jwtToken: string): string => {
         const jwtTokenInDb: string | undefined = getJWTOauthFromDatabase(userEmail);
         if (jwtTokenInDb) {
             const newJwt: string =  generateAndSaveNewJwtForUser(userEmail);
-            console.log(`Successfully refreshed token (JWT) for user ${userEmail}`);
+            logInfo(`Successfully refreshed token (JWT) for user ${userEmail}`);
             return newJwt;
         } else {
             const message: string = `Refresh token failed because given JWT is not saved in Bittery: ${jwtToken} `;

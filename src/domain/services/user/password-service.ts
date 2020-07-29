@@ -21,6 +21,7 @@ import { NotificationTypeEnum } from '../../model/notification/notification-type
 import { NotificationReasonEnum } from '../../model/notification/notification-reason-enum';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { Pool, PoolClient } from 'pg';
+import { logError } from '../../../application/logging-service';
 
 export const encodePassword = (password: string): string => {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(Number(getProperty('ENCRYPTION_PASSWORD_SALT_ROUNDS'))));
@@ -70,7 +71,7 @@ export const resetPassword = async (passwordResetDto: PasswordResetDto): Promise
                     ${getNumberProperty('PASSWORD_RESET_EMAIL_MEASURE_PERIOD_LIMIT')}/${getNumberProperty('PASSWORD_RESET_EMAIL_HOURS_MEASURE_PERIOD_HOURS')} hours`);
             }
         } else {
-            console.log(`Failed to reset password for email ${passwordResetDto.email} because there is no registered user!!!`);
+            logError(`Failed to reset password for email ${passwordResetDto.email} because there is no registered user!!!`);
         }
     } else {
         throw new Error(`Failed to reset password for user ${passwordResetDto.email} because of captcha verification failed.`);

@@ -7,6 +7,7 @@ import {
 import { UserBtcpayDetails } from '../../../model/btcpay/user-btcpay-details';
 import { getProperty } from '../../../../application/property-service';
 import { CustomLnd } from '../../../model/lnd/custom-lnd';
+import { logInfo } from '../../../../application/logging-service';
 
 const puppeteer = require('puppeteer');
 
@@ -20,7 +21,7 @@ export const initializeBtcpayServices = async (
         bip49RootPublicKey: string,
         paymentExpirationMinutes: number,
         customLnd?: CustomLnd): Promise<UserBtcpayDetails> => {
-    console.log(`Initializing btcpay services for user domain ${userDomain}`);
+    logInfo(`Initializing btcpay services for user domain ${userDomain}`);
     const browser = await getBrowser();
     const page = (await browser.pages())[0];
     await loginToBtcpay(page);
@@ -76,7 +77,7 @@ export const loginToBtcpay = async (page: any): Promise<void> => {
     await page.type('#Password', PASSWORD);
     await page.click('#LoginButton');
     await page.waitForSelector('div.header-content-inner.text-white');
-    console.log(`Successfully logged to BTCPAY`);
+    logInfo(`Successfully logged to BTCPAY`);
 };
 
 const getBtcpayPairingCode = async (storeName: string, storeId: string, page: any): Promise<string> => {
@@ -118,7 +119,7 @@ const createStore = async (storeName: string, page: any): Promise<string> => {
     await page.waitForSelector('input#Id');
     const element = await page.$('#Id');
     const storeId = await page.evaluate((element: any) => element.value, element);
-    console.log(`Store ${storeName} created! New Id: ${storeId}, name: ${storeName}`);
+    logInfo(`Store ${storeName} created! New Id: ${storeId}, name: ${storeName}`);
     return storeId;
 };
 
@@ -131,7 +132,7 @@ const addLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: an
     await page.waitForSelector('button[type="submit"]');
     await page.click('[type="submit"]');
     await page.waitForSelector('input#Id');
-    console.log(`Added btcpay lnd address for store with id ${storeId}`);
+    logInfo(`Added btcpay lnd address for store with id ${storeId}`);
 };
 
 const setExpirationMinutesToStore = async (storeId: string, paymentExpirationMinutes: string, page: any): Promise<void> => {
@@ -143,7 +144,7 @@ const setExpirationMinutesToStore = async (storeId: string, paymentExpirationMin
     await page.waitForSelector('button[type="submit"]');
     await page.click('[type="submit"]');
     await page.waitForSelector('div.alert.alert-success.alert-dismissible');
-    console.log(`Set invoice expiration time ${paymentExpirationMinutes} minutes for store ${storeId}`);
+    logInfo(`Set invoice expiration time ${paymentExpirationMinutes} minutes for store ${storeId}`);
 };
 
 export const addBtcRootPublicKeyToStore = async (storeId: string, page: any, browser: any, bip49RootPublicKey: string): Promise<void> => {
@@ -176,5 +177,5 @@ export const addBtcRootPublicKeyToStore = async (storeId: string, page: any, bro
     //     }
     //     return el.innerHTML;
     // });
-    console.log(`Successfully added Bitcoin root public key for store with id ${storeId}`);
+    logInfo(`Successfully added Bitcoin root public key for store with id ${storeId}`);
 };

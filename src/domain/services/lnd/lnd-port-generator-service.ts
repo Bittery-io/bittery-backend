@@ -1,5 +1,6 @@
 import { findCurrentHighestLndPort } from '../../repository/user-lnds-repository';
 import { isPortFreeToUse } from '../../../application/infrastructure-invoke-service-client-service';
+import { logInfo } from '../../../application/logging-service';
 
 export const generateNextLndPortToUse = async (): Promise<number> => {
     let currentHighestLndPort: number | undefined = await findCurrentHighestLndPort();
@@ -15,11 +16,11 @@ export const generateNextLndPortToUse = async (): Promise<number> => {
         while (isPortFree) {
             isPortFree = await isPortFreeToUse(nextLndPortToUse);
             if (isPortFree) {
-                console.log(`Next generated LND port ${nextLndPortToUse} is free to use!`);
+                logInfo(`Next generated LND port ${nextLndPortToUse} is free to use!`);
                 break;
             } else {
                 nextLndPortToUse = currentHighestLndPort + 1;
-                console.log(`Next generated LND port ${nextLndPortToUse - 1} is busy, trying next one: ${nextLndPortToUse}`);
+                logInfo(`Next generated LND port ${nextLndPortToUse - 1} is busy, trying next one: ${nextLndPortToUse}`);
             }
         }
         return nextLndPortToUse;

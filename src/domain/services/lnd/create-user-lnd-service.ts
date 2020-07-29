@@ -22,6 +22,7 @@ import { UserRtl } from '../../model/lnd/rtl/user-rtl';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { createUserLndNode } from '../../../application/infrastructure-invoke-service-client-service';
+import { logError, logInfo } from '../../../application/logging-service';
 
 export const createUserLnd = async (userEmail: string): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -60,7 +61,7 @@ export const addExistingUserLnd = async (userEmail: string, saveUserLndDto: Save
                 saveUserLndDto.tlsCertFileText,
                 tlsCertThumbprint,
             ));
-            console.log(`Saved custom LND for user ${userEmail}`);
+            logInfo(`Saved custom LND for user ${userEmail}`);
         } else {
             throw new LndCreateException(`Cannot add user ${userEmailHasLnd} LND because getting node info failed.`,
                 LndCreationErrorType.GETTING_LND_INFO_FAILED);
@@ -89,11 +90,11 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
                 userRtl!.rtlInitPassword,
             );
         } else {
-            console.log(`Cannot return user lnd for user ${userEmail} because has no Bittery lnd!`);
+            logError(`Cannot return user lnd for user ${userEmail} because has no Bittery lnd!`);
             return undefined;
         }
     } else {
-        console.log(`Cannot return user lnd for user ${userEmail} because has no domain yet`);
+        logError(`Cannot return user lnd for user ${userEmail} because has no domain yet`);
         return undefined;
     }
 };
@@ -111,7 +112,7 @@ export const getCustomUserLnd = async (userEmail: string): Promise<CustomLndDto 
             lndStatus,
         );
     } else {
-        console.log(`Cannot return custom lnd for user ${userEmail} because has no custom lnd!`);
+        logError(`Cannot return custom lnd for user ${userEmail} because has no custom lnd!`);
         return undefined;
     }
 };

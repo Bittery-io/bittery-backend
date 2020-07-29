@@ -1,5 +1,6 @@
 import * as util from 'util';
 import { getProperty } from './property-service';
+import { logError } from './logging-service';
 
 const { exec } = require('child_process');
 const fs = require('fs');
@@ -13,11 +14,11 @@ export const getCertThumbprint = async (tlsCert: string): Promise<string> => {
             exec(`openssl x509 -noout -fingerprint -sha256 -inform pem -in ${tlsCertFilePath} | sed -e 's/.*=//' -e 's/://g'`,
                 (error: any, stdout: any, stderr: any) => {
                     if (error) {
-                        console.log('Error processing user tls.cert', error);
+                        logError('Error processing user tls.cert', error);
                         reject('Error processing user tls.cert');
                     }
                     if (stderr) {
-                        console.log('Stderr error processing user tls.cert', stderr);
+                        logError('Stderr error processing user tls.cert', stderr);
                         reject('Stderr error processing user tls.cert');
                     }
                     resolve(stdout);

@@ -4,6 +4,7 @@ import { Request, Response } from 'express-serve-static-core';
 import { getAccessTokenFromAuthorizationHeader } from './token-extractor-service';
 import { getJWTOauthFromDatabase } from '../../repository/authentication-repository';
 import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
+import { logError } from '../../../application/logging-service';
 
 export const authorizeRequest = async (req: Request, resp: Response, next: express.NextFunction): Promise<Response | void> => {
     return shouldNotAuthorizeRequest(req.path) ?
@@ -18,14 +19,14 @@ const validateScopeAccess = async (req: Request, resp: Response, next: express.N
             next() :
             unauthorizedStatus(req, resp);
     } catch (err) {
-        console.log('Error during validating scope access. ', err);
+        logError('Error during validating scope access. ', err);
         return resp.status(401).send();
     }
 };
 
 const unauthorizedStatus = (req: Request, resp: Response): Response => {
     const authorization: string = req.headers!.authorization!;
-    console.log(`Can not authorize selected path ${req.path} with Authorization header: ${authorization}`);
+    logError(`Can not authorize selected path ${req.path} with Authorization header: ${authorization}`);
     return resp.status(401).send();
 };
 

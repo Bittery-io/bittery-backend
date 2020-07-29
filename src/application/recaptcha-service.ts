@@ -1,3 +1,5 @@
+import { logError } from './logging-service';
+
 const reCAPTCHA = require('recaptcha2');
 
 const recaptcha = new reCAPTCHA({
@@ -11,7 +13,7 @@ export const verifyCaptcha = async (captchaCode: string): Promise<boolean> => {
         await recaptcha.validate(captchaCode);
         return true;
     } catch (err) {
-        console.log(`Recaptcha validation error for code ${captchaCode}`, err);
+        logError(`Recaptcha validation error for code ${captchaCode}`, err);
         return false;
     }
 };

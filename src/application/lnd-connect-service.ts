@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 import axios from 'axios';
 import { getProperty } from './property-service';
+import { logError } from './logging-service';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -20,7 +21,7 @@ export const getLndUrl = async (domain: string): Promise<string | undefined> => 
         });
         return res.data.uris[0];
     } catch (err) {
-        console.log(`Get info of node for domain ${domain} failed!`, err.message);
+        logError(`Get info of node for domain ${domain} failed!`, err.message);
         return undefined;
     }
 };
@@ -38,7 +39,7 @@ export const getCustomLndUrl = async (macaroonHex: string, lndRestAddress: strin
         });
         return res.data.uris[0];
     } catch (err) {
-        console.log(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
+        logError(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
         return undefined;
     }
 };
@@ -55,7 +56,7 @@ export const getLndInfo = async (macaroonHex: string, lndRestAddress: string, tl
         });
         return res.data;
     } catch (err) {
-        console.log(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
+        logError(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
         return undefined;
     }
 

@@ -14,6 +14,7 @@ import { getDomainLndFile } from '../domain/services/lnd/lnd-files-service';
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
 import { findCustomLndTlsCert } from '../domain/repository/custom-lnds-repository';
+import { logError } from '../application/logging-service';
 
 export const createLndApi = async (req: Request, res: Response): Promise<Response> => {
     const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(req);
@@ -24,7 +25,7 @@ export const createLndApi = async (req: Request, res: Response): Promise<Respons
         if (err instanceof LndCreateException) {
             return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
         }
-        console.log('Failed to add user LND services', err);
+        logError('Failed to add user LND services', err);
         return res.status(500).send(new ErrorDto('LND services creation failed',
             LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
     }
@@ -40,7 +41,7 @@ export const saveExistingLndApi = async (req: Request, res: Response): Promise<R
         if (err instanceof LndCreateException) {
             return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
         }
-        console.log('Failed to add user LND services', err);
+        logError('Failed to add user LND services', err);
         return res.status(500).send(new ErrorDto('LND services creation failed',
             LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
     }
@@ -75,7 +76,7 @@ async function getLndFileApi(req: Request, res: Response, fileName: string) {
         // Spróbuj to
         // res.download()
     } catch (err) {
-        console.log(`Getting lnd ${fileName} certificate for user ${userEmail} failed with error: `, err);
+        logError(`Getting lnd ${fileName} certificate for user ${userEmail} failed with error: `, err);
         return res.sendStatus(400);
     }
 }
