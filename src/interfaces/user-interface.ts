@@ -21,7 +21,7 @@ export const registerUser = async (req: Request, res: Response) => {
         if (getBooleanProperty('REGISTRATION_ENABLED')) {
             const registerUserDto: RegisterUserDto = req.body;
             await registerNewUser(registerUserDto);
-            logError(`User ${registerUserDto.email} registered successfully`);
+            logInfo(`User ${registerUserDto.email} registered successfully`);
             return res.sendStatus(204);
         } else {
             return res.status(500).send(new ErrorDto('Maintenance: Registration currently disabled'));

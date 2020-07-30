@@ -127,8 +127,8 @@ const addLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: an
     await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
     await page.waitForSelector('a#Modify-LightningBTC');
     await page.click('a#Modify-LightningBTC');
-    await page.waitForSelector('input#lightningurl');
-    await page.type('#lightningurl', lndBtcpayUrl);
+    await page.waitForSelector('input#ConnectionString');
+    await page.type('#ConnectionString', lndBtcpayUrl);
     await page.waitForSelector('button[type="submit"]');
     await page.click('[type="submit"]');
     await page.waitForSelector('input#Id');

@@ -37,8 +37,8 @@ services:
       - CREATE_INVOICE_ENABLED=true
       - INVOKE_SERVER_PORT=3002
     volumes:
-      - /home/peer/Programowanie/bittery/bittery-infrastructure:/bittery-infrastructure:ro
-      - ./volumes/logs:/logs:ro
+      - /home/peer/Programowanie/bittery/bittery-infrastructure:/bittery-infrastructure
+      - ./volumes/logs:/logs
     networks:
       - bittery-net
     ports:

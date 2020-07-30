@@ -42,12 +42,12 @@ export const logInfo = (message: string): void => {
     logger.info(message);
 };
 
-export const logError = (message: string, others?: any[]): void => {
+export const logError = (message: string, ...others: any[]): void => {
     if (others) {
         for (const singleOther of others) {
             if (singleOther instanceof Error) {
                 // tslint:disable-next-line:no-parameter-reassignment
-                message = `${message}. ${singleOther.stack}`;
+                message = `${message} ${singleOther.stack}`;
             } else {
                 // tslint:disable-next-line:no-parameter-reassignment
                 message = `${message}. ${singleOther}`;

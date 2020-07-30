@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3001,   () => {
-    logInfo('App is listening on port 3001!asdfasdf');
+    logInfo('App is listening on port 3001!');
 });
 
 app.use('/', routes);
