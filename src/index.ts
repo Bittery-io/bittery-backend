@@ -3,6 +3,7 @@ import routes from './routes';
 import bodyParser from 'body-parser';
 import { authorizeRequest } from './domain/services/auth/access-authorization-service';
 import { logInfo } from './application/logging-service';
+import { getNumberProperty } from './application/property-service';
 
 // Create a new express app instance
 const app: express.Application = express();
@@ -14,7 +15,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.listen(3001,   () => {
+app.listen(getNumberProperty('APP_PORT'),   () => {
     logInfo('App is listening on port 3001!');
 });
 

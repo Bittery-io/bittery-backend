@@ -1,4 +1,5 @@
 #!/bin/bash
+export APP_PORT=3001
 export DB_USER=master
 export DB_HOST=localhost
 export DB_DATABASE=bitteryio
