@@ -23,6 +23,7 @@
     "dayjs": "^1.8.29",
     "express": "^4.17.1",
     "form-data": "^3.0.0",
+    "is-port-reachable": "^3.0.0",
     "jsonwebtoken": "^8.5.1",
     "lndconnect": "^0.2.10",
     "macaroon": "^3.0.4",

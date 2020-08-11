@@ -1,6 +1,6 @@
 import { findCurrentHighestLndPort } from '../../repository/user-lnds-repository';
-import { isPortFreeToUse } from '../../../application/infrastructure-invoke-service-client-service';
 import { logInfo } from '../../../application/logging-service';
+import { isPortFreeToUse } from './is-port-free-to-use-service';
 
 export const generateNextLndPortToUse = async (): Promise<number> => {
     let currentHighestLndPort: number | undefined = await findCurrentHighestLndPort();

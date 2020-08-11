@@ -21,8 +21,8 @@ import { findUserRtl, insertUserRtl } from '../../repository/user-rtl-repository
 import { UserRtl } from '../../model/lnd/rtl/user-rtl';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
-import { createUserLndNode } from '../../../application/infrastructure-invoke-service-client-service';
 import { logError, logInfo } from '../../../application/logging-service';
+import { createUserLndNode } from './create-lnd-scripts-service';
 
 export const createUserLnd = async (userEmail: string): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
