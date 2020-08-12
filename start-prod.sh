@@ -27,4 +27,5 @@ export BTCPAY_PAYMENT_EXPIRATION_MINUTES=34560
 
 npm run lint
 npm run compile
+npm run copy-static-assets
 npm run start
