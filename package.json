@@ -8,6 +8,7 @@
     "lint": "node_modules/tslint/bin/tslint -c tslint.json 'src/**/*.ts' 'test/**/*.ts'",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
+    "copy-static-assets": "./copy-static-assets.sh",
     "test": "jest --coverage",
     "db-migrate-up": "node_modules/db-migrate/bin/db-migrate up -e $1"
   },
