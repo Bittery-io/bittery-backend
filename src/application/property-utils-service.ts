@@ -1,7 +1,7 @@
-import { getProperty } from './property-service';
+import { getBooleanProperty, getProperty } from './property-service';
 
-export const isDevelopmentEnv = (): string => {
-    return getProperty('IS_DEVELOPMENT_ENV');
+export const isDevelopmentEnv = (): boolean => {
+    return getBooleanProperty('IS_DEVELOPMENT_ENV');
 };
 
 export const getDevelopmentHostName = (): string => {
