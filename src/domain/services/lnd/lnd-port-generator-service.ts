@@ -13,7 +13,7 @@ export const generateNextLndPortToUse = async (): Promise<number> => {
     } else {
         let nextLndPortToUse: number = currentHighestLndPort + 1;
         let isPortFree: boolean = true;
-        while (isPortFree) {
+        while (!isPortFree) {
             isPortFree = await isPortFreeToUse(nextLndPortToUse);
             if (isPortFree) {
                 logInfo(`Next generated LND port ${nextLndPortToUse} is free to use!`);
