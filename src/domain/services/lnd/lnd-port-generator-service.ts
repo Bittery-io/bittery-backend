@@ -19,7 +19,7 @@ export const generateNextLndPortToUse = async (): Promise<number> => {
                 logInfo(`Next generated LND port ${nextLndPortToUse} is free to use!`);
                 break;
             } else {
-                nextLndPortToUse = currentHighestLndPort + 1;
+                nextLndPortToUse = nextLndPortToUse + 1;
                 logInfo(`Next generated LND port ${nextLndPortToUse - 1} is busy, trying next one: ${nextLndPortToUse}`);
             }
         } while (!isPortFree);
