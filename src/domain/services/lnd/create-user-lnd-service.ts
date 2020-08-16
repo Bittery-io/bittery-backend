@@ -30,7 +30,7 @@ export const createUserLnd = async (userEmail: string): Promise<void> => {
         const rtlOneTimePassword: string = generateUuid();
         const md5Domain: string = isDevelopmentEnv() ? getDevelopmentHostName() : getMd5(domain);
         if (!await domainExists(md5Domain)) {
-            const domainName: string = `${md5Domain}.app.bittery.io`;
+            const domainName: string = `${md5Domain}.bittery.io`;
             const lndPort: number = await generateNextLndPortToUse();
             await createUserLndNode(domainName, String(lndPort), rtlOneTimePassword);
             await runInTransaction(async (client: PoolClient) => {
