@@ -30,12 +30,13 @@ export const createUserLnd = async (userEmail: string): Promise<void> => {
         const rtlOneTimePassword: string = generateUuid();
         const md5Domain: string = isDevelopmentEnv() ? getDevelopmentHostName() : getMd5(domain);
         if (!await domainExists(md5Domain)) {
+            const domainName: string = `${md5Domain}.app.bittery.io`;
             const lndPort: number = await generateNextLndPortToUse();
-            await createUserLndNode(md5Domain, String(lndPort), rtlOneTimePassword);
+            await createUserLndNode(domainName, String(lndPort), rtlOneTimePassword);
             await runInTransaction(async (client: PoolClient) => {
-                await insertUserDomain(client, new UserDomain(userEmail, md5Domain));
-                await insertUserLnd(client, md5Domain, lndPort);
-                await insertUserRtl(client, md5Domain, rtlOneTimePassword);
+                await insertUserDomain(client, new UserDomain(userEmail, domainName));
+                await insertUserLnd(client, domainName, lndPort);
+                await insertUserRtl(client, domainName, rtlOneTimePassword);
             });
         } else {
             throw new Error('It should not happen but cannot create domain because it already exists!');
