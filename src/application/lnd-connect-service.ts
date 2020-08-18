@@ -10,7 +10,7 @@ const readFile = util.promisify(fs.readFile);
 
 export const getLndUrl = async (domain: string): Promise<string | undefined> => {
     try {
-        const res = await axios.get(`https://${domain}:445/lnd-rest/btc/v1/getinfo`, {
+        const res = await axios.get(`https://${domain}:444/lnd-rest/btc/v1/getinfo`, {
             headers: {
                 'Grpc-Metadata-macaroon': await getMacaroonHex(domain),
             },

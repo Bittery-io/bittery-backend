@@ -81,10 +81,10 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
             const lndUrl: string | undefined = await getLndUrl(userDomain.userDomain);
             const userRtl: UserRtl | undefined = await findUserRtl(userEmail);
             const lndStatus: LndStatusEnum = lndUrl ? LndStatusEnum.WORKING : LndStatusEnum.STOPPED;
-            const lndRestAddress: string = `https://${userDomain.userDomain}:445/lnd-rest/btc/`;
+            const lndRestAddress: string = `https://${userDomain.userDomain}:444/lnd-rest/btc/`;
             return new UserLndDto(
                 lndRestAddress,
-                `https://${userDomain.userDomain}:445${getProperty('RTL_URL')}`,
+                `https://${userDomain.userDomain}:444${getProperty('RTL_URL')}`,
                 await getLndConnectUri(userDomain.userDomain),
                 lndUrl ? lndUrl : 'Connection to node failed.',
                 lndStatus,
