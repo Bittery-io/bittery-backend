@@ -84,7 +84,7 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
             const lndRestAddress: string = `https://${userDomain.userDomain}:444/lnd-rest/btc/`;
             return new UserLndDto(
                 lndRestAddress,
-                `https://${userDomain.userDomain}:444${getProperty('RTL_URL')}`,
+                `https://${userDomain.userDomain}:446${getProperty('RTL_URL')}`,
                 await getLndConnectUri(userDomain.userDomain),
                 lndUrl ? lndUrl : 'Connection to node failed.',
                 lndStatus,
