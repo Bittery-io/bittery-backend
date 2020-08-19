@@ -46,7 +46,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
         });
         logInfo(`Successfully created user btcpay services for user with email ${userEmail}`);
     } else {
-        logError(`Successfully created user btcpay services for user with email ${userEmail}`);
+        logError(`Failed to create user ${userEmail} BTCPAY services because are already created`);
         throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because are already created`,
             CreateUserBtcpayErrorType.USER_ALREADY_HAS_BTCPAY);
     }
