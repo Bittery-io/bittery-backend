@@ -105,6 +105,7 @@ const getBtcpayPairingCode = async (storeName: string, storeId: string, page: an
     if (!pairingCode) {
         throw new Error('Could not get pairing code');
     }
+    logInfo(`Got pairing code for storeId ${storeId}`);
     return pairingCode;
 };
 
