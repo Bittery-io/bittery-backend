@@ -1,13 +1,15 @@
 import { getProperty } from '../../../application/property-service';
+import { isDevelopmentEnv } from '../../../application/property-utils-service';
 
 const { exec } = require('child_process');
 
 export const createUserLndNode = async (domainName: string, lndPort: string, rtlInitPassword: string): Promise<void> => {
+    const isLocalhost: string = isDevelopmentEnv() ? 'true' : 'false';
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             console.log(`Starting adding LND services for domain ${domainName} and lnd port ${lndPort}`);
             // tslint:disable-next-line:max-line-length
-            exec(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/add-user.sh ${domainName} ${lndPort} ${rtlInitPassword}`, (error: any, stdout: any, stderr: any) => {
+            exec(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/add-user.sh ${domainName} ${lndPort} ${rtlInitPassword} ${isLocalhost}`, (error: any, stdout: any, stderr: any) => {
                 if (error) {
                     console.log(`1/3 Error adding LND services for domain ${domainName} and lnd port ${lndPort}: ${error.message}`);
                     reject('Failed adding user LND services');

@@ -13,7 +13,7 @@ export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoice
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
         const btcpayInvoice: BtcpayInvoice = await createBtcpayInvoice(saveInvoiceDto, userBtcpayDetails.btcpayUserAuthToken!);
-        logInfo(`Created new invoice with id ${btcpayInvoice} for user email ${userEmail}`);
+        logInfo(`Created new invoice with id ${btcpayInvoice.id} for user email ${userEmail}`);
     } else {
         throw new UserBtcpayException(`Cannot create invoice because user ${userEmail} has not btcpay yet!`, UserBtcpayErrorType.USER_HAS_NOT_BTCPAY);
     }
