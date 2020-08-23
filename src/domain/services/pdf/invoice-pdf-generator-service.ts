@@ -8,7 +8,7 @@ import { getNumberProperty, getProperty } from '../../../application/property-se
 const logoSrc = fs.readFileSync(path.resolve(__dirname, 'BITTERY.jpg'));
 const font = fs.readFileSync(path.resolve(__dirname, 'Lato-Regular.ttf'));
 // @ts-ignore
-export const generateInvoicePdf = async (invoice: Invoice, userEmail: string): Promise<Buffer> => {
+export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, lndAddress: string): Promise<Buffer> => {
     // keep 19 cm width
     const logo = new pdf.Image(logoSrc);
     const doc = new pdf.Document({
@@ -102,7 +102,7 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string): P
             fontSize: 14,
             paddingLeft: 0.5 * pdf.cm,
         });
-        doc.cell('Payment address', {
+        doc.cell('BOLT 11 invoice (payment address)', {
             fontSize: 12,
             paddingLeft: 0.5 * pdf.cm,
         });
@@ -113,7 +113,7 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string): P
             paddingLeft: 0.5 * pdf.cm,
         });
 
-        doc.cell('039ac5cf32c9c1692b7986ce6717049d9bbcc1f70c724eff0aad01b2b502eebd65@192.168.1.2:9777', { fontSize: 10, paddingLeft: 0.5 * pdf.cm });
+        doc.cell(lndAddress, { fontSize: 10, paddingLeft: 0.5 * pdf.cm });
     }
 
     doc.cell('Payment widget', {
