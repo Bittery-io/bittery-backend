@@ -16,6 +16,7 @@ import { CustomLndDto } from './dto/custom-lnd-dto';
 import { findCustomLndTlsCert } from '../domain/repository/custom-lnds-repository';
 import { logError } from '../application/logging-service';
 import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { getMacaroon } from '../application/lnd-connect-service';
 
 @JsonController('/lnd')
 @Authorized()
@@ -89,8 +90,8 @@ export class LndController {
             @Res() res: Response, fileName: string) {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const tlsCertificateFile: Buffer = await getDomainLndFile(userEmail, fileName);
-            res.contentType('text/plain');
+            const tlsCertificateFile: Buffer = Buffer.from(await getDomainLndFile(userEmail, ''), 'binary');
+            res.contentType('application/x-binary');
             return res.status(200).send(tlsCertificateFile);
             // Spróbuj to
             // res.download()
