@@ -1,33 +1,16 @@
-import express = require('express');
-import { getArrayProperty, getProperty } from '../../../application/property-service';
-import { Request, Response } from 'express-serve-static-core';
+import { getArrayProperty } from '../../../application/property-service';
 import { getAccessTokenFromAuthorizationHeader } from './token-extractor-service';
 import { getJWTOauthFromDatabase } from '../../repository/authentication-repository';
 import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
-import { logError } from '../../../application/logging-service';
+import { Action } from 'routing-controllers/Action';
 
-export const authorizeRequest = async (req: Request, resp: Response, next: express.NextFunction): Promise<Response | void> => {
-    return shouldNotAuthorizeRequest(req.path) ?
-        next() :
-        await validateScopeAccess(req, resp, next);
-};
-
-const validateScopeAccess = async (req: Request, resp: Response, next: express.NextFunction): Promise<Response | void> => {
+export const authorizeRequest = async (action: Action, roles: string[]) => {
+    const authorizationHeader: string = action.request.headers['authorization'];
     try {
-        const authorizationHeader: string | undefined = req.headers!.authorization;
-        return await hasUserAccess(getAccessTokenFromAuthorizationHeader(authorizationHeader)) ?
-            next() :
-            unauthorizedStatus(req, resp);
+        return await hasUserAccess(getAccessTokenFromAuthorizationHeader(authorizationHeader));
     } catch (err) {
-        logError('Error during validating scope access. ', err);
-        return resp.status(401).send();
+        return false;
     }
-};
-
-const unauthorizedStatus = (req: Request, resp: Response): Response => {
-    const authorization: string = req.headers!.authorization!;
-    logError(`Can not authorize selected path ${req.path} with Authorization header: ${authorization}`);
-    return resp.status(401).send();
 };
 
 const hasUserAccess = async (jwtToken: string): Promise<boolean> => {

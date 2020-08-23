@@ -1,4 +1,3 @@
-import { Request } from 'express-serve-static-core';
 import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
 
 export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: string | undefined): string => {
@@ -11,7 +10,7 @@ export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: strin
     throw Error(`Authorization header ${authorizationHeader} is incorrect. Should be 'Bearer ACCESS_TOKEN'.`);
 };
 
-export const getUserEmailFromAccessTokenInAuthorizationHeader = async (req: Request): Promise<string> => {
-    const accessToken: string = getAccessTokenFromAuthorizationHeader(req.headers.authorization!);
+export const getUserEmailFromAccessTokenInAuthorizationHeader = async (authorizationHeader: string): Promise<string> => {
+    const accessToken: string = getAccessTokenFromAuthorizationHeader(authorizationHeader);
     return await verifyUserTokenAndGetUserEmail(accessToken);
 };

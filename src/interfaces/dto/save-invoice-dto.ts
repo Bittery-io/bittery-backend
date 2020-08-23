@@ -1,10 +1,22 @@
-export class SaveInvoiceDto {
-    amount: number;
-    currency: string;
-    itemDesc: string;
-    buyer: string;
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-    constructor(amount: number, currency: string, itemDesc: string, buyer: string) {
+export class SaveInvoiceDto {
+
+    @IsString()
+    amount: string;
+
+    @IsString()
+    currency: string;
+
+    @IsString()
+    @IsOptional()
+    itemDesc?: string;
+
+    @IsString()
+    @IsOptional()
+    buyer?: string;
+
+    constructor(amount: string, currency: string, itemDesc: string, buyer: string) {
         this.amount = amount;
         this.currency = currency;
         this.itemDesc = itemDesc;

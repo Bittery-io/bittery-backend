@@ -1,8 +1,20 @@
+import { IsEmail, IsString } from 'class-validator';
+
 export class PasswordResetConfirmDto {
+
+    @IsEmail()
     email: string;
+
+    @IsString()
     password: string;
+
+    @IsString()
     repeatPassword: string;
+
+    @IsString()
     captchaCode: string;
+
+    @IsString()
     passwordResetKey: string;
 
     constructor(password: string, repeatPassword: string, email: string, captchaCode: string, passwordResetKey: string) {
