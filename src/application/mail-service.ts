@@ -85,3 +85,27 @@ export const sendResetPasswordEmail = async (toEmail: string, resetPasswordEmail
         return undefined;
     }
 };
+
+export const sendUserRegisterMail = async (usersCounter: number): Promise<string | undefined> => {
+    const body: string = `
+    <html>
+    <body>
+    <h2>Nowy user w Bittery. Suma: ${usersCounter}</h2>
+    <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: 'peerzet3@gmail.com',
+        subject: 'Nowy user w Bittery',
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo('Sent user registered mail');
+        return sendResponse.id;
+    } catch (err) {
+        logError(`User register mail send failed`, err);
+        return undefined;
+    }
+};

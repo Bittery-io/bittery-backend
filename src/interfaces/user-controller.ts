@@ -16,6 +16,8 @@ import { getAccessTokenFromAuthorizationHeader } from '../domain/services/auth/t
 import { getBooleanProperty } from '../application/property-service';
 import { logError, logInfo } from '../application/logging-service';
 import { Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { countUsers } from '../domain/repository/user-repository';
+import { sendUserRegisterMail } from '../application/mail-service';
 
 @JsonController('/user')
 export class UserController {
@@ -28,6 +30,14 @@ export class UserController {
             if (getBooleanProperty('REGISTRATION_ENABLED')) {
                 await registerNewUser(registerUserDto);
                 logInfo(`User ${registerUserDto.email} registered successfully`);
+                // ### OPTIONAL
+                try {
+                    const usersCounter: number = await countUsers();
+                    await sendUserRegisterMail(usersCounter);
+                } catch (err) {
+                    logError('Ups dont know why but sending user registered mail to me failed!', err);
+                }
+                // ###
                 return res.sendStatus(204);
             } else {
                 return res.status(500).send(new ErrorDto('Maintenance: Registration currently disabled'));

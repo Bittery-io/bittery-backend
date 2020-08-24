@@ -10,13 +10,12 @@ import {
     getCustomUserLnd,
     getUserLnd,
 } from '../domain/services/lnd/create-user-lnd-service';
-import { getDomainLndFile } from '../domain/services/lnd/lnd-files-service';
+import { readMacaroonBase64, readTlsBase64 } from '../domain/services/lnd/lnd-files-service';
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
 import { findCustomLndTlsCert } from '../domain/repository/custom-lnds-repository';
 import { logError } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
-import { getMacaroon } from '../application/lnd-connect-service';
+import { Authorized, Body, Controller, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 
 @JsonController('/lnd')
 @Authorized()
@@ -85,22 +84,6 @@ export class LndController {
         }
     }
 
-    async getLndFileApi(
-            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-            @Res() res: Response, fileName: string) {
-        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        try {
-            const tlsCertificateFile: Buffer = Buffer.from(await getDomainLndFile(userEmail, ''), 'binary');
-            res.contentType('application/x-binary');
-            return res.status(200).send(tlsCertificateFile);
-            // Spróbuj to
-            // res.download()
-        } catch (err) {
-            logError(`Getting lnd ${fileName} certificate for user ${userEmail} failed with error: `, err);
-            return res.sendStatus(400);
-        }
-    }
-
     @Get('/files/tls/custom')
     async getCustomTlsFile(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
@@ -120,13 +103,31 @@ export class LndController {
     async getTlsCertificateFileApi(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
-        return await this.getLndFileApi(authorizationHeader, res, 'tls.cert');
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        try {
+            const tlsBase64: string = await readTlsBase64(userEmail);
+            return res.status(200).send({
+                fileBase64: tlsBase64,
+            });
+        } catch (err) {
+            logError(`Getting lnd tls.cert file for user ${userEmail} failed with error: `, err);
+            return res.sendStatus(400);
+        }
     }
 
     @Get('/files/macaroon')
     async getAdminMacaroonFileApi(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
-        return await this.getLndFileApi(authorizationHeader, res, 'admin.macaroon');
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        try {
+            const macaroonBase64: string = await readMacaroonBase64(userEmail);
+            return res.status(200).send({
+                fileBase64: macaroonBase64,
+            });
+        } catch (err) {
+            logError(`Getting lnd admin.cert file for user ${userEmail} failed with error: `, err);
+            return res.sendStatus(400);
+        }
     }
 }

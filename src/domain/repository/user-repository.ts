@@ -38,3 +38,8 @@ export const findUser = async (email: string): Promise<User | undefined> => {
             result.rows[0].creation_date,
         ) : undefined;
 };
+
+export const countUsers = async (): Promise<number> => {
+    const result = await dbPool.query('SELECT COUNT(*) FROM USERS');
+    return result.rows[0].count;
+};

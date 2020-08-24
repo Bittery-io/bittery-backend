@@ -1,17 +1,20 @@
-import fs from 'fs';
-import path from 'path';
-import { getProperty } from '../../../application/property-service';
 import { findUserDomain } from '../../repository/user-domains-repository';
 import { UserDomain } from '../../model/lnd/user-domain';
-import { getMacaroon } from '../../../application/lnd-connect-service';
-const util = require('util');
+import { getMacaroonBase64, getTlsBase64 } from '../../../application/lnd-connect-service';
 
-const readFile = util.promisify(fs.readFile);
-
-export const getDomainLndFile = async (email: string, fileName: string): Promise<string> => {
+export const readMacaroonBase64 = async (email: string): Promise<string> => {
     const userDomain: UserDomain | undefined = await findUserDomain(email);
     if (userDomain) {
-        return await getMacaroon(userDomain.userDomain);
+        return await getMacaroonBase64(userDomain.userDomain);
+    } else {
+        throw new Error(`Cannot get tls certificate for email ${email} because has not domain!`);
+    }
+};
+
+export const readTlsBase64 = async (email: string): Promise<string> => {
+    const userDomain: UserDomain | undefined = await findUserDomain(email);
+    if (userDomain) {
+        return await getTlsBase64(userDomain.userDomain);
     } else {
         throw new Error(`Cannot get tls certificate for email ${email} because has not domain!`);
     }

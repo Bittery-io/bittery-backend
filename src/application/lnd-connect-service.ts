@@ -66,10 +66,14 @@ export const getMacaroonHex = async (domain: string): Promise<string> => {
     return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString('hex');
 };
 
-export const getMacaroon = async (domain: string): Promise<string> => {
-    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString();
+export const getMacaroonBase64 = async (domain: string): Promise<string> => {
+    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString('base64');
 };
 
 export const getTls = async (domain: string): Promise<string> => {
     return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/tls.cert`)).toString();
+};
+
+export const getTlsBase64 = async (domain: string): Promise<string> => {
+    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/tls.cert`)).toString('base64');
 };
