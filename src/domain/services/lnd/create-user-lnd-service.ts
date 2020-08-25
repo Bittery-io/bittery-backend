@@ -53,8 +53,9 @@ export const addExistingUserLnd = async (userEmail: string, saveUserLndDto: Save
         const lndInfo: any | undefined = await getLndInfo(saveUserLndDto.macaroonHex,
             saveUserLndDto.lndRestAddress,
             saveUserLndDto.tlsCertFileText);
+        logInfo(`Successfully connected to user custom LND node address: ${saveUserLndDto.lndRestAddress}`);
         if (lndInfo) {
-            const tlsCertThumbprint: string = await getCertThumbprint(saveUserLndDto.tlsCertFileText);
+            const tlsCertThumbprint: string = await getCertThumbprint(userEmail, saveUserLndDto.tlsCertFileText);
             await insertCustomLnd(new CustomLnd(
                 userEmail,
                 saveUserLndDto.lndRestAddress,

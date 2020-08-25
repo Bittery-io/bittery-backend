@@ -19,9 +19,12 @@ import { logError, logInfo } from '../../../application/logging-service';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
-        const userDomain: UserDomain | undefined = await findUserDomain(userEmail);
-        const userDomainName: string = isDevelopmentEnv() ? getDevelopmentHostName() : userDomain!.userDomain;
         const customLnd: CustomLnd | undefined = await findCustomLnd(userEmail);
+        let userDomainName: string | undefined = undefined;
+        if (!customLnd) {
+            const userDomain: UserDomain | undefined = await findUserDomain(userEmail);
+            userDomainName = isDevelopmentEnv() ? getDevelopmentHostName() : userDomain!.userDomain;
+        }
         if (!createUserBtcpayDto.bip49RootPublicKey && !createUserBtcpayDto.electrumMasterPublicKey) {
             throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because no master public key provided`,
                 CreateUserBtcpayErrorType.NO_MASTER_PUBLIC_KEY_PROVIDED);
@@ -33,7 +36,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
             UserBitcoinWalletTypeEnum.BIP_49 :
             UserBitcoinWalletTypeEnum.ELECTRUM;
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
-            userEmail, userDomainName!, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), customLnd);
+            userEmail, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), userDomainName, customLnd);
         await runInTransaction(async (client: PoolClient) => {
             await insertUserBtcpayDetails(client, userBtcpayDetails);
             await insertUserBitcoinWallet(client, new UserBitcoinWallet(

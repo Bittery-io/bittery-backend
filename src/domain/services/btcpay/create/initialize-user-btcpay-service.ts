@@ -17,15 +17,21 @@ const PASSWORD = getProperty('BTCPAY_ADMIN_PASSWORD');
 
 export const initializeBtcpayServices = async (
         userEmail: string,
-        userDomain: string,
         bip49RootPublicKey: string,
         paymentExpirationMinutes: number,
+        userDomain?: string,
         customLnd?: CustomLnd): Promise<UserBtcpayDetails> => {
-    logInfo(`Initializing btcpay services for user domain ${userDomain}`);
+    let storeName: string;
+    if (userDomain) {
+        logInfo(`Initializing BTCPay services for user domain ${userDomain}`);
+        storeName = `${userEmail}-${userDomain}-${new Date().getTime()}`;
+    } else {
+        storeName = `${userEmail}-CUSTOM_LND-${new Date().getTime()}`;
+        logInfo(`Initializing BTCPay services for user with custom LND: ${customLnd?.lndRestAddress}`);
+    }
     const browser = await getBrowser();
     const page = (await browser.pages())[0];
     await loginToBtcpay(page);
-    const storeName = `${userEmail}-${new Date().getTime()}`;
     const storeId: string = await createStore(storeName, page);
     await addBtcRootPublicKeyToStore(storeId, page, browser, bip49RootPublicKey);
     let lndAddress: string;
@@ -36,11 +42,11 @@ export const initializeBtcpayServices = async (
             customLnd.tlsCertThumbprint,
         );
     } else {
-        lndAddress = generateBtcPayLndAddress(userDomain);
+        lndAddress = generateBtcPayLndAddress(userDomain!);
     }
     await addLndNodeToStore(storeId, lndAddress, page);
     await setExpirationMinutesToStore(storeId, String(paymentExpirationMinutes), page);
-    const pairingCode: string = await getBtcpayPairingCode(userDomain, storeId, page);
+    const pairingCode: string = await getBtcpayPairingCode(storeName, storeId, page);
     const btcpayUserAuthToken: BtcpayUserAuthToken = await generateApiToken(pairingCode);
     return new UserBtcpayDetails(userEmail, storeId, btcpayUserAuthToken);
 };
