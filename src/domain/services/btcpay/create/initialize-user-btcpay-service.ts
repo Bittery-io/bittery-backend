@@ -8,6 +8,7 @@ import { UserBtcpayDetails } from '../../../model/btcpay/user-btcpay-details';
 import { getProperty } from '../../../../application/property-service';
 import { CustomLnd } from '../../../model/lnd/custom-lnd';
 import { logInfo } from '../../../../application/logging-service';
+import { formatDateWithTime2 } from '../../utils/date-service';
 
 const puppeteer = require('puppeteer');
 
@@ -24,9 +25,9 @@ export const initializeBtcpayServices = async (
     let storeName: string;
     if (userDomain) {
         logInfo(`Initializing BTCPay services for user domain ${userDomain}`);
-        storeName = `${userEmail}-${userDomain}-${new Date().getTime()}`;
+        storeName = `${userEmail}-${userDomain}-${formatDateWithTime2(new Date().getTime())}`;
     } else {
-        storeName = `${userEmail}-CUSTOM_LND-${new Date().getTime()}`;
+        storeName = `${userEmail}-CUSTOM_LND-${formatDateWithTime2(new Date().getTime())}`;
         logInfo(`Initializing BTCPay services for user with custom LND: ${customLnd?.lndRestAddress}`);
     }
     const browser = await getBrowser();
