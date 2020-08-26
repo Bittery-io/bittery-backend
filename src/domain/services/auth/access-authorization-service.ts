@@ -23,7 +23,3 @@ const hasUserAccess = async (jwtToken: string): Promise<boolean> => {
         return false;
     }
 };
-
-const shouldNotAuthorizeRequest = (requestPath: string): boolean => {
-    return getArrayProperty('AUTH_EXCLUDED_URLS').filter(url => requestPath === url).length > 0;
-};
