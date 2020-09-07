@@ -39,7 +39,7 @@ const startAllServicesAtStart = async () => {
 
 export const startScheduler = () => {
     // every 4 hours
-    schedule.scheduleJob('0 */4 * * *', async () => {
+    schedule.scheduleJob('0 0,4,8,12,16,20 * * *', async () => {
         logInfo('Starting restart LNDs scheduler');
         const lndRuns: LndRun[] = await findAllLndRuns();
         logInfo(`1/6 Found LND runs in the db: ${lndRuns.length}`);
