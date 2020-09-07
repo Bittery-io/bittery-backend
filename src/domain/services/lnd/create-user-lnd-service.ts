@@ -23,6 +23,10 @@ import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../application/logging-service';
 import { createUserLndNode } from './create-lnd-scripts-service';
+import { existingRunningLnd, insertLndRuns } from '../../repository/lnd-run/lnd-runs-repository';
+import { findLndRunRequest } from '../../repository/lnd-run/lnd-run-requests-repository';
+import { LndRunRequest } from '../../model/lnd/run/lnd-run-request';
+import { LndRun } from '../../model/lnd/run/lnd-run';
 
 export const createUserLnd = async (userEmail: string): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -37,6 +41,7 @@ export const createUserLnd = async (userEmail: string): Promise<void> => {
                 await insertUserDomain(client, new UserDomain(userEmail, domainName));
                 await insertUserLnd(client, domainName, lndPort);
                 await insertUserRtl(client, domainName, rtlOneTimePassword);
+                await insertLndRuns(client, [new LndRun(domainName, new Date().toISOString())]);
             });
         } else {
             throw new Error('It should not happen but cannot create domain because it already exists!');
@@ -79,18 +84,33 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
     const userDomain: UserDomain | undefined = await findUserDomain(userEmail);
     if (userDomain) {
         if (await userHasLnd(userEmail)) {
-            const lndUrl: string | undefined = await getLndUrl(userDomain.userDomain);
-            const userRtl: UserRtl | undefined = await findUserRtl(userEmail);
-            const lndStatus: LndStatusEnum = lndUrl ? LndStatusEnum.WORKING : LndStatusEnum.STOPPED;
-            const lndRestAddress: string = `https://${userDomain.userDomain}:444/lnd-rest/btc/`;
-            return new UserLndDto(
-                lndRestAddress,
-                `https://${userDomain.userDomain}:446${getProperty('RTL_URL')}`,
-                await getLndConnectUri(userDomain.userDomain),
-                lndUrl ? lndUrl : 'Connection to node failed.',
-                lndStatus,
-                userRtl!.rtlInitPassword,
-            );
+            const userLndIsRunning: boolean = await existingRunningLnd(userDomain.userDomain);
+            if (userLndIsRunning) {
+                const lndUrl: string | undefined = await getLndUrl(userDomain.userDomain);
+                const userRtl: UserRtl | undefined = await findUserRtl(userEmail);
+                const lndStatus: LndStatusEnum = lndUrl ? LndStatusEnum.WORKING : LndStatusEnum.STOPPED;
+                const lndRestAddress: string = `https://${userDomain.userDomain}:444/lnd-rest/btc/`;
+                return new UserLndDto(
+                    lndRestAddress,
+                    `https://${userDomain.userDomain}:446${getProperty('RTL_URL')}`,
+                    await getLndConnectUri(userDomain.userDomain),
+                    lndUrl ? lndUrl : 'Connection to node failed.',
+                    lndStatus,
+                    userRtl!.rtlInitPassword,
+                );
+            } else {
+                logInfo(`Returning user ${userEmail} LND however its currently TURNED OFF.`);
+                const lndRunRequest: LndRunRequest | undefined = await findLndRunRequest(userDomain.userDomain);
+                return new UserLndDto(
+                    'Currently unavailable. LND node is turned off.',
+                    'Currently unavailable. LND node is turned off.',
+                    'Currently unavailable. LND node is turned off.',
+                    'Currently unavailable. LND node is turned off.',
+                    LndStatusEnum.TURNED_OFF,
+                    'Currently unavailable. LND node is turned off.',
+                    lndRunRequest !== undefined,
+                );
+            }
         } else {
             logError(`Cannot return user lnd for user ${userEmail} because has no Bittery lnd!`);
             return undefined;

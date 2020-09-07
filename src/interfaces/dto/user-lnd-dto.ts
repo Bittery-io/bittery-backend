@@ -8,13 +8,17 @@ export class UserLndDto {
     lndStatus: LndStatusEnum;
     rtlInitPassword: string;
 
+    // these both can be set only if LND is turned off for user
+    turnOnRequested?: boolean;
+
     constructor(lndRestAddress: string, rtlAddress: string, lndConnectUrl: string, lndUrl: string,
-                lndStatus: LndStatusEnum, rtlInitPassword: string) {
+                lndStatus: LndStatusEnum, rtlInitPassword: string, turnOnRequested?: boolean) {
         this.lndRestAddress = lndRestAddress;
         this.rtlAddress = rtlAddress;
         this.lndConnectUrl = lndConnectUrl;
         this.lndUrl = lndUrl;
         this.lndStatus = lndStatus;
         this.rtlInitPassword = rtlInitPassword;
+        this.turnOnRequested = turnOnRequested;
     }
 }

@@ -1,6 +1,7 @@
 import { dbPool } from '../../application/db/db';
 import { UserDomain } from '../model/lnd/user-domain';
 import { PoolClient } from 'pg';
+import { UserBitcoinWallet } from '../model/btc/user-bitcoin-wallet';
 
 export const insertUserDomain = async (client: PoolClient, userDomain: UserDomain): Promise<void> => {
     await client.query(`
@@ -25,4 +26,17 @@ export const findUserDomain = async (userEmail: string): Promise<UserDomain | un
         foundRow.user_email,
         foundRow.user_domain,
     ) : undefined;
+};
+
+export const findNewestRegistrationUserDomains = async (limit: number): Promise<UserDomain[]> => {
+    // tslint:disable-next-line:max-line-length
+    const result = await dbPool.query(
+        `SELECT * FROM USER_DOMAINS ud JOIN USERS u ON ud.user_email = u.email ORDER BY u.CREATION_DATE DESC LIMIT $1`, [limit]);
+    const foundRows = result.rows;
+    return foundRows.map((row) => {
+        return new UserDomain(
+            row.user_email,
+            row.user_domain,
+        );
+    });
 };
