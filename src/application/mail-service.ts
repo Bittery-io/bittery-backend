@@ -33,7 +33,7 @@ export const sendRegistrationEmail = async (toEmail: string, signUpKey: string):
     --------------------------------------------------- <br>
       Bittery.io<br>
       Website: <a href='https://bittery.io'> https://bittery.io </a> <br>
-      E-mail: bittery@protonmail.com <br><br>
+      E-mail: bitteryio@protonmail.com <br><br>
     </body>
     </html>`;
     const data = {
