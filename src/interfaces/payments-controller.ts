@@ -43,7 +43,7 @@ export class PaymentsController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const invoices: object[] = await getInvoices(userEmail);
+            const invoices: object[] = await getInvoices(userEmail, 50);
             return res.status(200).send(invoices);
         } catch (err) {
             if (err instanceof UserBtcpayException) {

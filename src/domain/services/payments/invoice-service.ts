@@ -25,10 +25,10 @@ export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoice
     }
 };
 
-export const getInvoices = async (userEmail: string): Promise<object[]> => {
+export const getInvoices = async (userEmail: string, limit: number): Promise<object[]> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
-        return await getBtcpayInvoices(userBtcpayDetails.btcpayUserAuthToken);
+        return await getBtcpayInvoices(userBtcpayDetails.btcpayUserAuthToken, limit);
     } else {
         throw new UserBtcpayException(`Cannot get invoices because user ${userEmail} has not btcpay yet!`,
         UserBtcpayErrorType.USER_HAS_NOT_BTCPAY);

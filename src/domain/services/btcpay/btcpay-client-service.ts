@@ -21,11 +21,22 @@ export const createBtcpayInvoice = async (saveInvoiceDto: SaveInvoiceDto, btcpay
     return new BtcpayInvoice(res.id, res.url);
 };
 
-export const getBtcpayInvoices = async (btcpayUserAuthToken: BtcpayUserAuthToken): Promise<object[]> => {
+const getClient = (btcpayUserAuthToken: BtcpayUserAuthToken) => {
     const keyPair = btcpay.crypto.load_keypair(Buffer.from(btcpayUserAuthToken.privateKey, 'hex'));
-    const clientFinal = new btcpay.BTCPayClient(getProperty('BTCPAY_URL'),
+    return new btcpay.BTCPayClient(getProperty('BTCPAY_URL'),
         keyPair, { merchant: btcpayUserAuthToken.merchantToken });
-    return await clientFinal.get_invoices({ limit: 50 });
+};
+
+export const getBtcpayInvoices = async (btcpayUserAuthToken: BtcpayUserAuthToken, limit: number): Promise<Invoice[]> => {
+    const clientFinal = getClient(btcpayUserAuthToken);
+    return await clientFinal.get_invoices({ limit });
+};
+
+export const getBtcpayInvoicesBetweenDate = async (btcpayUserAuthToken: BtcpayUserAuthToken,
+                                                   dateStart: string,
+                                                   dateEnd: string): Promise<Invoice[]> => {
+    const clientFinal = getClient(btcpayUserAuthToken);
+    return await clientFinal.get_invoices({ dateStart, dateEnd });
 };
 
 export const getBtcpayInvoice = async (btcpayUserAuthToken: BtcpayUserAuthToken, invoiceId: string): Promise<Invoice> => {
