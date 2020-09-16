@@ -113,6 +113,8 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
                 newInvoicesQuantity += 1;
                 break;
             case 'complete':
+            case 'paid':
+            case 'confirmed':
                 paidInvoicedAmountBtc += Number(invoice.btcPrice);
                 paidInvoicesQuantity += 1;
                 break;
