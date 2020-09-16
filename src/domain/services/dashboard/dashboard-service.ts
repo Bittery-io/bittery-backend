@@ -81,6 +81,8 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
                             newInvoicesTimeframeQuantity += 1;
                             break;
                         case 'complete':
+                        case 'paid':
+                        case 'confirmed':
                             paidInvoicesTimeframeQuantity += 1;
                             break;
                         case 'expired':
