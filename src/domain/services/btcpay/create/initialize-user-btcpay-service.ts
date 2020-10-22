@@ -159,7 +159,7 @@ export const addBtcRootPublicKeyToStore = async (storeId: string, page: any, bro
     await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
     await page.waitForSelector('a#ModifyBTC');
     await page.click('a#ModifyBTC');
-    await page.waitForSelector('input#DerivationScheme');
+    await page.waitForSelector('textarea#DerivationScheme');
     await page.type('#DerivationScheme', bip49RootPublicKey);
     await page.waitForSelector('button#Continue');
     await page.click('button#Continue');
