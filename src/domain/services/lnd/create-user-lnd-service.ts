@@ -27,8 +27,9 @@ import { existingRunningLnd, insertLndRuns } from '../../repository/lnd-run/lnd-
 import { findLndRunRequest } from '../../repository/lnd-run/lnd-run-requests-repository';
 import { LndRunRequest } from '../../model/lnd/run/lnd-run-request';
 import { LndRun } from '../../model/lnd/run/lnd-run';
+import { CreateLndDto } from '../../../interfaces/dto/lnd/create-lnd-dto';
 
-export const createUserLnd = async (userEmail: string): Promise<void> => {
+export const createUserLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
         const domain: string = generateUuid();
         const rtlOneTimePassword: string = generateUuid();
@@ -39,7 +40,7 @@ export const createUserLnd = async (userEmail: string): Promise<void> => {
             await createUserLndNode(domainName, String(lndPort), rtlOneTimePassword);
             await runInTransaction(async (client: PoolClient) => {
                 await insertUserDomain(client, new UserDomain(userEmail, domainName));
-                await insertUserLnd(client, domainName, lndPort);
+                await insertUserLnd(client, domainName, createLndDto.lndType);
                 await insertUserRtl(client, domainName, rtlOneTimePassword);
                 await insertLndRuns(client, [new LndRun(domainName, new Date().toISOString())]);
             });
@@ -86,14 +87,16 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
         if (await userHasLnd(userEmail)) {
             const userLndIsRunning: boolean = await existingRunningLnd(userDomain.userDomain);
             if (userLndIsRunning) {
-                const lndUrl: string | undefined = await getLndUrl(userDomain.userDomain);
+                // const lndUrl: string | undefined = await getLndUrl(userDomain.userDomain);
+                const lndUrl: string | undefined = 'cos tam';
                 const userRtl: UserRtl | undefined = await findUserRtl(userEmail);
                 const lndStatus: LndStatusEnum = lndUrl ? LndStatusEnum.WORKING : LndStatusEnum.STOPPED;
                 const lndRestAddress: string = `https://${userDomain.userDomain}:444/lnd-rest/btc/`;
                 return new UserLndDto(
                     lndRestAddress,
                     `https://${userDomain.userDomain}:446${getProperty('RTL_URL')}`,
-                    await getLndConnectUri(userDomain.userDomain),
+                    // await getLndConnectUri(userDomain.userDomain),
+                    'lnd connect uri',
                     lndUrl ? lndUrl : 'Connection to node failed.',
                     lndStatus,
                     userRtl!.rtlInitPassword,

@@ -90,4 +90,4 @@ export const startScheduler = () => {
     });
 };
 
-startAllServicesAtStart();
+// startAllServicesAtStart();

@@ -16,6 +16,7 @@ import { CustomLndDto } from './dto/custom-lnd-dto';
 import { findCustomLndTlsCert } from '../domain/repository/custom-lnds-repository';
 import { logError } from '../application/logging-service';
 import { Authorized, Body, Controller, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { CreateLndDto } from './dto/lnd/create-lnd-dto';
 
 @JsonController('/lnd')
 @Authorized()
@@ -24,10 +25,11 @@ export class LndController {
     @Post('/')
     async createLndApi(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Body({ required: true }) createLndDto: CreateLndDto,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            await createUserLnd(userEmail);
+            await createUserLnd(userEmail, createLndDto);
             return res.status(200).send();
         } catch (err) {
             if (err instanceof LndCreateException) {

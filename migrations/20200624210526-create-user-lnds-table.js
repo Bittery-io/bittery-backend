@@ -30,7 +30,7 @@ exports.up = function(db) {
         mapping: 'user_domain'
       },
     },
-    lnd_port: { type: 'integer', notNull: true, unique: true }
+    lnd_type: { type: 'string', length:20, notNull: true }
   });
 };
 

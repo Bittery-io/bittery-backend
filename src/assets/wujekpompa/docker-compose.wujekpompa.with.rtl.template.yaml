@@ -1,0 +1,52 @@
+version: "3"
+
+networks:
+  bittery-net:
+
+services:
+
+  lnd_bitcoin:
+    image: bitteryio/lnd:v0.11.1-beta
+    container_name: lnd_bitcoin
+    restart: unless-stopped
+    entrypoint: "lnd --bitcoin.active --bitcoin.regtest --bitcoin.node=bitcoind --bitcoind.rpcuser=lnd --rpclisten=0.0.0.0:10009 --bitcoind.rpcpass=afixedpasswordbecauselndsuckswithcookiefile --bitcoind.rpchost=bitcoind:43782 --bitcoind.zmqpubrawblock=tcp://bitcoind:28332 --bitcoind.zmqpubrawtx=tcp://bitcoind:28333 --tlsextraip=64.225.71.145 --restlisten=0.0.0.0:8080"
+    volumes:
+      - ./volumes/lnd:/root/.lnd
+    networks:
+      - bittery-net
+    expose:
+      - 8080
+      - 10009
+    ports:
+      - 9735:9735
+
+#  $DOMAIN_rtl:
+#    image: rtl
+#    container_name: $DOMAIN_rtl
+#    environment:
+#      - RTL_CONFIG_PATH=/config
+#    volumes:
+#      - ./volumes/lnd_datadir/bitcoin/datadir:/data/macaroon
+#      - ./volumes/rtl/channel_backup:/data/channel_backup
+#      - ./volumes/rtl/config:/config
+#    networks:
+#      - bittery-net
+#    expose:
+#      - 3000
+
+  nginx:
+    restart: unless-stopped
+    image: nginx:1.19.4
+    container_name: nginx
+    volumes:
+      - ./volumes/nginx/conf:/etc/nginx/conf.d:rw
+      - ./volumes/nginx/vhost:/etc/nginx/vhost.d
+      - ./volumes/nginx/html:/usr/share/nginx/html
+      - ./volumes/nginx/certs:/etc/nginx/certs:ro
+      - ./volumes/lnd/:/etc/nginx/lnd
+    networks:
+      - bittery-net
+    ports:
+      - 80:80
+      - 443:443
+      - 10009:10009

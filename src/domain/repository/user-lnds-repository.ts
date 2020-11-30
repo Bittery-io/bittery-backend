@@ -1,15 +1,10 @@
 import { dbPool } from '../../application/db/db';
 import { PoolClient } from 'pg';
+import { LndType } from '../model/lnd/lnd-type';
 
-export const insertUserLnd = async (client: PoolClient, userDomain: string, lndPort: number): Promise<void> => {
+export const insertUserLnd = async (client: PoolClient, userDomain: string, lndType: LndType): Promise<void> => {
     await client.query(`
-        INSERT INTO USER_LNDS(USER_DOMAIN, LND_PORT) VALUES($1, $2)`, [userDomain, lndPort]);
-};
-
-export const findCurrentHighestLndPort = async (): Promise<number | undefined> => {
-    const result = await dbPool.query(`SELECT MAX(LND_PORT) FROM USER_LNDS`);
-    const foundRow = result.rows[0];
-    return foundRow ? foundRow.max : undefined;
+        INSERT INTO USER_LNDS(USER_DOMAIN, LND_TYPE) VALUES($1, $2)`, [userDomain, lndType]);
 };
 
 export const userHasLnd = async (userEmail: string): Promise<boolean> => {
