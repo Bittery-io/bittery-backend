@@ -3,11 +3,9 @@ import { logInfo } from './application/logging-service';
 import { getNumberProperty } from './application/property-service';
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
-import { createLndDroplet } from './domain/services/lnd/provisioning/lnd-digital-ocean-provision-service';
 import 'ts-replace-all';
-import { LndType } from './domain/model/lnd/lnd-type';
-
-require('./domain/services/lnd-run-schedule/lnd-run-schedule-service');
+import { HostedLndType } from './domain/model/lnd/hosted/hosted-lnd-type';
+import { createLnd } from './domain/services/lnd/create-user-lnd-service';
 
 // Create a new express app instance
 export const routingControllersOptions = {
@@ -21,6 +19,8 @@ app.listen(getNumberProperty('APP_PORT'),   () => {
     logInfo('App is listening on port 3001!');
 });
 
-createLndDroplet('wujekpompa', LndType.STANDARD);
-
+createLnd('peerzet3@gmail.com', {
+    wumboChannels: false,
+    lndHostedType: HostedLndType.STANDARD,
+});
 exports.express = app;

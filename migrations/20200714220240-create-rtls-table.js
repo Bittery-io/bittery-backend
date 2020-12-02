@@ -15,27 +15,28 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('user_domains', {
-    user_domain: { type: 'string', length: 500, primaryKey: true },
-    user_email: {
-      type: 'string',
-      length: 500,
+  return db.createTable('rtls', {
+    lnd_id: {
+      type: 'UUID',
+      primaryKey: true,
       notNull: true,
       foreignKey: {
-        name: 'user_domains_user_email_fk',
-        table: 'users',
+        name: 'rtls_lnd_id_fk',
+        table: 'lnds',
         rules: {
-          onDelete: 'RESTRICT',
-          onUpdate: 'RESTRICT'
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE'
         },
-        mapping: 'email'
+        mapping: 'lnd_id'
       },
     },
+    rtl_one_time_init_password: { type: 'string', length: 100, notNull: true, unique: true },
+    rtl_version: { type: 'string', length: 20, notNull: true }
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('user_domains');
+  return db.dropTable('rtls');
 };
 
 exports._meta = {

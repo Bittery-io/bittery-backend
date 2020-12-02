@@ -6,10 +6,20 @@ networks:
 services:
 
   lnd_bitcoin:
-    image: bitteryio/lnd:v0.11.1-beta
+    image: bitteryio/lnd:${LND_HOSTED_VERSION}
     container_name: lnd_bitcoin
     restart: unless-stopped
-    entrypoint: "lnd --bitcoin.active --bitcoin.regtest --bitcoin.node=bitcoind --bitcoind.rpcuser=lnd --rpclisten=0.0.0.0:10009 --bitcoind.rpcpass=afixedpasswordbecauselndsuckswithcookiefile --bitcoind.rpchost=bitcoind:43782 --bitcoind.zmqpubrawblock=tcp://bitcoind:28332 --bitcoind.zmqpubrawtx=tcp://bitcoind:28333 --tlsextraip=64.225.71.145 --restlisten=0.0.0.0:8080"
+    entrypoint: "lnd --bitcoin.active \
+                     --bitcoin.mainnet \
+                     --bitcoin.node=bitcoind \
+                     --rpclisten=0.0.0.0:10009 \
+                     --bitcoind.rpcuser=${BITCOIND_RPC_USER} \
+                     --bitcoind.rpcpass=${BITCOIND_RPC_PASSWORD} \
+                     --bitcoind.rpchost=${BITCOIND_RPC_HOST}:43783 \
+                     --bitcoind.zmqpubrawblock=tcp://${BITCOIND_RPC_HOST}:28334 \
+                     --bitcoind.zmqpubrawtx=tcp://${BITCOIND_RPC_HOST}:28335 \
+                     --tlsextraip=${LND_IP} \
+                     --restlisten=0.0.0.0:8080"
     volumes:
       - ./volumes/lnd:/root/.lnd
     networks:
@@ -21,12 +31,12 @@ services:
       - 9735:9735
 
   rtl:
-    image: bitteryio/rtl:v0.9.3
+    image: bitteryio/rtl:${RTL_HOSTED_VERSION}
     container_name: rtl
     environment:
       - RTL_CONFIG_PATH=/config
     volumes:
-      - ./volumes/lnd_datadir/bitcoin/datadir:/data/macaroon
+      - ./volumes/lnd/data/chain/bitcoin/mainnet:/data/macaroon:ro
       - ./volumes/rtl/channel_backup:/data/channel_backup
       - ./volumes/rtl/config:/config
     networks:

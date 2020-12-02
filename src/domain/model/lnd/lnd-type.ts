@@ -1,4 +1,4 @@
 export enum LndType {
-    STANDARD = 'standard',
-    ENCRYPTED = 'encrypted',
+    EXTERNAL = 'EXTERNAL',
+    HOSTED = 'HOSTED',
 }

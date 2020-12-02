@@ -5,15 +5,14 @@ import { ErrorDto } from './dto/error-dto';
 import { UserLndDto } from './dto/user-lnd-dto';
 import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-type';
 import {
-    addExistingUserLnd,
-    createUserLnd,
+    addExternalLnd,
+    createLnd,
     getCustomUserLnd,
     getUserLnd,
 } from '../domain/services/lnd/create-user-lnd-service';
 import { readMacaroonBase64, readTlsBase64 } from '../domain/services/lnd/lnd-files-service';
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
-import { findCustomLndTlsCert } from '../domain/repository/custom-lnds-repository';
 import { logError } from '../application/logging-service';
 import { Authorized, Body, Controller, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
@@ -29,7 +28,7 @@ export class LndController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            await createUserLnd(userEmail, createLndDto);
+            await createLnd(userEmail, createLndDto);
             return res.status(200).send();
         } catch (err) {
             if (err instanceof LndCreateException) {
@@ -48,7 +47,7 @@ export class LndController {
             @Body({ required: true }) saveUserLndDto: SaveUserLndDto): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            await addExistingUserLnd(userEmail, saveUserLndDto);
+            await addExternalLnd(userEmail, saveUserLndDto);
             return res.status(200).send();
         } catch (err) {
             if (err instanceof LndCreateException) {
@@ -91,7 +90,9 @@ export class LndController {
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        const customTlsCertText: string | undefined = await findCustomLndTlsCert(userEmail);
+        // todo zrobic
+        // const customTlsCertText: string | undefined = await findCustomLndTlsCert(userEmail);
+        const customTlsCertText: string | undefined = undefined;
         if (customTlsCertText) {
             const tlsCertificateFile: Buffer = Buffer.from(customTlsCertText, 'utf-8');
             res.contentType('text/plain');

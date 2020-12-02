@@ -1,5 +1,5 @@
 import { IsBoolean, IsDefined, IsOptional, IsString } from 'class-validator';
-import { LndType } from '../../../domain/model/lnd/lnd-type';
+import { HostedLndType } from '../../../domain/model/lnd/hosted/hosted-lnd-type';
 
 export class CreateLndDto {
 
@@ -11,11 +11,11 @@ export class CreateLndDto {
     wumboChannels: boolean;
 
     @IsDefined()
-    lndType: LndType;
+    lndHostedType: HostedLndType;
 
-    constructor(lnAlias: string, wumboChannels: boolean, lndType: LndType) {
+    constructor(lnAlias: string, wumboChannels: boolean, lndHostedType: HostedLndType) {
         this.lnAlias = lnAlias;
         this.wumboChannels = wumboChannels;
-        this.lndType = lndType;
+        this.lndHostedType = lndHostedType;
     }
 }

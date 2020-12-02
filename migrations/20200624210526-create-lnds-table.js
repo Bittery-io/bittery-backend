@@ -15,13 +15,14 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('custom_lnds', {
+  return db.createTable('lnds', {
+    lnd_id: { type: 'UUID', primaryKey: true },
     user_email: {
       type: 'string',
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'custom_lnds_user_email_fk',
+        name: 'lnds_user_email_fk',
         table: 'users',
         rules: {
           onDelete: 'RESTRICT',
@@ -29,17 +30,19 @@ exports.up = function(db) {
         },
         mapping: 'email'
       },
-      primaryKey: true,
     },
+    lnd_address: { type: 'string', length: 500, notNull: true },
     lnd_rest_address: { type: 'string', length: 200, notNull: true },
-    macaroon_hex: { type: 'string', length: 1000, notNull: true },
+    macaroon_hex: { type: 'string', length: 1000 },
     tls_cert: { type: 'string', length: 2000, notNull: true },
     tls_cert_thumbprint: { type: 'string', length: 300, notNull: true },
+    lnd_version: { type: 'string', length: 20, notNull: true },
+    lnd_type: { type: 'string', length: 20, notNull: true }
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('custom_lnds');
+  return db.dropTable('lnds');
 };
 
 exports._meta = {

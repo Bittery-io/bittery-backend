@@ -15,27 +15,29 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('user_rtls', {
-    user_domain: {
-      type: 'string',
-      length: 500,
+  return db.createTable('digital_ocean_lnds', {
+    droplet_id: { type: 'int', notNull: true, unique: true },
+    lnd_id: {
+      type: 'UUID',
       primaryKey: true,
+      notNull: true,
       foreignKey: {
-        name: 'user_rtls_user_domain_fk',
-        table: 'user_domains',
+        name: 'hosted_lnds_lnd_id_fk',
+        table: 'lnds',
         rules: {
-          onDelete: 'RESTRICT',
-          onUpdate: 'RESTRICT'
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE'
         },
-        mapping: 'user_domain'
+        mapping: 'lnd_id'
       },
     },
-    rtl_init_password: { type: 'string', length: 100, notNull: true, unique: true }
+    droplet_name: { type: 'string', length: 100, notNull: true },
+    droplet_ip: { type: 'string', length: '20', notNull: true }
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('user_rtls');
+  return db.dropTable('digital_ocean_lnds');
 };
 
 exports._meta = {

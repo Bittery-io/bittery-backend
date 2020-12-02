@@ -8,12 +8,9 @@ import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
 import { generateInvoicePdf } from '../pdf/invoice-pdf-generator-service';
 import { Invoice } from 'btcpay';
 import { logInfo } from '../../../application/logging-service';
-import { getCustomLndUrl, getLndUrl } from '../../../application/lnd-connect-service';
-import { findUserDomain } from '../../repository/user-domains-repository';
-import { UserDomain } from '../../model/lnd/user-domain';
-import { findCustomLnd } from '../../repository/custom-lnds-repository';
-import { getRounds } from 'bcrypt';
-import { CustomLnd } from '../../model/lnd/custom-lnd';
+import { findLnd } from '../../repository/lnd/lnds-repository';
+import { Lnd } from '../../model/lnd/lnd';
+import { getLndUrl } from '../../../application/lnd-connect-service';
 
 export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<void> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
@@ -38,24 +35,16 @@ export const getInvoices = async (userEmail: string, limit: number): Promise<obj
 export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promise<Buffer> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
-        const invoice: Invoice =  await getBtcpayInvoice(userBtcpayDetails.btcpayUserAuthToken, invoiceId);
-        const userDomain: UserDomain | undefined = await findUserDomain(userEmail);
-        let lndUrl: string | undefined;
-        if (userDomain) {
-            lndUrl = await getLndUrl(userDomain!.userDomain);
-            if (!lndUrl) {
-                // tslint:disable-next-line:max-line-length
-                throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND (offline?) address for domain ${userDomain!.userDomain}!`,
-                    UserBtcpayErrorType.COULD_NOT_GET_LND_ADDRESS);
-            }
-        } else {
-            const userCustomLnd: CustomLnd | undefined = await findCustomLnd(userEmail);
-            lndUrl = await getCustomLndUrl(userCustomLnd!.macaroonHex, userCustomLnd!.lndRestAddress, userCustomLnd!.tlsCert);
-            if (!lndUrl) {
-                // tslint:disable-next-line:max-line-length
-                throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND (offline?) address for user custom LND : ${userCustomLnd?.lndRestAddress}!`,
-                    UserBtcpayErrorType.COULD_NOT_GET_LND_ADDRESS);
-            }
+        const invoice: Invoice = await getBtcpayInvoice(userBtcpayDetails.btcpayUserAuthToken, invoiceId);
+        // todo tutaj zabezpieczenie epiej jakies na undefined
+        const lnd: Lnd = (await findLnd(userEmail))!;
+        // todo tutaj zabezpieczenie
+        const lndUrl: string | undefined = await getLndUrl(lnd.macaroonHex!, lnd.lndRestAddress, lnd.tlsCert);
+        if (!lndUrl) {
+            // tslint:disable-next-line:max-line-length
+            throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND (offline?) address for user LND: 
+                    ${lnd.lndRestAddress}, type: ${lnd.lndType}`,
+                UserBtcpayErrorType.COULD_NOT_GET_LND_ADDRESS);
         }
         return await generateInvoicePdf(invoice, userEmail, lndUrl!);
     } else {

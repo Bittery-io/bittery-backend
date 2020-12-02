@@ -8,25 +8,7 @@ import { logError } from './logging-service';
 
 const readFile = util.promisify(fs.readFile);
 
-export const getLndUrl = async (domain: string): Promise<string | undefined> => {
-    try {
-        const res = await axios.get(`https://${domain}:444/lnd-rest/btc/v1/getinfo`, {
-            headers: {
-                'Grpc-Metadata-macaroon': await getMacaroonHex(domain),
-            },
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false,
-            }),
-            timeout: 3000,
-        });
-        return res.data.uris[0];
-    } catch (err) {
-        logError(`Get info of node for domain ${domain} failed!`, err.message);
-        return undefined;
-    }
-};
-
-export const getCustomLndUrl = async (macaroonHex: string, lndRestAddress: string, tlsCert: string): Promise<string | undefined> => {
+export const getLndUrl = async (macaroonHex: string, lndRestAddress: string, tlsCert: string): Promise<string | undefined> => {
     try {
         const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
             headers: {
@@ -70,10 +52,10 @@ export const getMacaroonBase64 = async (domain: string): Promise<string> => {
     return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/admin.macaroon`)).toString('base64');
 };
 
-export const getTls = async (domain: string): Promise<string> => {
-    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/tls.cert`)).toString();
+export const getTls = async (tlsCertName: string): Promise<string> => {
+    return (await readFile(`${getProperty('LND_HOSTED_FILE_FOLDER_PATH')}/${tlsCertName}`)).toString();
 };
 
-export const getTlsBase64 = async (domain: string): Promise<string> => {
-    return (await readFile(`${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/volumes/lnd/${domain}/bitcoin/datadir/tls.cert`)).toString('base64');
+export const getTlsBase64 = async (tlsCertName: string): Promise<string> => {
+    return (await readFile(`${getProperty('LND_HOSTED_FILE_FOLDER_PATH')}/${tlsCertName}`)).toString('base64');
 };

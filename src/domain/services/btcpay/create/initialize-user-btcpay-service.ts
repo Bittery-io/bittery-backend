@@ -2,13 +2,12 @@ import { BtcpayUserAuthToken } from '../../../model/btcpay/btcpay-user-auth-toke
 import { generateApiToken } from './btcpay-api-token-generator-service';
 import {
     generateBtcPayCustomLndAddress,
-    generateBtcPayLndAddress,
 } from '../../lnd/lnd-btcpay-address-generator-service';
 import { UserBtcpayDetails } from '../../../model/btcpay/user-btcpay-details';
 import { getProperty } from '../../../../application/property-service';
-import { CustomLnd } from '../../../model/lnd/custom-lnd';
 import { logInfo } from '../../../../application/logging-service';
 import { formatDateWithTime2 } from '../../utils/date-service';
+import { Lnd } from '../../../model/lnd/lnd';
 
 const puppeteer = require('puppeteer');
 
@@ -20,31 +19,20 @@ export const initializeBtcpayServices = async (
         userEmail: string,
         bip49RootPublicKey: string,
         paymentExpirationMinutes: number,
-        userDomain?: string,
-        customLnd?: CustomLnd): Promise<UserBtcpayDetails> => {
+        lnd: Lnd): Promise<UserBtcpayDetails> => {
     let storeName: string;
-    if (userDomain) {
-        logInfo(`Initializing BTCPay services for user domain ${userDomain}`);
-        storeName = `${userEmail}-${userDomain}-${formatDateWithTime2(new Date().getTime())}`;
-    } else {
-        storeName = `${userEmail}-CUSTOM_LND-${formatDateWithTime2(new Date().getTime())}`;
-        logInfo(`Initializing BTCPay services for user with custom LND: ${customLnd?.lndRestAddress}`);
-    }
+    storeName = `${userEmail}-${formatDateWithTime2(new Date().getTime())}`;
+    logInfo(`Initializing BTCPay services for user LND: ${lnd.lndId}`);
     const browser = await getBrowser();
     const page = (await browser.pages())[0];
     await loginToBtcpay(page);
     const storeId: string = await createStore(storeName, page);
     await addBtcRootPublicKeyToStore(storeId, page, browser, bip49RootPublicKey);
-    let lndAddress: string;
-    if (customLnd) {
-        lndAddress = generateBtcPayCustomLndAddress(
-            customLnd.lndRestAddress,
-            customLnd.macaroonHex,
-            customLnd.tlsCertThumbprint,
-        );
-    } else {
-        lndAddress = generateBtcPayLndAddress(userDomain!);
-    }
+    const lndAddress = generateBtcPayCustomLndAddress(
+        lnd.lndRestAddress,
+        lnd.macaroonHex!,
+        lnd.tlsCertThumbprint,
+    );
     await addLndNodeToStore(storeId, lndAddress, page);
     await setExpirationMinutesToStore(storeId, String(paymentExpirationMinutes), page);
     const pairingCode: string = await getBtcpayPairingCode(storeName, storeId, page);

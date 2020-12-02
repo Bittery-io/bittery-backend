@@ -15,26 +15,28 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('lnd_runs', {
-    user_domain: {
-      type: 'string',
-      length: 500,
+  return db.createTable('hosted_lnds', {
+    lnd_id: {
       primaryKey: true,
+      type: 'UUID',
+      notNull: true,
       foreignKey: {
-        name: 'user_rtls_user_domain_fk',
-        table: 'user_domains',
+        name: 'hosted_lnds_lnd_id_fk',
+        table: 'lnds',
         rules: {
-          onDelete: 'RESTRICT',
-          onUpdate: 'RESTRICT'
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE'
         },
-        mapping: 'user_domain'
+        mapping: 'lnd_id'
       },
     },
-    run_start_date: { type: 'timestamp', timezone: true, notNull: true },
-  });};
+    hosted_lnd_type: { type: 'string', length: 20, notNull: true },
+    hosted_lnd_provider: { type: 'string', length: 20, notNull: true },
+  });
+};
 
 exports.down = function(db) {
-  return db.dropTable('lnd_runs');
+  return db.dropTable('hosted_lnds');
 };
 
 exports._meta = {

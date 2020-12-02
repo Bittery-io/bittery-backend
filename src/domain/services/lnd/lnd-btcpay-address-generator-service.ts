@@ -1,7 +1,3 @@
-export const generateBtcPayLndAddress = (userDomain: string): string => {
-    return `type=lnd-rest;server=https://${userDomain}_lnd_bitcoin:8080/;macaroonfilepath=/etc/lnd_bitcoin/${userDomain}/bitcoin/datadir/admin.macaroon;allowinsecure=true`;
-};
-
 export const generateBtcPayCustomLndAddress = (lndRestAddress: string, macaroonHex: string, tlsCertThumbprint: string): string => {
     return `type=lnd-rest;server=${lndRestAddress};macaroon=${macaroonHex};certthumbprint=${tlsCertThumbprint}`;
 };

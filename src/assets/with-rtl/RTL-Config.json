@@ -21,10 +21,10 @@
         "themeColor": "GREEN",
         "channelBackupPath": "/data/channel_backup",
         "enableLogging": false,
-        "lnServerUrl": "http://lnd_bitcoin:8080/v1",
+        "lnServerUrl": "https://lnd_bitcoin:8080",
         "fiatConversion": false
       }
     }
   ],
-  "multiPass": "dupa"
+  "multiPass": "$RTL_INIT_PASSWORD"
 }
