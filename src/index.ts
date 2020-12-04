@@ -19,8 +19,9 @@ app.listen(getNumberProperty('APP_PORT'),   () => {
     logInfo('App is listening on port 3001!');
 });
 
-createLnd('peerzet3@gmail.com', {
-    wumboChannels: false,
-    lndHostedType: HostedLndType.STANDARD,
-});
+// createLnd('peerzet3@gmail.com', {
+//     wumboChannels: true,
+//     lnAlias: 'KILLEM ALL',
+//     lndHostedType: HostedLndType.STANDARD,
+// });
 exports.express = app;

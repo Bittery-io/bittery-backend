@@ -6,9 +6,10 @@ import { Lnd } from '../../model/lnd/lnd';
 export const insertLnd = async (client: PoolClient, lnd: Lnd): Promise<void> => {
     await client.query(`
         INSERT INTO LNDS(LND_ID, USER_EMAIL, LND_ADDRESS, LND_REST_ADDRESS, MACAROON_HEX,
-                         TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                         TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, CREATION_DATE)
+                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [lnd.lndId, lnd.userEmail, lnd.lndAddress, lnd.lndRestAddress, lnd.macaroonHex, lnd.tlsCert,
-            lnd.tlsCertThumbprint, lnd.lndVersion, lnd.lndType]);
+            lnd.tlsCertThumbprint, lnd.lndVersion, lnd.lndType, lnd.creationDate]);
 };
 
 export const userHasLnd = async (userEmail: string): Promise<boolean> => {

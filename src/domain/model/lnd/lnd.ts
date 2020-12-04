@@ -10,11 +10,13 @@ export class Lnd {
     tlsCertThumbprint: string;
     lndVersion: string;
     lndType: LndType;
+    creationDate: string;
     macaroonHex?: string;
     rtl?: Rtl;
 
     constructor(lndId: string, userEmail: string, lndAddress: string, lndRestAddress: string,
-                tlsCert: string, tlsCertThumbprint: string, lndVersion: string, lndType: LndType, macaroonHex?: string, rtl?: Rtl) {
+                tlsCert: string, tlsCertThumbprint: string, lndVersion: string, lndType: LndType, creationDate: string,
+                macaroonHex?: string, rtl?: Rtl) {
         this.lndId = lndId;
         this.userEmail = userEmail;
         this.lndAddress = lndAddress;
@@ -23,6 +25,7 @@ export class Lnd {
         this.tlsCertThumbprint = tlsCertThumbprint;
         this.lndVersion = lndVersion;
         this.lndType = lndType;
+        this.creationDate = creationDate;
         this.macaroonHex = macaroonHex;
         this.rtl = rtl;
     }

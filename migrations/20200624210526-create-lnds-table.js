@@ -37,7 +37,8 @@ exports.up = function(db) {
     tls_cert: { type: 'string', length: 2000, notNull: true },
     tls_cert_thumbprint: { type: 'string', length: 300, notNull: true },
     lnd_version: { type: 'string', length: 20, notNull: true },
-    lnd_type: { type: 'string', length: 20, notNull: true }
+    lnd_type: { type: 'string', length: 20, notNull: true },
+    creation_date: { type: 'timestamp', timezone: true, notNull: true }
   });
 };
 

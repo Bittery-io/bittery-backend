@@ -1,10 +1,11 @@
-import { IsBoolean, IsDefined, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDefined, IsOptional, IsString, MaxLength } from 'class-validator';
 import { HostedLndType } from '../../../domain/model/lnd/hosted/hosted-lnd-type';
 
 export class CreateLndDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(32)
     lnAlias?: string;
 
     @IsBoolean()

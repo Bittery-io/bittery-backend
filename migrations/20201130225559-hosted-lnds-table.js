@@ -32,6 +32,8 @@ exports.up = function(db) {
     },
     hosted_lnd_type: { type: 'string', length: 20, notNull: true },
     hosted_lnd_provider: { type: 'string', length: 20, notNull: true },
+    wumboChannels: { type: 'boolean', notNull: true, },
+    lnAlias: { type: 'string', length: 32 },
   });
 };
 

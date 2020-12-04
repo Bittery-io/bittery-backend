@@ -23,15 +23,20 @@ import { LndType } from '../../model/lnd/lnd-type';
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
         const lndId: string = generateUuid();
-        const digitalOceanLnd: DigitalOceanLnd = await provisionDigitalOceanLnd(userEmail, lndId, createLndDto);
-        await runInTransaction(async (client: PoolClient) => {
-            await insertLnd(client, digitalOceanLnd);
-            if (createLndDto.lndHostedType === HostedLndType.STANDARD) {
-                await insertHostedLnd(client, digitalOceanLnd);
-                await insertUserRtl(client, digitalOceanLnd.rtl!);
-                await insertDigitalOceanLnd(client, digitalOceanLnd);
-            }
-        });
+        const digitalOceanLnd: DigitalOceanLnd | undefined = await provisionDigitalOceanLnd(userEmail, lndId, createLndDto);
+        if (digitalOceanLnd) {
+            await runInTransaction(async (client: PoolClient) => {
+                await insertLnd(client, digitalOceanLnd);
+                if (createLndDto.lndHostedType === HostedLndType.STANDARD) {
+                    await insertHostedLnd(client, digitalOceanLnd);
+                    await insertUserRtl(client, digitalOceanLnd.rtl!);
+                    await insertDigitalOceanLnd(client, digitalOceanLnd);
+                } else {
+                    await insertHostedLnd(client, digitalOceanLnd);
+                    await insertDigitalOceanLnd(client, digitalOceanLnd);
+                }
+            });
+        }
     } else {
         throw new LndCreateException(`User ${userEmail} already has LND added!`, LndCreationErrorType.USER_ALREADY_HAS_LND);
     }

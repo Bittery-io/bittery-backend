@@ -6,10 +6,10 @@ networks:
 services:
 
   lnd_bitcoin:
-    image: bitteryio/lnd:v0.11.1-beta
+    image: bitteryio/lnd:${LND_HOSTED_VERSION}
     container_name: lnd_bitcoin
     restart: unless-stopped
-    entrypoint: "lnd --bitcoin.active --bitcoin.regtest --bitcoin.node=bitcoind --bitcoind.rpcuser=lnd --rpclisten=0.0.0.0:10009 --bitcoind.rpcpass=afixedpasswordbecauselndsuckswithcookiefile --bitcoind.rpchost=bitcoind:43782 --bitcoind.zmqpubrawblock=tcp://bitcoind:28332 --bitcoind.zmqpubrawtx=tcp://bitcoind:28333 --tlsextraip=64.225.71.145 --restlisten=0.0.0.0:8080"
+    entrypoint: ${LND_ENTRYPOINT}
     volumes:
       - ./volumes/lnd:/root/.lnd
     networks:

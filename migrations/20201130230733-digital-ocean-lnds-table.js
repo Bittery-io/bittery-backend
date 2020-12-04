@@ -32,7 +32,7 @@ exports.up = function(db) {
       },
     },
     droplet_name: { type: 'string', length: 100, notNull: true },
-    droplet_ip: { type: 'string', length: '20', notNull: true }
+    droplet_ip: { type: 'string', length: 20, notNull: true, },
   });
 };
 

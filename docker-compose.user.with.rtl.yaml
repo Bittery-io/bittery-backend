@@ -9,6 +9,20 @@ services:
     image: bitteryio/lnd:${LND_HOSTED_VERSION}
     container_name: lnd_bitcoin
     restart: unless-stopped
+    entrypoint: "lnd --bitcoin.active \
+                     --bitcoin.mainnet \
+                     --bitcoin.node=bitcoind \
+                     --rpclisten=0.0.0.0:10009 \
+                     --bitcoind.rpcuser=${BITCOIND_RPC_USER} \
+                     --bitcoind.rpcpass=${BITCOIND_RPC_PASSWORD} \
+                     --bitcoind.rpchost=${BITCOIND_RPC_HOST}:43783 \
+                     --bitcoind.zmqpubrawblock=tcp://${BITCOIND_RPC_HOST}:28334 \
+                     --bitcoind.zmqpubrawtx=tcp://${BITCOIND_RPC_HOST}:28335 \
+                     --alias=${LN_ALIAS} \
+                     --alias=${LN_ALIAS} \
+                     $WUMBO_CHANNELS
+                     --tlsextraip=${LND_IP} \
+                     --restlisten=0.0.0.0:8080"
     volumes:
       - ./volumes/lnd:/root/.lnd
     networks:
