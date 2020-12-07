@@ -12,11 +12,11 @@ export class CreateLndDto {
     wumboChannels: boolean;
 
     @IsDefined()
-    lndHostedType: HostedLndType;
+    hostedLndType: HostedLndType;
 
-    constructor(lnAlias: string, wumboChannels: boolean, lndHostedType: HostedLndType) {
+    constructor(wumboChannels: boolean, hostedLndType: HostedLndType, lnAlias?: string) {
         this.lnAlias = lnAlias;
         this.wumboChannels = wumboChannels;
-        this.lndHostedType = lndHostedType;
+        this.hostedLndType = hostedLndType;
     }
 }

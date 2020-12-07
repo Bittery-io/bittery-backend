@@ -15,9 +15,9 @@ export class HostedLnd extends Lnd {
     constructor(lndId: string, userEmail: string, lndAddress: string, lndRestAddress: string, tlsCert: string,
                 tlsCertThumbprint: string, lndVersion: string, lndType: LndType, hostedLndType: HostedLndType,
                 hostedLndProvider: HostedLndProvider, creationDate: string, wumboChannels: boolean,
-                lnAlias?: string, macaroonHex?: string, rtl?: Rtl) {
+                lnAlias?: string, macaroonHex?: string) {
         super(lndId, userEmail, lndAddress, lndRestAddress, tlsCert, tlsCertThumbprint, lndVersion, lndType,
-            creationDate,  macaroonHex, rtl);
+            creationDate,  macaroonHex);
         this.hostedLndType = hostedLndType;
         this.hostedLndProvider = hostedLndProvider;
         this.wumboChannels = wumboChannels;

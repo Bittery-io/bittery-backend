@@ -8,13 +8,13 @@ export const insertUserRtl = async (client: PoolClient, rtl: Rtl): Promise<void>
         [rtl.lndId, rtl.rtlOneTimeInitPassword, rtl.rtlVersion]);
 };
 
-export const findUserRtl = async (userEmail: string): Promise<Rtl | undefined> => {
+export const findRtl = async (lndId: string): Promise<Rtl | undefined> => {
     const result = await dbPool.query(`SELECT * FROM RTLS rtl JOIN LNDS lnd ON rtl.LND_ID = lnd.LND_ID 
-                                        WHERE lnd.USER_EMAIL = $1`, [userEmail]);
+                                        WHERE lnd.LND_ID = $1`, [lndId]);
     return  result.rows.length === 1 ?
         new Rtl(
             result.rows[0].lnd_id,
-            result.rows[0].one_time_init_password,
+            result.rows[0].rtl_one_time_init_password,
             result.rows[0].rtl_version,
         ) : undefined;
 };

@@ -17,14 +17,15 @@ export const userHasLnd = async (userEmail: string): Promise<boolean> => {
     return result.rows[0].exists;
 };
 
-export const findLndRestAddress = async (lndId: string, userEmail: string): Promise<string> => {
+export const findLndRestAddress = async (lndId: string, userEmail: string): Promise<string | undefined> => {
     const result = await dbPool.query(`SELECT LND_REST_ADDRESS FROM LNDS WHERE LND_ID = $1 AND USER_EMAIL = $2`,
         [lndId, userEmail]);
-    return result.rows[0].lnd_rest_address;
+    const foundRow = result.rows[0];
+    return foundRow ? result.rows[0].lnd_rest_address : undefined;
 };
 
 // todo docelowo powinno byc po lndId wtedy user moze miec wiecej, na razie jedno starczy
-export const findLnd = async (userEmail: string): Promise<Lnd | undefined> => {
+export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> => {
     const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_ADDRESS, LND_REST_ADDRESS, MACAROON_HEX,
                                               TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE FROM LNDS WHERE USER_EMAIL = $1`,
         [userEmail]);

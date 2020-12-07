@@ -1,5 +1,4 @@
 import { LndType } from './lnd-type';
-import { Rtl } from './hosted/rtl/rtl';
 
 export class Lnd {
     lndId: string;
@@ -12,11 +11,10 @@ export class Lnd {
     lndType: LndType;
     creationDate: string;
     macaroonHex?: string;
-    rtl?: Rtl;
 
     constructor(lndId: string, userEmail: string, lndAddress: string, lndRestAddress: string,
                 tlsCert: string, tlsCertThumbprint: string, lndVersion: string, lndType: LndType, creationDate: string,
-                macaroonHex?: string, rtl?: Rtl) {
+                macaroonHex?: string) {
         this.lndId = lndId;
         this.userEmail = userEmail;
         this.lndAddress = lndAddress;
@@ -27,6 +25,5 @@ export class Lnd {
         this.lndType = lndType;
         this.creationDate = creationDate;
         this.macaroonHex = macaroonHex;
-        this.rtl = rtl;
     }
 }

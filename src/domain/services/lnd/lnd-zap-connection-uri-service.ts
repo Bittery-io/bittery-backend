@@ -2,12 +2,12 @@ import { getMacaroonHex, getTls } from '../../../application/lnd-connect-service
 
 const lndconnect = require('lndconnect');
 
-export const getLndConnectUri = async (domainName: string): Promise<string> => {
-    const grpsAddress: string = `${domainName}:443`;
+export const getLndConnectUri = async (lndAddress: string, tlsCert: string, macaroonHex: string): Promise<string> => {
+    const grpsAddress: string = `${lndAddress}:443`;
     return lndconnect.encode({
         host: grpsAddress,
-        cert: await getTls(domainName),
-        macaroon: await getMacaroonHex(domainName),
+        cert: tlsCert,
+        macaroon: macaroonHex,
     });
 };
 

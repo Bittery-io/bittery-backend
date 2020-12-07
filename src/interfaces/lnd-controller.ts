@@ -16,6 +16,12 @@ import { CustomLndDto } from './dto/custom-lnd-dto';
 import { logError } from '../application/logging-service';
 import { Authorized, Body, Controller, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
+import { Param } from 'routing-controllers';
+import { generateLndSeed, initLndWallet, unlockLnd } from '../domain/services/lnd/lnd-service';
+import { LndInitWalletDto } from './dto/lnd/lnd-init-wallet-dto';
+import { LndInitWalletResponseDto } from './dto/lnd/lnd-init-wallet-response-dto';
+import { ln } from 'shelljs';
+import { UnlockLndDto } from './dto/lnd/unlock-lnd-dto';
 
 @JsonController('/lnd')
 @Authorized()
@@ -40,8 +46,8 @@ export class LndController {
         }
     }
 
-    @Post('/existing')
-    async saveExistingLndApi(
+    @Post('/external')
+    async saveExternalLndApi(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response,
             @Body({ required: true }) saveUserLndDto: SaveUserLndDto): Promise<Response> {
@@ -69,6 +75,51 @@ export class LndController {
             return res.send(userLndDto);
         } else {
             return res.status(404).send();
+        }
+    }
+
+    @Get('/:lndId/seed')
+    async generateSeedMnemonic(
+        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+        @Param('lndId') lndId: string,
+        @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        const seed: string[] | undefined = await generateLndSeed(userEmail, lndId);
+        if (seed) {
+            return res.send(seed);
+        } else {
+            return res.status(400).send();
+        }
+    }
+
+    @Post('/:lndId/initwallet')
+    async initLndWalletApi(
+        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+        @Param('lndId') lndId: string,
+        @Body({ required: true }) initWalletDto: LndInitWalletDto,
+        @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        const lndInitWalletResponseDto: LndInitWalletResponseDto | undefined = await initLndWallet(userEmail, lndId,
+            initWalletDto);
+        if (lndInitWalletResponseDto) {
+            return res.send(lndInitWalletResponseDto);
+        } else {
+            return res.status(400).send();
+        }
+    }
+
+    @Post('/:lndId/unlock')
+    async unlockLndApi(
+        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+        @Param('lndId') lndId: string,
+        @Body({ required: true }) unlockLndDto: UnlockLndDto,
+        @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        const unlocked: boolean = await unlockLnd(userEmail, lndId, unlockLndDto.password);
+        if (unlocked) {
+            return res.sendStatus(200);
+        } else {
+            return res.status(400).send();
         }
     }
 

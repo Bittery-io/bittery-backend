@@ -1,24 +1,29 @@
 import { LndStatusEnum } from '../../domain/model/lnd/lnd-status-enum';
+import { LndType } from '../../domain/model/lnd/lnd-type';
+import { HostedLndType } from '../../domain/model/lnd/hosted/hosted-lnd-type';
 
 export class UserLndDto {
+    lndId: string;
     lndRestAddress: string;
-    rtlAddress: string;
-    lndUrl: string;
-    lndConnectUrl: string;
     lndStatus: LndStatusEnum;
-    rtlInitPassword: string;
+    lndType: LndType;
+    hostedLndType?: HostedLndType;
+    lndConnectUri?: string;
+    lndUrl?: string;
+    rtlAddress?: string;
+    rtlOneTimeInitPassword?: string;
 
-    // these both can be set only if LND is turned off for user
-    turnOnRequested?: boolean;
-
-    constructor(lndRestAddress: string, rtlAddress: string, lndConnectUrl: string, lndUrl: string,
-                lndStatus: LndStatusEnum, rtlInitPassword: string, turnOnRequested?: boolean) {
+    constructor(lndId: string, lndRestAddress: string, lndStatus: LndStatusEnum, lndType: LndType,
+                hostedLndType?: HostedLndType, lndUrl?: string, lndConnectUri?: string,
+                rtlAddress?: string, rtlOneTimeInitPassword?: string) {
+        this.lndId = lndId;
         this.lndRestAddress = lndRestAddress;
-        this.rtlAddress = rtlAddress;
-        this.lndConnectUrl = lndConnectUrl;
-        this.lndUrl = lndUrl;
         this.lndStatus = lndStatus;
-        this.rtlInitPassword = rtlInitPassword;
-        this.turnOnRequested = turnOnRequested;
+        this.lndType = lndType;
+        this.hostedLndType = hostedLndType;
+        this.lndConnectUri = lndConnectUri;
+        this.lndUrl = lndUrl;
+        this.rtlAddress = rtlAddress;
+        this.rtlOneTimeInitPassword = rtlOneTimeInitPassword;
     }
 }

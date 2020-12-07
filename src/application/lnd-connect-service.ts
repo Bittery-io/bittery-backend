@@ -1,47 +1,14 @@
-import * as https from 'https';
+import { getProperty } from './property-service';
+import { lndGetInfo } from '../domain/services/lnd/api/lnd-api-service';
 
 const fs = require('fs');
 const util = require('util');
-import axios from 'axios';
-import { getProperty } from './property-service';
-import { logError } from './logging-service';
 
 const readFile = util.promisify(fs.readFile);
 
-export const getLndUrl = async (macaroonHex: string, lndRestAddress: string, tlsCert: string): Promise<string | undefined> => {
-    try {
-        const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
-            headers: {
-                'Grpc-Metadata-macaroon': macaroonHex,
-            },
-            httpsAgent: new https.Agent({
-                ca: [tlsCert],
-            }),
-            timeout: 6000,
-        });
-        return res.data.uris[0];
-    } catch (err) {
-        logError(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
-        return undefined;
-    }
-};
-
-export const getLndInfo = async (macaroonHex: string, lndRestAddress: string, tlsCert: string): Promise<any | undefined> => {
-    try {
-        const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
-            headers: {
-                'Grpc-Metadata-macaroon': macaroonHex,
-            },
-            httpsAgent: new https.Agent({
-                ca: [tlsCert],
-            }),
-        });
-        return res.data;
-    } catch (err) {
-        logError(`Get info of custom node for address ${lndRestAddress} failed!`, err.message);
-        return undefined;
-    }
-
+export const getLndUrl = async (macaroonHex: string, lndRestAddress: string): Promise<string | undefined> => {
+    const info :any | undefined = await lndGetInfo(lndRestAddress, macaroonHex);
+    return info ? info.uris[0] : undefined;
 };
 
 export const getMacaroonHex = async (domain: string): Promise<string> => {

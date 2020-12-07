@@ -8,7 +8,7 @@ import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
 import { generateInvoicePdf } from '../pdf/invoice-pdf-generator-service';
 import { Invoice } from 'btcpay';
 import { logInfo } from '../../../application/logging-service';
-import { findLnd } from '../../repository/lnd/lnds-repository';
+import { findUserLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { getLndUrl } from '../../../application/lnd-connect-service';
 
@@ -37,9 +37,9 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
     if (userBtcpayDetails) {
         const invoice: Invoice = await getBtcpayInvoice(userBtcpayDetails.btcpayUserAuthToken, invoiceId);
         // todo tutaj zabezpieczenie epiej jakies na undefined
-        const lnd: Lnd = (await findLnd(userEmail))!;
+        const lnd: Lnd = (await findUserLnd(userEmail))!;
         // todo tutaj zabezpieczenie
-        const lndUrl: string | undefined = await getLndUrl(lnd.macaroonHex!, lnd.lndRestAddress, lnd.tlsCert);
+        const lndUrl: string | undefined = await getLndUrl(lnd.macaroonHex!, lnd.lndRestAddress);
         if (!lndUrl) {
             // tslint:disable-next-line:max-line-length
             throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND (offline?) address for user LND: 

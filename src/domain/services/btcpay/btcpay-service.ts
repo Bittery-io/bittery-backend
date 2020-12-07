@@ -11,12 +11,12 @@ import { getNumberProperty } from '../../../application/property-service';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../application/logging-service';
-import { findLnd } from '../../repository/lnd/lnds-repository';
+import { findUserLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
-        const lnd: Lnd | undefined = await findLnd(userEmail);
+        const lnd: Lnd | undefined = await findUserLnd(userEmail);
         if (!lnd) {
             // todo obsluga bledu lepsza
             throw new Error('user has not lnd yet');
