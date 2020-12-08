@@ -39,6 +39,12 @@ export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> =
         foundRow.tls_cert_thumbprint,
         foundRow.lnd_version,
         foundRow.lnd_type,
+        foundRow.creation_date,
         foundRow.macaroon_hex,
     ) : undefined;
+};
+
+export const updateLndSetMacaroonHex = async (lndId: string, macaroonHex: string): Promise<void> => {
+    await dbPool.query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
+        [macaroonHex, lndId]);
 };

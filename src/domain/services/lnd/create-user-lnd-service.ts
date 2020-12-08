@@ -22,9 +22,10 @@ import { LndStatusEnum } from '../../model/lnd/lnd-status-enum';
 import { getLndConnectUri } from './lnd-zap-connection-uri-service';
 import { DigitalOceanLndHosting } from '../../model/lnd/digital-ocean-lnd-hosting';
 import { lndGetInfo, lndUnlockWallet } from './api/lnd-api-service';
-import { getLndUrl } from '../../../application/lnd-connect-service';
+import { getLndUri } from '../../../application/lnd-connect-service';
 import { LndWalletNotInitException } from '../../model/lnd/api/lnd-wallet-not-init-exception';
 import { LndLockedException } from '../../model/lnd/api/lnd-locked-exception';
+import { LndInfo } from '../../model/lnd/api/lnd-info';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -79,14 +80,15 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
     const lnd: Lnd | undefined = await findUserLnd(userEmail);
     if (lnd) {
         const rtl: Rtl | undefined = lnd.lndType === LndType.HOSTED ? (await findRtl(lnd.lndId)) : undefined;
-        let lndUrl: string | undefined = undefined;
         let lndConnectUri: string | undefined = undefined;
+        let lndInfo: LndInfo | undefined = undefined;
         let lndStatus: LndStatusEnum = LndStatusEnum.TURNED_OFF;
         if (lnd.macaroonHex) {
-            lndUrl = await getLndUrl(lnd.macaroonHex, lnd.lndRestAddress);
+            lndInfo = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex);
+            const lndUri = lndInfo!.uri;
             lndConnectUri = await getLndConnectUri(lnd.lndAddress, lnd.tlsCert, lnd.macaroonHex);
             // if response is not undefined and macaroon is set it means it's off
-            if (lndUrl) {
+            if (lndUri) {
                 lndStatus = LndStatusEnum.STOPPED;
             } else {
                 lndStatus = LndStatusEnum.WORKING;
@@ -111,10 +113,10 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
             lndStatus,
             lnd.lndType,
             hostedLndType,
-            lndUrl,
             lndConnectUri,
             rtl ? `https://${lnd.lndAddress}/rtl` : undefined,
             rtl ? rtl.rtlOneTimeInitPassword : undefined,
+            lndInfo,
         );
     } else {
         logError(`Cannot return user lnd for user ${userEmail} because has no LND added in Bittery!`);

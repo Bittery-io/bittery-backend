@@ -10,7 +10,7 @@ import { Invoice } from 'btcpay';
 import { logInfo } from '../../../application/logging-service';
 import { findUserLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
-import { getLndUrl } from '../../../application/lnd-connect-service';
+import { getLndUri } from '../../../application/lnd-connect-service';
 
 export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<void> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
@@ -39,7 +39,7 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
         // todo tutaj zabezpieczenie epiej jakies na undefined
         const lnd: Lnd = (await findUserLnd(userEmail))!;
         // todo tutaj zabezpieczenie
-        const lndUrl: string | undefined = await getLndUrl(lnd.macaroonHex!, lnd.lndRestAddress);
+        const lndUrl: string | undefined = await getLndUri(lnd.macaroonHex!, lnd.lndRestAddress);
         if (!lndUrl) {
             // tslint:disable-next-line:max-line-length
             throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND (offline?) address for user LND: 

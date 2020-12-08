@@ -74,7 +74,6 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.DOWNLOAD_TLS_CERT,
             dropletName, dropletId, dropletIpPublic, rtlOneTimePassword);
     }
-
     return new DropletCreationInfo(
         dropletId,
         dropletName,

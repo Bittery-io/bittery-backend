@@ -6,7 +6,7 @@ const util = require('util');
 
 const readFile = util.promisify(fs.readFile);
 
-export const getLndUrl = async (macaroonHex: string, lndRestAddress: string): Promise<string | undefined> => {
+export const getLndUri = async (macaroonHex: string, lndRestAddress: string): Promise<string | undefined> => {
     const info :any | undefined = await lndGetInfo(lndRestAddress, macaroonHex);
     return info ? info.uris[0] : undefined;
 };
