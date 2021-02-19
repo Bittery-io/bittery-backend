@@ -8,15 +8,11 @@ export class CreateLndDto {
     @MaxLength(32)
     lnAlias?: string;
 
-    @IsBoolean()
-    wumboChannels: boolean;
-
     @IsDefined()
     hostedLndType: HostedLndType;
 
-    constructor(wumboChannels: boolean, hostedLndType: HostedLndType, lnAlias?: string) {
+    constructor(hostedLndType: HostedLndType, lnAlias?: string) {
         this.lnAlias = lnAlias;
-        this.wumboChannels = wumboChannels;
         this.hostedLndType = hostedLndType;
     }
 }

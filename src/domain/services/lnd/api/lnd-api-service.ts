@@ -21,12 +21,12 @@ export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string, tl
         return new LndInfo(
             res.data.identity_pubkey,
             res.data.uris[0],
-            res.data.syncedToChain,
-            res.data.syncedToGraph,
-            res.data.numPeers,
-            res.data.numInactiveChannels,
-            res.data.numActiveChannels,
-            res.data.numPendingChannels,
+            res.data.synced_to_chain,
+            res.data.synced_to_graph,
+            res.data.num_peers,
+            res.data.num_inactive_channels,
+            res.data.num_active_channels,
+            res.data.num_pending_channels,
             res.data.version,
             res.data.alias,
         );
@@ -102,6 +102,10 @@ export const lndUnlockWallet = async (lndRestAddress: string, walletPassword: st
         return true;
     } catch (err) {
         logError(`Unlock for LND with address ${lndRestAddress} failed!`, err.message);
+        if (err.response && err.response.data && err.response.data.code === 2 &&
+                err.response.data.message === 'invalid passphrase for master public key') {
+            throw new LndLockedException();
+        }
         if (err.response && err.response.data && err.response.data.code === 2) {
             throw new LndWalletNotInitException();
         }

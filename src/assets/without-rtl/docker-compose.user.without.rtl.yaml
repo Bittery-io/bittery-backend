@@ -9,7 +9,6 @@ services:
     image: bitteryio/lnd:${LND_HOSTED_VERSION}
     container_name: lnd_bitcoin
     restart: unless-stopped
-    entrypoint: ${LND_ENTRYPOINT}
     volumes:
       - ./volumes/lnd:/root/.lnd
     networks:

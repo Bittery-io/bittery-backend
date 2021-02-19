@@ -48,3 +48,10 @@ export const updateLndSetMacaroonHex = async (lndId: string, macaroonHex: string
     await dbPool.query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
         [macaroonHex, lndId]);
 };
+
+export const findUserLndTls = async (userEmail: string): Promise<string | undefined> => {
+    const result = await dbPool.query(`SELECT TLS_CERT FROM LNDS WHERE USER_EMAIL = $1`,
+        [userEmail]);
+    const foundRow = result.rows[0];
+    return foundRow.tls_cert;
+};

@@ -1,7 +1,7 @@
 export enum LndStatusEnum {
     INIT_REQUIRED = 'INIT_REQUIRED',
     UNLOCK_REQUIRED = 'UNLOCK_REQUIRED',
-    WORKING = 'WORKING',
+    RUNNING = 'RUNNING',
     STOPPED = 'STOPPED',
     TURNED_OFF = 'TURNED_OFF',
 }

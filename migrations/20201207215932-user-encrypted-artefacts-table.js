@@ -46,6 +46,9 @@ exports.up = function(db) {
       },
     },
     admin_macaroon: { type: 'string', notNull: true },
+    ln_seed: { type: 'string', notNull: true },
+    ln_password: { type: 'string', notNull: true },
+    standard_wallet_seed: { type: 'string', notNull: true },
   });
 };
 

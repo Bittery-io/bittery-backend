@@ -42,6 +42,10 @@ export const logInfo = (message: string): void => {
     logger.info(message);
 };
 
+export const logWarn = (message: string): void => {
+    logger.warn(message);
+};
+
 export const logError = (message: string, ...others: any[]): void => {
     if (others) {
         for (const singleOther of others) {

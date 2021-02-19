@@ -18,7 +18,7 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
     let dropletCreationInfo: DropletCreationInfo;
     try {
         dropletCreationInfo = await createLndDroplet(dropletName, userEmail, createLndDto.hostedLndType,
-            createLndDto.wumboChannels, createLndDto.lnAlias);
+            false, createLndDto.lnAlias);
     } catch (err) {
         logError(`Failed to create Digital Ocean LND for user with email ${userEmail}. 
                           Failed on deployment stage: ${err.failedDeploymentStage}`);
@@ -29,7 +29,7 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
             err.failedDeploymentStage,
             err.dropletId,
             err.dropletName,
-            err.dropletIp,
+            err.dropletIpPublic,
             err.rtlOneTimeInitPassword,
         ));
         return undefined;
@@ -53,7 +53,7 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
             dropletCreationInfo.dropletName,
             dropletCreationInfo.dropletIpPublic,
             new Date().toISOString(),
-            createLndDto.wumboChannels,
+            false,
             createLndDto.lnAlias,
             undefined,
         );

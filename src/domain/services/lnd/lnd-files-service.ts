@@ -1,23 +1,17 @@
-import { getMacaroonBase64, getTlsBase64 } from '../../../application/lnd-connect-service';
+import { connectSshToNode } from './provisioning/lnd-droplet-digital-ocean-provision-service';
+import { getProperty } from '../../../application/property-service';
+import * as util from 'util';
+import * as fs from 'fs';
 
-// todo zaczytaj z bazy
-export const readMacaroonBase64 = async (userEmail: string): Promise<string> => {
-    // const userDomain: UserDomain | undefined = await findUserDomain(userEmail);
-    // if (userDomain) {
-    //     return await getMacaroonBase64(userDomain.userDomain);
-    // } else {
-    //     throw new Error(`Cannot get tls certificate for email ${userEmail} because has not domain!`);
-    // }
-    return '';
-};
+const readFile = util.promisify(fs.readFile);
+const removeFile = util.promisify(fs.unlink);
 
-// todo zaczytaj z bazy
-export const readTlsBase64 = async (email: string): Promise<string> => {
-    // const userDomain: UserDomain | undefined = await findUserDomain(email);
-    // if (userDomain) {
-    //     return await getTlsBase64(userDomain.userDomain);
-    // } else {
-    //     throw new Error(`Cannot get tls certificate for email ${email} because has not domain!`);
-    // }
-    return '';
+export const readAdminMacaroonBase64FromLnd = async (userEmail: string, dropletIp: string): Promise<string> => {
+    const ssh: any = await connectSshToNode(userEmail, dropletIp);
+    const admianMacaroonTmpName: string = `${userEmail}.${dropletIp}.admin.macaroon`;
+    const filePath: string = `${getProperty('LND_HOSTED_FILE_FOLDER_PATH')}/${admianMacaroonTmpName}`;
+    await ssh.getFile(filePath, '/lnd/data/chain/bitcoin/mainnet');
+    const base64AdminMacaroon: string = (await readFile(filePath)).toString('base64');
+    await removeFile(filePath);
+    return base64AdminMacaroon;
 };

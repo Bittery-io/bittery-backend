@@ -59,7 +59,7 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
 
     const rtlOneTimePassword: string = generateUuid();
     try {
-        await startLndInDroplet(ssh, dropletIpPublic, rtlOneTimePassword, wumboChannels, lnAlias);
+        await startLndInDroplet(ssh, dropletIpPublic, wumboChannels, rtlOneTimePassword, lnAlias);
         logInfo(`6/7 Successfully started LND for droplet with id ${dropletId} for user email ${userEmail}`);
     } catch (err) {
         throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.START_LND,
@@ -138,7 +138,7 @@ const getDropletPublicIp = async (userEmail: string, dropletId: number, dropletN
     }
 };
 
-const connectSshToNode = async (userEmail: string, dropletIpPublic: string, dropletId: number): Promise<any> => {
+export const connectSshToNode = async (userEmail: string, dropletIpPublic: string, dropletId?: number): Promise<any> => {
     const ssh = new NodeSSH();
     for (let i = 0; i < 20; i++) {
         try {
@@ -149,8 +149,12 @@ const connectSshToNode = async (userEmail: string, dropletIpPublic: string, drop
             });
             break;
         } catch (err) {
-            logInfo(`3.5/7 Connecting SSH to droplet with id ${dropletId} for user email ${userEmail} not yet succeed. Sleeping for a while`);
-            await sleep(5000);
+            if (dropletId) {
+                logInfo(`3.5/7 Connecting SSH to droplet with id ${dropletId} for user email ${userEmail} not yet succeed. Sleeping for a while`);
+                await sleep(5000);
+            } else {
+                logInfo(`Connecting SSH to user email ${userEmail} droplet with IP ${dropletIpPublic}.`);
+            }
         }
     }
     return ssh;
@@ -171,10 +175,12 @@ const downloadTlsCertFromLndOnDropletAndGetTlsCertName = async (ssh: any, drople
     return tlsCertName;
 };
 
-const startLndInDroplet = async (ssh: any, dropletPublicIp: string, rtlOneTimePassword: string,
-                                 wumboChannels: boolean, lnAlias?: string): Promise<string> => {
+export const startLndInDroplet = async (ssh: any, dropletPublicIp: string, wumboChannels: boolean,
+                                 rtlOneTimePassword?: string, lnAlias?: string): Promise<void> => {
     const wumboChannelsString: string = wumboChannels ? 'true' : 'false';
     const lnAliasString: string = lnAlias ? lnAlias : 'NO_LN_ALIAS';
-    await ssh.execCommand(`sh /root/start.sh ${getProperty('BITCOIND_RPC_HOST')} ${getProperty('BITCOIND_RPC_USER')} ${getProperty('BITCOIND_RPC_PASSWORD')} ${getProperty('LND_HOSTED_VERSION')} ${getProperty('RTL_HOSTED_VERSION')} ${dropletPublicIp} \"${lnAliasString}\" ${wumboChannelsString} ${rtlOneTimePassword}`);
-    return rtlOneTimePassword;
+    const a: string = `sh /root/start.sh ${getProperty('BITCOIND_RPC_HOST')} ${getProperty('BITCOIND_RPC_USER')} ${getProperty('BITCOIND_RPC_PASSWORD')} ${getProperty('LND_HOSTED_VERSION')} ${getProperty('RTL_HOSTED_VERSION')} ${dropletPublicIp} \"${lnAliasString}\" ${wumboChannelsString} ${rtlOneTimePassword}`;
+    logInfo(`Start command: ${a}`);
+    const res = await ssh.execCommand(`sh /root/start.sh ${getProperty('BITCOIND_RPC_HOST')} ${getProperty('BITCOIND_RPC_USER')} ${getProperty('BITCOIND_RPC_PASSWORD')} ${getProperty('LND_HOSTED_VERSION')} ${getProperty('RTL_HOSTED_VERSION')} ${dropletPublicIp} \"${lnAliasString}\" ${wumboChannelsString} ${rtlOneTimePassword}`);
+    console.log('exec res: ', res);
 };

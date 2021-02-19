@@ -7,12 +7,12 @@ export class LndInfo {
     numInactiveChannels: number;
     numActiveChannels: number;
     numPendingChannels: number;
-    version: number;
+    version: string;
     alias?: string;
 
     constructor(publicKey: string, uri: string, syncedToChain: boolean, syncedToGraph: boolean, numPeers: number,
                 numInactiveChannels: number, numActiveChannels: number, numPendingChannels: number,
-                version: number, alias?: string) {
+                version: string, alias?: string) {
         this.publicKey = publicKey;
         this.uri = uri;
         this.syncedToChain = syncedToChain;

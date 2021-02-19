@@ -12,7 +12,6 @@ export RTL_INIT_PASSWORD="$9"
 
 ###############################
 # create lnd.conf
-PWD=$(dirname "$0")
 export BITCOIND_RPC_HOST=bittery.io
 echo '[Bitcoin]' > lnd.conf
 echo 'bitcoin.active=1' >> lnd.conf
@@ -25,6 +24,8 @@ echo 'bitcoind.rpchost='${BITCOIND_RPC_HOST}':43783' >> lnd.conf
 echo 'bitcoind.zmqpubrawblock=tcp://'${BITCOIND_RPC_HOST}':28334' >> lnd.conf
 echo 'bitcoind.zmqpubrawtx=tcp://'${BITCOIND_RPC_HOST}':28335' >> lnd.conf
 echo '[Application Options]' >> lnd.conf
+echo 'listen=0.0.0.0:9735' >> lnd.conf
+echo 'externalip=0.0.0.0:9735' >> lnd.conf
 echo 'rpclisten=0.0.0.0:10009' >> lnd.conf
 echo 'tlsextraip='${LND_IP} >> lnd.conf
 echo 'restlisten=0.0.0.0:8080' >> lnd.conf
@@ -48,7 +49,7 @@ if [ -f "$PWD/RTL-Config.json" ]; then
   $PWD/RTL-Config.json | sed -e $'s/\\\\n/\\\n        /g')" > $PWD/RTL-Config.json
   mv $PWD/RTL-Config.json $PWD/volumes/rtl/config/RTL-Config.json
 fi
-
+sleep 10
 chmod u+rwx /root/docker-compose.user.with.rtl.yaml
 docker-compose -f /root/docker-compose.user.with.rtl.yaml down
 docker-compose -f /root/docker-compose.user.with.rtl.yaml up -d
