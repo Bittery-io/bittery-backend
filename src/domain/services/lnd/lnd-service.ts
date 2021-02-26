@@ -3,7 +3,7 @@ import { lndBakeMacaroonForBtcPay, lndGenSeed, lndInitWallet, lndUnlockWallet } 
 import { logError, logInfo } from '../../../application/logging-service';
 import { LndInitWalletDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-dto';
 import { LndInitWalletResponseDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-response-dto';
-import { inserUserEncryptedArtefacts } from '../../repository/user-encrypted-artefacts-repository';
+import { insertUserEncryptedArtefacts } from '../../repository/user-encrypted-artefacts-repository';
 import { UserEncryptedArtefacts } from '../../model/user/user-encrypted-artefacts';
 import { sleep } from '../utils/sleep-service';
 import { Lnd } from '../../model/lnd/lnd';
@@ -32,7 +32,8 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
             const dropletIp: string = await findDropletIp(lndId, userEmail);
             adminMacaroon = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
         }
-        await inserUserEncryptedArtefacts(new UserEncryptedArtefacts(userEmail, lndId, adminMacaroon));
+        await insertUserEncryptedArtefacts(new UserEncryptedArtefacts(userEmail, lndId, adminMacaroon, lndInitWalletDto.passwordEncrypted,
+            lndInitWalletDto.seedMnemonicEncrypted));
         await sleep(5000);
         const bitteryBakedMacaroonHex: string | undefined =
             await lndBakeMacaroonForBtcPay(lndRestAddress, Buffer.from(adminMacaroon, 'base64').toString('hex'));

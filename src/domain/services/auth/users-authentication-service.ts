@@ -1,9 +1,9 @@
 import { storeJWTOauthInDatabase } from '../../repository/authentication-repository';
 import { getProperty } from '../../../application/property-service';
-import { generateToken } from '../jwt/session-token-service';
+import { generateJwtToken } from '../jwt/session-token-service';
 
-export const generateAndSaveNewJwtForUser = (userId: string): string => {
-    const accessToken: string = generateToken(userId, getProperty('OAUTH2_TOKEN_CLIENT_SECRET'));
+export const generateAndSaveNewJwtForUser = (userId: string, sha256PasswordProof?: string): string => {
+    const accessToken: string = generateJwtToken(userId, getProperty('OAUTH2_TOKEN_CLIENT_SECRET'), sha256PasswordProof);
     storeJWTOauthInDatabase(userId, accessToken);
     return accessToken;
 };

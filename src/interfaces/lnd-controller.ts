@@ -13,7 +13,7 @@ import {
 import { readAdminMacaroonBase64FromLnd } from '../domain/services/lnd/lnd-files-service';
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
-import { logError } from '../application/logging-service';
+import { logError, logInfo } from '../application/logging-service';
 import { Authorized, Body, Controller, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
 import { Param } from 'routing-controllers';
@@ -23,6 +23,8 @@ import { LndInitWalletResponseDto } from './dto/lnd/lnd-init-wallet-response-dto
 import { UnlockLndDto } from './dto/lnd/unlock-lnd-dto';
 import { restartLnd } from '../domain/services/lnd/restart-lnd-service';
 import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
+import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
+import { updateAdminMacaroonArtefact } from '../domain/repository/user-encrypted-artefacts-repository';
 
 @JsonController('/lnd')
 @Authorized()
@@ -91,6 +93,18 @@ export class LndController {
         } else {
             return res.status(400).send();
         }
+    }
+
+    @Post('/:lndId/adminmacaroon')
+    async saveEncryptedMacaroonApi(
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Param('lndId') lndId: string,
+            @Body({ required: true }) saveEncryptedAdminMacaroonDto: SaveEncryptedAdminMacaroonDto,
+            @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        await updateAdminMacaroonArtefact(userEmail, lndId, saveEncryptedAdminMacaroonDto.adminMacaroon);
+        logInfo(`Successfully updated admin macaroon for user ${userEmail} and lnd id ${lndId}`);
+        return res.sendStatus(200);
     }
 
     @Post('/:lndId/initwallet')

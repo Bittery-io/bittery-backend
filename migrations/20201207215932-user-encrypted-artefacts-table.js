@@ -45,10 +45,10 @@ exports.up = function(db) {
         mapping: 'lnd_id'
       },
     },
-    admin_macaroon: { type: 'string', notNull: true },
-    ln_seed: { type: 'string', notNull: true },
-    ln_password: { type: 'string', notNull: true },
-    standard_wallet_seed: { type: 'string', notNull: true },
+    admin_macaroon: { type: 'string', notNull: false },
+    ln_seed: { type: 'string', notNull: false },
+    ln_password: { type: 'string',  notNull: false },
+    standard_wallet_seed: { type: 'string', notNull: false },
   });
 };
 

@@ -13,8 +13,16 @@ export class LndInitWalletDto {
     @ArrayMaxSize(24)
     seedMnemonic: string[];
 
-    constructor(password: string, seedMnemonic: string[]) {
+    @IsDefined()
+    passwordEncrypted: string;
+
+    @IsDefined()
+    seedMnemonicEncrypted: string;
+
+    constructor(password: string, seedMnemonic: string[], passwordEncrypted: string, seedMnemonicEncrypted: string) {
         this.password = password;
         this.seedMnemonic = seedMnemonic;
+        this.passwordEncrypted = passwordEncrypted;
+        this.seedMnemonicEncrypted = seedMnemonicEncrypted;
     }
 }

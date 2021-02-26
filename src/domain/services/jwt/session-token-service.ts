@@ -2,10 +2,11 @@ import jwt from 'jsonwebtoken';
 import { getProperty } from '../../../application/property-service';
 import { logError } from '../../../application/logging-service';
 
-export const generateToken = (id: string, secret: string): string => {
+export const generateJwtToken = (userId: string, secret: string, sha256PasswordProof?: string): string => {
     return jwt.sign(
         {
-            userId: id,
+            userId,
+            passwordProof: sha256PasswordProof ?? '',
         },
         secret,
         {

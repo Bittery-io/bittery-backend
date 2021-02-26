@@ -5,12 +5,17 @@ import { UserLoginErrorType } from './user-login-error-type';
 import { LoginUserDto } from '../../../interfaces/dto/login-user-dto';
 import { UserLoginException } from './user-login-exception';
 import { generateAndSaveNewJwtForUser } from '../auth/users-authentication-service';
+import { findUserPasswordProof } from '../../repository/user-password-proofs-repository';
+import { UserPasswordProof } from '../../model/artefacts/user-password-proof';
 
 export const loginUser = async (loginUserDto: LoginUserDto): Promise<string> => {
     const user: User = await getUser(loginUserDto.email);
     if (user.active) {
         await validateUserPassword(user.encodedPassword, loginUserDto.password);
-        return generateAndSaveNewJwtForUser(user.email);
+        const userPasswordProof: UserPasswordProof | undefined = await findUserPasswordProof(loginUserDto.email);
+        return generateAndSaveNewJwtForUser(
+            user.email,
+            userPasswordProof ? userPasswordProof.sha256PasswordProof : undefined);
     } else {
         throw new UserLoginException(`Login failed. User ${loginUserDto.email} registered but is not active!`,
             UserLoginErrorType.USER_NOT_ACTIVE);
