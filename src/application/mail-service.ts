@@ -14,7 +14,6 @@ export const sendRegistrationEmail = async (toEmail: string, signUpKey: string):
     <h2>Welcome to Bittery.io - better Bitcoin payments</h2>
     <br>
     <p>Thank you for joining Bittery.</a></p>
-    <p>Let's change payments together.</a></p><br>
     <p>Your username is: <b>${toEmail}</b></p>
     <p>In order to finish registration process and activate your account, please confirm your registration: </p>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">

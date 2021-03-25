@@ -6,7 +6,8 @@ networks:
 services:
 
   lnd_bitcoin:
-    image: bitteryio/lnd:${LND_HOSTED_VERSION}
+#    image: bitteryio/lnd:${LND_HOSTED_VERSION}
+    image: lightninglabs/lnd:v0.12.1-beta
     container_name: lnd_bitcoin
     restart: unless-stopped
     volumes:

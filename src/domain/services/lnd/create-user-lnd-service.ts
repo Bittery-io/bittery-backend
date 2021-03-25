@@ -30,6 +30,16 @@ import {
     lndSetupBacklogExists,
 } from '../../repository/lnd/setup-backlog/lnd-setup-backlog-repository';
 import { LndSetupBacklog } from '../../model/lnd/setup-backlog/lnd-setup-backlog';
+import { insertBilling } from '../../repository/billings-repository';
+import { Billing } from '../../model/billings/billing';
+import { Product } from '../../model/billings/product';
+import { saveBitteryInvoice } from '../payments/bittery-invoice-service';
+import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
+import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
+import { addDays } from '../utils/date-service';
+import { BillingStatus } from '../../model/billings/billing-status';
+import { ln } from 'shelljs';
+import { formatLndUri, getLndUri } from '../../../application/lnd-connect-service';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -40,6 +50,14 @@ export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): 
             if (digitalOceanLndHosting) {
                 await runInTransaction(async (client: PoolClient) => {
                     await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                    await insertBilling(client, new Billing(
+                        generateUuid(),
+                        userEmail,
+                        Product.LND,
+                        'PAID_BY_BITTERY',
+                        new Date().toISOString(),
+                        new Date(addDays(new Date().getTime(), 3)).toISOString(),
+                        BillingStatus.PAID));
                     if (createLndDto.hostedLndType === HostedLndType.STANDARD) {
                         await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
                         await insertUserRtl(client, digitalOceanLndHosting.rtl!);
@@ -90,16 +108,18 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
     const lnd: Lnd | undefined = await findUserLnd(userEmail);
     if (lnd) {
         const rtl: Rtl | undefined = lnd.lndType === LndType.HOSTED ? (await findRtl(lnd.lndId)) : undefined;
-        let rtlAddress: string | undefined = rtl ? `https://${lnd.lndAddress}/rtl` : undefined;
+        let rtlAddress: string | undefined = rtl ? `https://${lnd.lndIpAddress}/rtl` : undefined;
         let rtlOneTimeInitPassword: string | undefined = rtl ? rtl.rtlOneTimeInitPassword : undefined;
         const hostedLndType: HostedLndType | undefined = rtl ? HostedLndType.STANDARD : HostedLndType.ENCRYPTED;
         let lndConnectUri: string | undefined = undefined;
         let lndInfo: LndInfo | undefined = undefined;
         let lndStatus: LndStatusEnum = LndStatusEnum.TURNED_OFF;
+        let lndUri: string | undefined = undefined;
         if (lnd.macaroonHex) {
             lndInfo = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex);
             // if response is not undefined and macaroon is set it means it's off
             if (lndInfo) {
+                lndUri = formatLndUri(lndInfo.publicKey, lnd.lndIpAddress);
                 lndStatus = LndStatusEnum.RUNNING;
             } else {
                 try {
@@ -111,7 +131,7 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
                     }
                 }
             }
-            lndConnectUri = await getLndConnectUri(lnd.lndAddress, lnd.tlsCert, lnd.macaroonHex);
+            lndConnectUri = await getLndConnectUri(lnd.lndIpAddress, lnd.tlsCert, lnd.macaroonHex);
         } else {
             rtlAddress = undefined;
             rtlOneTimeInitPassword = undefined;
@@ -131,6 +151,7 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
             lnd.lndRestAddress,
             lndStatus,
             lnd.lndType,
+            lndUri,
             hostedLndType,
             lndConnectUri,
             rtlAddress,

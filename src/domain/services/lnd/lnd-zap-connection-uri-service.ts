@@ -1,9 +1,9 @@
 const lndconnect = require('lndconnect');
 
 export const getLndConnectUri = async (lndAddress: string, tlsCert: string, macaroonHex: string): Promise<string> => {
-    const grpsAddress: string = `${lndAddress}:10009`;
+    const grpcAddress: string = `${lndAddress}:10009`;
     return lndconnect.encode({
-        host: grpsAddress,
+        host: grpcAddress,
         cert: tlsCert,
         macaroon: macaroonHex,
     });

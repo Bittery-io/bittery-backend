@@ -24,7 +24,11 @@ import { UnlockLndDto } from './dto/lnd/unlock-lnd-dto';
 import { restartLnd } from '../domain/services/lnd/restart-lnd-service';
 import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
 import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
-import { updateAdminMacaroonArtefact } from '../domain/repository/user-encrypted-artefacts-repository';
+import {
+    findAdminMacaroonArtefact, findLnPasswordArtefact,
+    updateAdminMacaroonArtefact,
+} from '../domain/repository/user-encrypted-artefacts-repository';
+import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
 
 @JsonController('/lnd')
 @Authorized()
@@ -183,13 +187,14 @@ export class LndController {
         }
     }
 
-    @Get('/files/tls')
+    @Get('/:lndId/files/tls')
     async getTlsCertificateFileApi(
+            @Param('lndId') lndId: string,
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const tlsCert: string | undefined = await findUserLndTls(userEmail);
+            const tlsCert: string | undefined = await findUserLndTls(userEmail, lndId);
             if (tlsCert) {
                 const tlsCertificateFile: Buffer = Buffer.from(tlsCert, 'utf-8');
                 res.contentType('text/plain');
@@ -203,20 +208,46 @@ export class LndController {
         }
     }
 
-    @Get('/files/macaroon')
+    @Get('/:lndId/files/macaroon')
     async getAdminMacaroonFileApi(
+            @Param('lndId') lndId: string,
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            // const macaroonBase64: string = await readAdminMacaroonBase64FromLnd(userEmail);
-            // return res.status(200).send({
-            //     fileBase64: macaroonBase64,
-            // });
-            return res.status(200).send();
+            const encryptedAdminMacaroon: string | undefined = await findAdminMacaroonArtefact(userEmail, lndId);
+            if (encryptedAdminMacaroon) {
+                logInfo(`Successfully returned encrypted admin macaroon for email ${userEmail} and lnd id ${lndId}`);
+                return res.status(200).send(new EncryptedArtefactDto(encryptedAdminMacaroon));
+            } else {
+                logInfo(`Failed to return encrypted admin macaroon for email ${userEmail} and lnd id ${lndId} because LND not found`);
+                return res.sendStatus(400);
+            }
         } catch (err) {
-            logError(`Getting lnd admin.cert file for user ${userEmail} failed with error: `, err);
+            logError(`Returning encrypted admin macaroon for email ${userEmail} and lnd id ${lndId} failed with err:`, err);
             return res.sendStatus(400);
         }
     }
+
+    @Get('/:lndId/password')
+    async getLnNodeEncryptedPassword(
+            @Param('lndId') lndId: string,
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        try {
+            const encryptedAdminMacaroon: string | undefined = await findLnPasswordArtefact(userEmail, lndId);
+            if (encryptedAdminMacaroon) {
+                logInfo(`Successfully returned encrypted LN node password for email ${userEmail} and lnd id ${lndId}`);
+                return res.status(200).send(new EncryptedArtefactDto(encryptedAdminMacaroon));
+            } else {
+                logInfo(`Failed to return encrypted LN node password for email ${userEmail} and lnd id ${lndId} because LND not found`);
+                return res.sendStatus(400);
+            }
+        } catch (err) {
+            logError(`Returning encrypted LN node password for email ${userEmail} and lnd id ${lndId} failed with err:`, err);
+            return res.sendStatus(400);
+        }
+    }
+
 }

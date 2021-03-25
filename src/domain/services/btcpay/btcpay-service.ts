@@ -13,13 +13,15 @@ import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../application/logging-service';
 import { findUserLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
+import { updateStandardWalletSeedArtefact } from '../../repository/user-encrypted-artefacts-repository';
+import { ln } from 'shelljs';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
         const lnd: Lnd | undefined = await findUserLnd(userEmail);
         if (!lnd) {
             // todo obsluga bledu lepsza
-            throw new Error('user has not lnd yet');
+            throw new Error('User has not lnd yet');
         }
         if (!createUserBtcpayDto.bip49RootPublicKey && !createUserBtcpayDto.electrumMasterPublicKey) {
             throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because no master public key provided`,
@@ -34,6 +36,9 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
             userEmail, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), lnd);
         await runInTransaction(async (client: PoolClient) => {
+            if (createUserBtcpayDto.encryptedStandardWalletSeed) {
+                await updateStandardWalletSeedArtefact(userEmail, lnd.lndId, createUserBtcpayDto.encryptedStandardWalletSeed);
+            }
             await insertUserBtcpayDetails(client, userBtcpayDetails);
             await insertUserBitcoinWallet(client, new UserBitcoinWallet(
                 userEmail,

@@ -32,8 +32,8 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
             const dropletIp: string = await findDropletIp(lndId, userEmail);
             adminMacaroon = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
         }
-        await insertUserEncryptedArtefacts(new UserEncryptedArtefacts(userEmail, lndId, adminMacaroon, lndInitWalletDto.passwordEncrypted,
-            lndInitWalletDto.seedMnemonicEncrypted));
+        await insertUserEncryptedArtefacts(new UserEncryptedArtefacts(userEmail, lndId, adminMacaroon,
+            lndInitWalletDto.seedMnemonicEncrypted, lndInitWalletDto.passwordEncrypted));
         await sleep(5000);
         const bitteryBakedMacaroonHex: string | undefined =
             await lndBakeMacaroonForBtcPay(lndRestAddress, Buffer.from(adminMacaroon, 'base64').toString('hex'));

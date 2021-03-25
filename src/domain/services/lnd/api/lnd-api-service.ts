@@ -5,6 +5,7 @@ import { LndWalletNotInitException } from '../../../model/lnd/api/lnd-wallet-not
 import { LndInitWalletDto } from '../../../../interfaces/dto/lnd/lnd-init-wallet-dto';
 import { LndLockedException } from '../../../model/lnd/api/lnd-locked-exception';
 import { LndInfo } from '../../../model/lnd/api/lnd-info';
+import { Lnd } from '../../../model/lnd/lnd';
 
 export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string, tlsCert?: string): Promise<LndInfo | undefined> => {
     try {
@@ -20,7 +21,6 @@ export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string, tl
         });
         return new LndInfo(
             res.data.identity_pubkey,
-            res.data.uris[0],
             res.data.synced_to_chain,
             res.data.synced_to_graph,
             res.data.num_peers,

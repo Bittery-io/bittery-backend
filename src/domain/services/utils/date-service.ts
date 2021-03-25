@@ -16,6 +16,10 @@ export const minusDays = (date: number, days: number): number => {
     return dayjs(date).subtract(days, 'day').valueOf();
 };
 
+export const addDays = (date: number, days: number): number => {
+    return dayjs(date).add(days, 'day').valueOf();
+};
+
 export const minusDaysGetDay = (date: number, minusDays: number): number => {
     return dayjs(date).subtract(minusDays, 'day').date();
 };
@@ -41,4 +45,12 @@ export const minutesToDays = (minutes: number): number => {
 
 export const nowepoch = () => {
     return dayjs().toDate().getTime();
+};
+
+export const isFirstDateAfterSecond = (firstDate: number, secondDate: number) => {
+    return firstDate > secondDate;
+};
+
+export const addMonthsToDate = (date: number, months: number): number => {
+    return dayjs(date).add(months, 'month').valueOf();
 };

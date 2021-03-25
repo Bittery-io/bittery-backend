@@ -9,6 +9,7 @@ import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-excep
 import { getBooleanProperty } from '../application/property-service';
 import { logError } from '../application/logging-service';
 import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers/index';
+import { Invoice } from 'btcpay';
 
 @JsonController('/payments')
 @Authorized()
@@ -43,7 +44,7 @@ export class PaymentsController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const invoices: object[] = await getInvoices(userEmail, 50);
+            const invoices: Invoice[] = await getInvoices(userEmail, 50);
             return res.status(200).send(invoices);
         } catch (err) {
             if (err instanceof UserBtcpayException) {

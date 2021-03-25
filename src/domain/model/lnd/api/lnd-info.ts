@@ -1,6 +1,5 @@
 export class LndInfo {
     publicKey: string;
-    uri: string;
     syncedToChain: boolean;
     syncedToGraph: boolean;
     numPeers: number;
@@ -10,11 +9,10 @@ export class LndInfo {
     version: string;
     alias?: string;
 
-    constructor(publicKey: string, uri: string, syncedToChain: boolean, syncedToGraph: boolean, numPeers: number,
+    constructor(publicKey: string, syncedToChain: boolean, syncedToGraph: boolean, numPeers: number,
                 numInactiveChannels: number, numActiveChannels: number, numPendingChannels: number,
                 version: string, alias?: string) {
         this.publicKey = publicKey;
-        this.uri = uri;
         this.syncedToChain = syncedToChain;
         this.syncedToGraph = syncedToGraph;
         this.numPeers = numPeers;
