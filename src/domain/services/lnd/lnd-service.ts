@@ -3,12 +3,12 @@ import { lndBakeMacaroonForBtcPay, lndGenSeed, lndInitWallet, lndUnlockWallet } 
 import { logError, logInfo } from '../../../application/logging-service';
 import { LndInitWalletDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-dto';
 import { LndInitWalletResponseDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-response-dto';
-import { insertUserEncryptedArtefacts } from '../../repository/user-encrypted-artefacts-repository';
-import { UserEncryptedArtefacts } from '../../model/user/user-encrypted-artefacts';
+import { insertUserEncryptedLnArtefacts } from '../../repository/user-encrypted-ln-artefacts-repository';
+import { UserEncryptedLnArtefacts } from '../../model/user/user-encrypted-ln-artefacts';
 import { sleep } from '../utils/sleep-service';
-import { Lnd } from '../../model/lnd/lnd';
 import { findDropletIp } from '../../repository/lnd/digital-ocean-lnds-repository';
 import { readAdminMacaroonBase64FromLnd } from './lnd-files-service';
+import { runInTransaction } from '../../../application/db/db-transaction';
 
 export const generateLndSeed = async (userEmail: string, lndId: string): Promise<string[] | undefined> => {
     const lndRestAddress: string | undefined = await findLndRestAddress(lndId, userEmail);
@@ -32,15 +32,17 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
             const dropletIp: string = await findDropletIp(lndId, userEmail);
             adminMacaroon = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
         }
-        await insertUserEncryptedArtefacts(new UserEncryptedArtefacts(userEmail, lndId, adminMacaroon,
-            lndInitWalletDto.seedMnemonicEncrypted, lndInitWalletDto.passwordEncrypted));
         await sleep(5000);
         const bitteryBakedMacaroonHex: string | undefined =
             await lndBakeMacaroonForBtcPay(lndRestAddress, Buffer.from(adminMacaroon, 'base64').toString('hex'));
-        if (bitteryBakedMacaroonHex) {
-            await updateLndSetMacaroonHex(lndId, bitteryBakedMacaroonHex);
-            logInfo(`Updated Bittery permissions baked macaroon hex for LND with id ${lndId} for user ${userEmail}`);
-        }
+        await runInTransaction(async (client) => {
+            await insertUserEncryptedLnArtefacts(client, new UserEncryptedLnArtefacts(userEmail, lndId, adminMacaroon,
+                lndInitWalletDto.seedMnemonicEncrypted, lndInitWalletDto.passwordEncrypted));
+            if (bitteryBakedMacaroonHex) {
+                await updateLndSetMacaroonHex(client, lndId, bitteryBakedMacaroonHex);
+                logInfo(`Updated Bittery permissions baked macaroon hex for LND with id ${lndId} for user ${userEmail}`);
+            }
+        });
         return new LndInitWalletResponseDto(adminMacaroon);
     } else {
         logError(`Cannot generate seed for user ${userEmail} and lnd id ${lndId}

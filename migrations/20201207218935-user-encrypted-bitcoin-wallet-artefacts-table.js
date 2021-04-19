@@ -15,13 +15,14 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('user_bitcoin_wallets', {
+  return db.createTable('user_encrypted_bitcoin_wallet_artefacts', {
     user_email: {
       type: 'string',
+      primaryKey: true,
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'user_bitcoin_wallets_user_email_fk',
+        name: 'user_encrypted_artefacts_user_email_fk',
         table: 'users',
         rules: {
           onDelete: 'RESTRICT',
@@ -29,31 +30,29 @@ exports.up = function(db) {
         },
         mapping: 'email'
       },
-      primaryKey: true,
     },
     store_id: {
       type: 'string',
       length: 500,
+      primaryKey: true,
+      unique: true,
       notNull: true,
       foreignKey: {
-        name: 'user_bitcoin_wallets_store_id_fk',
+        name: 'user_btcpay_details_store_id_fk',
         table: 'user_btcpay_details',
         rules: {
-          onDelete: 'RESTRICT',
-          onUpdate: 'RESTRICT'
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE'
         },
         mapping: 'store_id'
       },
-      primaryKey: true,
     },
-    root_public_key: { type: 'string', length: 500, notNull: true },
-    type: {type: 'string', length: 20, notNull: true},
-    creation_date: { type: 'timestamp', timezone: true, notNull: true },
+    standard_wallet_seed: { type: 'string', notNull: false },
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('user_bitcoin_wallets');
+  return db.dropTable('user_encrypted_bitcoin_wallet_artefacts');
 };
 
 exports._meta = {

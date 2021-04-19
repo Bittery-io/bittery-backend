@@ -13,8 +13,9 @@ import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../application/logging-service';
 import { findUserLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
-import { updateStandardWalletSeedArtefact } from '../../repository/user-encrypted-artefacts-repository';
-import { ln } from 'shelljs';
+import {
+    insertStandardWalletSeedArtefact,
+} from '../../repository/user-encrypted-bitcoin-wallet-artefacts-repository';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -36,9 +37,6 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
             userEmail, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), lnd);
         await runInTransaction(async (client: PoolClient) => {
-            if (createUserBtcpayDto.encryptedStandardWalletSeed) {
-                await updateStandardWalletSeedArtefact(userEmail, lnd.lndId, createUserBtcpayDto.encryptedStandardWalletSeed);
-            }
             await insertUserBtcpayDetails(client, userBtcpayDetails);
             await insertUserBitcoinWallet(client, new UserBitcoinWallet(
                 userEmail,
@@ -47,6 +45,13 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
                 userBitcoinWalletTypeEnum,
                 new Date().toDateString(),
             ));
+            if (createUserBtcpayDto.encryptedStandardWalletSeed) {
+                await insertStandardWalletSeedArtefact(
+                    client,
+                    userEmail,
+                    userBtcpayDetails.storeId,
+                    createUserBtcpayDto.encryptedStandardWalletSeed);
+            }
         });
         logInfo(`Successfully created user btcpay services for user with email ${userEmail}`);
     } else {

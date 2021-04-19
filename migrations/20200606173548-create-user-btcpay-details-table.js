@@ -10,7 +10,7 @@ var seed;
   */
 exports.up = function(db) {
   return db.createTable('user_btcpay_details', {
-    store_id: {type: 'string', length: 200, primaryKey: true},
+    store_id: {type: 'string', length: 200, primaryKey: true, unique: true },
     btcpay_user_merchant_token: {type: 'string', length: 1000, notNull: true},
     btcpay_user_private_key: {type: 'string', length: 1000, notNull: true},
     user_email: {

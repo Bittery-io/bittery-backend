@@ -13,6 +13,24 @@ export const insertLnd = async (client: PoolClient, lnd: Lnd): Promise<void> => 
             lnd.tlsCertThumbprint, lnd.lndVersion, lnd.lndType, lnd.creationDate]);
 };
 
+export const findAllLnds = async (): Promise<Lnd[]> => {
+    const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_IP_ADDRESS, LND_REST_ADDRESS, MACAROON_HEX,
+                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE FROM LNDS`, []);
+    return result.rows.map(row => new Lnd(
+        row.lnd_id,
+        row.user_email,
+        row.lnd_ip_address,
+        row.lnd_rest_address,
+        row.tls_cert,
+        row.tls_cert_thumbprint,
+        row.lnd_version,
+        row.lnd_type,
+        row.creation_date,
+        row.macaroon_hex,
+    ));
+
+};
+
 export const userHasLnd = async (userEmail: string): Promise<boolean> => {
     const result = await dbPool.query(`SELECT EXISTS(SELECT 1 FROM LNDS WHERE USER_EMAIL = $1)`, [userEmail]);
     return result.rows[0].exists;
@@ -46,8 +64,8 @@ export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> =
     ) : undefined;
 };
 
-export const updateLndSetMacaroonHex = async (lndId: string, macaroonHex: string): Promise<void> => {
-    await dbPool.query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
+export const updateLndSetMacaroonHex = async (client: PoolClient, lndId: string, macaroonHex: string): Promise<void> => {
+    await client.query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
         [macaroonHex, lndId]);
 };
 

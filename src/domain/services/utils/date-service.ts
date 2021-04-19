@@ -20,6 +20,14 @@ export const addDays = (date: number, days: number): number => {
     return dayjs(date).add(days, 'day').valueOf();
 };
 
+export const addHoursGetDate = (date: number, hours: number): number => {
+    return dayjs(date).add(hours, 'hour').valueOf();
+};
+
+export const getDifferenceInMilliseconds = (date1: number, date2: number): number => {
+    return dayjs(date1).diff(dayjs(date2));
+};
+
 export const minusDaysGetDay = (date: number, minusDays: number): number => {
     return dayjs(date).subtract(minusDays, 'day').date();
 };

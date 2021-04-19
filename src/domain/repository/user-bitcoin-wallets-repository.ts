@@ -21,7 +21,7 @@ export const findUserBitcoinWallets = async (userEmail: string): Promise<UserBit
             row.user_email,
             row.store_id,
             row.root_public_key,
-            row.bip,
+            row.type,
             row.creation_date,
         );
     });

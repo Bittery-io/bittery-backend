@@ -10,11 +10,10 @@ import {
     getCustomUserLnd,
     getUserLnd,
 } from '../domain/services/lnd/create-user-lnd-service';
-import { readAdminMacaroonBase64FromLnd } from '../domain/services/lnd/lnd-files-service';
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Controller, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
 import { Param } from 'routing-controllers';
 import { generateLndSeed, initLndWallet, unlockLnd } from '../domain/services/lnd/lnd-service';
@@ -25,10 +24,16 @@ import { restartLnd } from '../domain/services/lnd/restart-lnd-service';
 import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
 import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
 import {
-    findAdminMacaroonArtefact, findLnPasswordArtefact,
+    findAdminMacaroonArtefact,
+    findLnPasswordArtefact,
     updateAdminMacaroonArtefact,
-} from '../domain/repository/user-encrypted-artefacts-repository';
+} from '../domain/repository/user-encrypted-ln-artefacts-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
+import { getLndStaticChannelBackupClientReadViews } from '../domain/repository/lnd/static-channel-backup/lnd-static-channek-backup-repository';
+import { LndStaticChannelBackupClientReadView } from '../domain/model/lnd/static-channel-backup/lnd-static-channel-backup-client-read-view';
+import { StaticChannelBackupDto } from './dto/lnd/static-channel-backup/static-channel-backup-dto';
+import { SingleStaticChannelBackupDto } from './dto/lnd/static-channel-backup/single-static-channel-backup-dto';
+import { getMillisecondsToNextStaticChannekBackup } from '../domain/services/lnd/static-channel-backup/static-channel-backup-scheduler-service';
 
 @JsonController('/lnd')
 @Authorized()
@@ -250,4 +255,31 @@ export class LndController {
         }
     }
 
+    @Get('/:lndId/backup')
+    async getLndStaticChannelBackups(
+            @Param('lndId') lndId: string,
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        try {
+            const lndStaticChannelBackupClientReadViews: LndStaticChannelBackupClientReadView[]
+                = await getLndStaticChannelBackupClientReadViews(userEmail, lndId, 5);
+            logInfo(`Successfully returned ${lndStaticChannelBackupClientReadViews.length } static channel backups for ${userEmail} and lnd id ${lndId}`);
+            const scbs: SingleStaticChannelBackupDto[] = lndStaticChannelBackupClientReadViews
+                .map(_ => new SingleStaticChannelBackupDto(
+                    _.id,
+                    _.creationDate,
+                    _.type,
+                    _.status,
+                ));
+            const millisecondsToNextBackup: number = getMillisecondsToNextStaticChannekBackup();
+            return res.status(200).send(new StaticChannelBackupDto(
+                scbs,
+                millisecondsToNextBackup,
+            ));
+        } catch (err) {
+            logError(`Returning static channel backups for email ${userEmail} and lnd id ${lndId} failed with err:`, err);
+            return res.sendStatus(400);
+        }
+    }
 }

@@ -127,7 +127,7 @@ const getDropletPublicIp = async (userEmail: string, dropletId: number, dropletN
         } else {
             logInfo(`2.5/7 Requested public IP for droplet with id ${dropletId} for user email ${userEmail}
                         but have no valid response yet. Sleeping for a while.`);
-            await sleep(2000);
+            await sleep(3000);
         }
     }
     if (dropletIpPublic !== '') {

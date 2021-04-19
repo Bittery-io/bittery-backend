@@ -74,6 +74,7 @@ export const lndBakeMacaroonForBtcPay = async (lndRestAddress: string, macaroonH
                 { entity: 'info', action: 'read' },
                 { entity: 'invoices', action: 'read' },
                 { entity: 'invoices', action: 'write' },
+                { entity: 'offchain', action: 'read' },
             ],
         }, {
             headers: {
@@ -114,4 +115,49 @@ export const lndUnlockWallet = async (lndRestAddress: string, walletPassword: st
         }
     }
     return false;
+};
+
+// returns base64 string
+export const getAllStaticChannelBackupBase64 = async (lndRestAddress: string, macaroonHex: string): Promise<string> => {
+    try {
+        const res = await axios.get(`${lndRestAddress}/v1/channels/backup`, {
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false,
+            }),
+            headers: {
+                'Grpc-Metadata-macaroon': macaroonHex,
+            },
+        });
+        return Buffer.from(JSON.stringify(res.data.multi_chan_backup)).toString('base64');
+    } catch (err) {
+        logError(`Getting static channel backup for LND with address ${lndRestAddress} failed!`, err.message);
+        throw err;
+    }
+};
+
+export const restoreStaticChannelBackup = async (lndRestAddress: string, macaroonHex: string): Promise<string | undefined> => {
+    try {
+        const res = await axios.get(`${lndRestAddress}/v1/channels/backup`, {
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false,
+            }),
+            headers: {
+                'Grpc-Metadata-macaroon': macaroonHex,
+            },
+        });
+        // const res2 = await axios.post(`${lndRestAddress}/v1/channels/backup/restore`, {
+        //     multi_chan_backup: res.data.multi_chan_backup.multi_chan_backup,
+        // }, {
+        //     httpsAgent: new https.Agent({
+        //         rejectUnauthorized: false,
+        //     }),
+        //     headers: {
+        //         'Grpc-Metadata-macaroon': macaroonHex,
+        //     },
+        // });
+        return res.data.multi_chan_backup;
+    } catch (err) {
+        logError(`Getting static channel backup for LND with address ${lndRestAddress} failed!`, err.message);
+        return undefined;
+    }
 };

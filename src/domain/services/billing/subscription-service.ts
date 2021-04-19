@@ -23,7 +23,7 @@ import { BillingDto } from '../../../interfaces/dto/account/billing-dto';
 import { getBtcpayInvoice } from '../btcpay/btcpay-client-service';
 import { Invoice } from 'btcpay';
 
-const BITTERY_SUBSCRIPTION_PRICE_USD = 49.00;
+const BITTERY_SUBSCRIPTION_PRICE_USD = 29.0;
 
 export const extendSubscription = async (userEmail: string, extendSubscriptionDto: ExtendSubscriptionDto): Promise<string | undefined> => {
     const latestPaidUserBilling: Billing = (await findLatestCreatedBillingWithStatus(

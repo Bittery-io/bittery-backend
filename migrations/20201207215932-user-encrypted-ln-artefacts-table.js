@@ -15,14 +15,14 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('user_encrypted_artefacts', {
+  return db.createTable('user_encrypted_ln_artefacts', {
     user_email: {
       type: 'string',
       primaryKey: true,
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'digital_ocean_failures_user_email_fk',
+        name: 'user_encrypted_artefacts_user_email_fk',
         table: 'users',
         rules: {
           onDelete: 'RESTRICT',
@@ -36,7 +36,7 @@ exports.up = function(db) {
       primaryKey: true,
       notNull: true,
       foreignKey: {
-        name: 'rtls_lnd_id_fk',
+        name: 'user_encrypted_artefacts_lnd_id_fk',
         table: 'lnds',
         rules: {
           onDelete: 'CASCADE',
@@ -47,13 +47,12 @@ exports.up = function(db) {
     },
     admin_macaroon: { type: 'string', notNull: false },
     ln_seed: { type: 'string', notNull: false },
-    ln_password: { type: 'string',  notNull: false },
-    standard_wallet_seed: { type: 'string', notNull: false },
+    ln_password: { type: 'string',  notNull: false }
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('user_encrypted_artefacts');
+  return db.dropTable('user_encrypted_ln_artefacts');
 };
 
 exports._meta = {

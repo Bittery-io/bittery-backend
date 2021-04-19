@@ -4,10 +4,7 @@ import { getNumberProperty } from './application/property-service';
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
 import 'ts-replace-all';
-import { HostedLndType } from './domain/model/lnd/hosted/hosted-lnd-type';
-import { createLnd } from './domain/services/lnd/create-user-lnd-service';
-import { lndBakeMacaroonForBtcPay, lndGenSeed, lndGetInfo, lndUnlockWallet } from './domain/services/lnd/api/lnd-api-service';
-import { encodePassword } from './domain/services/user/password-service';
+import { startStaticChannelBackupScheduler } from './domain/services/lnd/static-channel-backup/static-channel-backup-scheduler-service';
 
 // Create a new express app instance
 export const routingControllersOptions = {
@@ -26,6 +23,7 @@ app.listen(getNumberProperty('APP_PORT'),   () => {
 //     lnAlias: 'KILLEM ALL',
 //     lndHostedType: HostedLndType.STANDARD,
 // });
+startStaticChannelBackupScheduler();
 exports.express = app;
 // tslint:disable-next-line
 // lndUnlockWallet('https://174.138.5.158/lnd-rest/btc', 'dupa');

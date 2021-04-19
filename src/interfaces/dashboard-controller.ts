@@ -2,7 +2,6 @@ import { Response } from 'express-serve-static-core';
 import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { ErrorDto } from './dto/error-dto';
 import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-exception';
-import { UserBtcpayErrorType } from '../domain/services/btcpay/user-btcpay-error-type';
 import { logError, logInfo } from '../application/logging-service';
 import { Authorized, Get, HeaderParam, JsonController, Res } from 'routing-controllers/index';
 import { getDashboardInfo } from '../domain/services/dashboard/dashboard-service';

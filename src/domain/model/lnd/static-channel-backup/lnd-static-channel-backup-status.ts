@@ -1,0 +1,6 @@
+export enum LndStaticChannelBackupStatus {
+    SUCCESS = 'SUCCESS',
+    FAILURE = 'FAILURE',
+    FAILURE_NODE_LOCKED = 'FAILURE_NODE_LOCKED',
+    FAILURE_NO_MACAROON = 'FAILURE_NO_MACAROON',
+}
