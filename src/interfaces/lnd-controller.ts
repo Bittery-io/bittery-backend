@@ -25,7 +25,7 @@ import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
 import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
 import {
     findAdminMacaroonArtefact,
-    findLnPasswordArtefact,
+    findLnPasswordArtefact, findLnSeedArtefact,
     updateAdminMacaroonArtefact,
 } from '../domain/repository/user-encrypted-ln-artefacts-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
@@ -251,6 +251,26 @@ export class LndController {
             }
         } catch (err) {
             logError(`Returning encrypted LN node password for email ${userEmail} and lnd id ${lndId} failed with err:`, err);
+            return res.sendStatus(400);
+        }
+    }
+
+    @Get('/seed')
+    async getLnNodeWalletSeed(
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        try {
+            const encryptedLnNodeWalletSeed: string | undefined = await findLnSeedArtefact(userEmail);
+            if (encryptedLnNodeWalletSeed) {
+                logInfo(`Successfully returned default encrypted LN node wallet seed for email ${userEmail}`);
+                return res.status(200).send(new EncryptedArtefactDto(encryptedLnNodeWalletSeed));
+            } else {
+                logInfo(`Failed to return default encrypted LN node wallet seed for email ${userEmail} because LND not found`);
+                return res.sendStatus(400);
+            }
+        } catch (err) {
+            logError(`Returning defualt encrypted LN node wallet seed for email ${userEmail} failed with err:`, err);
             return res.sendStatus(400);
         }
     }
