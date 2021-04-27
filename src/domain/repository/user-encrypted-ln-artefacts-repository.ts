@@ -37,6 +37,20 @@ export const findLnPasswordArtefact = async (userEmail: string, lndId: string): 
     return result.rows.length === 1 ? result.rows[0].ln_password : undefined;
 };
 
+export const findUserEncryptedArtefacts = async (userEmail: string, lndId: string): Promise<UserEncryptedLnArtefacts | undefined> => {
+    const result = await dbPool.query(`SELECT ADMIN_MACAROON, LN_PASSWORD, LN_SEED FROM USER_ENCRYPTED_LN_ARTEFACTS
+                        WHERE USER_EMAIL = $1
+                        AND LND_ID = $2`,
+        [userEmail, lndId]);
+    return result.rows.length === 1 ? new UserEncryptedLnArtefacts(
+        userEmail,
+        lndId,
+        result.rows[0].admin_macaroon,
+        result.rows[0].ln_seed,
+        result.rows[0].ln_password,
+    ) : undefined;
+};
+
 // todo IT WILL WORK UNTIL THERE IS SINGLE LND PER USER
 export const findLnSeedArtefact = async (userEmail: string): Promise<string | undefined> => {
     const result = await dbPool.query(`SELECT LN_SEED FROM USER_ENCRYPTED_LN_ARTEFACTS WHERE USER_EMAIL = $1`,

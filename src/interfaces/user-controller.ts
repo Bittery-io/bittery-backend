@@ -11,13 +11,14 @@ import { ConfirmRegistrationDto } from './dto/confirm-registration-dto';
 import { confirmResetPassword, resetPassword } from '../domain/services/user/password-service';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm-dto';
 import { PasswordResetDto } from './dto/password-reset-dto';
-import { getNewJwtToken } from '../domain/services/user/refresh-token-service';
+import { refreshToken } from '../domain/services/user/refresh-token-service';
 import { getAccessTokenFromAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
-import { getBooleanProperty } from '../application/property-service';
+import { getBooleanProperty, getNumberProperty } from '../application/property-service';
 import { logError, logInfo } from '../application/logging-service';
 import { Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 import { countUsers } from '../domain/repository/user-repository';
 import { sendUserRegisterMail } from '../application/mail-service';
+import { RefreshTokenDto } from './dto/refresh-token-dto';
 
 @JsonController('/user')
 export class UserController {
@@ -79,9 +80,9 @@ export class UserController {
             @Res() res: Response) {
         try {
             if (getBooleanProperty('LOGIN_ENABLED')) {
-                const accessToken: string = await loginUser(loginUserDto);
+                const accessTokenDto: AccessTokenDto = await loginUser(loginUserDto);
                 logInfo(`ECMR user ${loginUserDto.email} logged successfully`);
-                return res.send(new AccessTokenDto(accessToken));
+                return res.send(accessTokenDto);
             } else {
                 return res.status(500).send(new ErrorDto('Maintenance: Login possibility currently disabled'));
             }
@@ -96,12 +97,15 @@ export class UserController {
 
     @Post('/refreshToken')
     async refreshTokenApi(
-            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Body({ required: true }) refreshTokenDto: RefreshTokenDto,
             @Res() res: Response) {
         try {
-            const accessToken: string = getAccessTokenFromAuthorizationHeader(authorizationHeader!);
-            const newAccessToken: string = await getNewJwtToken(accessToken);
-            return res.send(new AccessTokenDto(newAccessToken));
+            const newAccessToken: string = await refreshToken(refreshTokenDto.refreshToken);
+            logInfo(`Successfully refreshed token ${refreshTokenDto.refreshToken}`);
+            return res.send(new AccessTokenDto(
+                newAccessToken,
+                refreshTokenDto.refreshToken,
+                getNumberProperty('SESSION_EXPIRES_IN_HOURS') * 60 * 60));
         } catch (err) {
             logError('Refreshing token failed.', err);
             return res.status(401).send(new ErrorDto(err.message));

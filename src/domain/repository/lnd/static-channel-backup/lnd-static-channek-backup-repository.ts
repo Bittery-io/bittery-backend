@@ -48,3 +48,21 @@ export const getLndStaticChannelBackupClientReadViews = async (userEmail: string
             row.status,
         ));
 };
+
+export const getLatestLndStaticChannelBackups = async (userEmail: string, lndId: string): Promise<LndStaticChannelBackup | undefined> => {
+    const result = await dbPool.query(`SELECT b.ID, b.creation_date, b.type, b.status, b.static_channel_backup_json_base64, b.message
+                                FROM LND_STATIC_CHANNEL_BACKUPS b 
+                                JOIN LNDS l ON l.LND_ID = b.LND_ID WHERE l.LND_ID = $1 AND l.USER_EMAIL = $2 AND b.status = $3
+                                ORDER BY b.creation_date DESC LIMIT 1`,
+        [lndId, userEmail, LndStaticChannelBackupStatus.SUCCESS]);
+    return result.rows.length === 1 ?
+        new LndStaticChannelBackup(
+            result.rows[0].id,
+            result.rows[0].lndId,
+            result.rows[0].creation_date,
+            result.rows[0].type,
+            result.rows[0].status,
+            result.rows[0].static_channel_backup_json_base64,
+            result.rows[0].message,
+        ) : undefined;
+};

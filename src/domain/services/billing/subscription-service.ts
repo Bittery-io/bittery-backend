@@ -20,7 +20,6 @@ import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { ExtendSubscriptionDto } from '../../../interfaces/dto/account/extend-subscription-dto';
 import { SubscriptionPlan } from '../../model/account/subscription-plan';
 import { BillingDto } from '../../../interfaces/dto/account/billing-dto';
-import { getBtcpayInvoice } from '../btcpay/btcpay-client-service';
 import { Invoice } from 'btcpay';
 
 const BITTERY_SUBSCRIPTION_PRICE_USD = 29.0;
@@ -120,7 +119,7 @@ const getSubscriptionPlan = (hostedLndType: HostedLndType): SubscriptionPlan => 
 const getDiscountMultiplier = (months: number): number => {
     if (months === 3) {
         return 0.95;
-    } else if (months === 6) {
+    } else if (months > 3 && months < 12) {
         return 0.9;
     } else if (months === 12) {
         return 0.8;

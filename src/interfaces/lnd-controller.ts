@@ -13,7 +13,7 @@ import {
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Post, QueryParam, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
 import { Param } from 'routing-controllers';
 import { generateLndSeed, initLndWallet, unlockLnd } from '../domain/services/lnd/lnd-service';
@@ -25,7 +25,7 @@ import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
 import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
 import {
     findAdminMacaroonArtefact,
-    findLnPasswordArtefact, findLnSeedArtefact,
+    findLnPasswordArtefact, findLnSeedArtefact, findUserEncryptedArtefacts,
     updateAdminMacaroonArtefact,
 } from '../domain/repository/user-encrypted-ln-artefacts-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
@@ -34,6 +34,8 @@ import { LndStaticChannelBackupClientReadView } from '../domain/model/lnd/static
 import { StaticChannelBackupDto } from './dto/lnd/static-channel-backup/static-channel-backup-dto';
 import { SingleStaticChannelBackupDto } from './dto/lnd/static-channel-backup/single-static-channel-backup-dto';
 import { getMillisecondsToNextStaticChannekBackup } from '../domain/services/lnd/static-channel-backup/static-channel-backup-scheduler-service';
+import { getLnFullBackup } from '../domain/services/lnd/backup/ln-backup-service';
+import { LndFullBackupDto } from './dto/lnd/backup/lnd-full-backup-dto';
 
 @JsonController('/lnd')
 @Authorized()
@@ -302,4 +304,26 @@ export class LndController {
             return res.sendStatus(400);
         }
     }
+
+    @Get('/:lndId/full-backup')
+    async getLndFullBackup(
+            @Param('lndId') lndId: string,
+            @QueryParam('seed') seed: boolean,
+            @QueryParam('macaroon') macaroon: boolean,
+            @QueryParam('password') password: boolean,
+            @QueryParam('scb') scb: boolean,
+            @QueryParam('tls') tls: boolean,
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        const lndFullBackupDto: LndFullBackupDto | undefined = await getLnFullBackup(
+            userEmail, lndId, seed, macaroon, password, scb, tls);
+        if (lndFullBackupDto) {
+            return res.status(200).send(lndFullBackupDto);
+        } else {
+            logError(`Returning full backup for user ${userEmail} and lndId ${lndId} failed`);
+            return res.sendStatus(400);
+        }
+    }
+
 }

@@ -22,7 +22,7 @@ exports.up = function(db) {
       length: 500,
       notNull: true,
       foreignKey: {
-        name: 'lnd_setup_backlog_user_email_fk',
+        name: 'user_password_proofs_user_email_fk',
         table: 'users',
         rules: {
           onDelete: 'RESTRICT',

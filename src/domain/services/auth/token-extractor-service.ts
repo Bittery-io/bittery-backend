@@ -1,4 +1,4 @@
-import { verifyUserTokenAndGetUserEmail } from '../jwt/session-token-service';
+import { verifyUserTokenAndGetUserEmailAndPasswordProof } from '../jwt/session-token-service';
 
 export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: string | undefined): string => {
     if (authorizationHeader) {
@@ -12,5 +12,5 @@ export const getAccessTokenFromAuthorizationHeader = (authorizationHeader: strin
 
 export const getUserEmailFromAccessTokenInAuthorizationHeader = async (authorizationHeader: string): Promise<string> => {
     const accessToken: string = getAccessTokenFromAuthorizationHeader(authorizationHeader);
-    return await verifyUserTokenAndGetUserEmail(accessToken);
+    return (await verifyUserTokenAndGetUserEmailAndPasswordProof(accessToken)).userId;
 };

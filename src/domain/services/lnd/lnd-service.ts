@@ -36,7 +36,9 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
         const bitteryBakedMacaroonHex: string | undefined =
             await lndBakeMacaroonForBtcPay(lndRestAddress, Buffer.from(adminMacaroon, 'base64').toString('hex'));
         await runInTransaction(async (client) => {
-            await insertUserEncryptedLnArtefacts(client, new UserEncryptedLnArtefacts(userEmail, lndId, adminMacaroon,
+            // todo this is kind of hack of pushing adminMacaroon not encrypted - it will be saved again client side encrypted
+            // todo after this call ends however I do it here for being sure it's saved... to be fixed/done better rather
+            await insertUserEncryptedLnArtefacts(client, new UserEncryptedLnArtefacts(userEmail, lndId, adminMacaroon!,
                 lndInitWalletDto.seedMnemonicEncrypted, lndInitWalletDto.passwordEncrypted));
             if (bitteryBakedMacaroonHex) {
                 await updateLndSetMacaroonHex(client, lndId, bitteryBakedMacaroonHex);
