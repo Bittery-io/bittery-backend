@@ -134,7 +134,7 @@ export const confirmUserRegistration = async (confirmRegistrationDto: ConfirmReg
         await confirmUserIfSignUpKeyValid(confirmRegistrationDto.email, confirmRegistrationDto.signUpKey);
         await setUserActiveFlag(confirmRegistrationDto.email, true);
     } else {
-        throw new UserRegisterException(`There is unconfirmed user confirmation for email ${confirmRegistrationDto.email}
+        throw new UserRegisterException(`There is not user confirmation waiting for email ${confirmRegistrationDto.email}
         and sign up key ${confirmRegistrationDto.signUpKey}`, UserRegistrationErrorType.NO_CONFIRMATION_ENTRY_EXIST);
     }
 };

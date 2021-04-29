@@ -10,13 +10,12 @@ export class UserLndDto {
     lndType: LndType;
     lndUri?: string;
     hostedLndType?: HostedLndType;
-    lndConnectUri?: string;
     rtlAddress?: string;
     rtlOneTimeInitPassword?: string;
     lndInfo?: LndInfo;
 
     constructor(lndId: string, lndRestAddress: string, lndStatus: LndStatusEnum, lndType: LndType,
-                lndUri?: string, hostedLndType?: HostedLndType, lndConnectUri?: string,
+                lndUri?: string, hostedLndType?: HostedLndType,
                 rtlAddress?: string, rtlOneTimeInitPassword?: string, lndInfo?: LndInfo) {
         this.lndId = lndId;
         this.lndRestAddress = lndRestAddress;
@@ -24,7 +23,6 @@ export class UserLndDto {
         this.lndType = lndType;
         this.lndUri = lndUri;
         this.hostedLndType = hostedLndType;
-        this.lndConnectUri = lndConnectUri;
         this.rtlAddress = rtlAddress;
         this.rtlOneTimeInitPassword = rtlOneTimeInitPassword;
         this.lndInfo = lndInfo;

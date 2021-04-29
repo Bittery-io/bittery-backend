@@ -21,8 +21,9 @@ import { ExtendSubscriptionDto } from '../../../interfaces/dto/account/extend-su
 import { SubscriptionPlan } from '../../model/account/subscription-plan';
 import { BillingDto } from '../../../interfaces/dto/account/billing-dto';
 import { Invoice } from 'btcpay';
+import { getNumberProperty } from '../../../application/property-service';
 
-const BITTERY_SUBSCRIPTION_PRICE_USD = 29.0;
+const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE_USD');
 
 export const extendSubscription = async (userEmail: string, extendSubscriptionDto: ExtendSubscriptionDto): Promise<string | undefined> => {
     const latestPaidUserBilling: Billing = (await findLatestCreatedBillingWithStatus(

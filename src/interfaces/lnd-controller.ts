@@ -8,7 +8,7 @@ import {
     addExternalLnd,
     createLnd,
     getCustomUserLnd,
-    getUserLnd,
+    getUserLnd, getUserLndConnectUriDetails,
 } from '../domain/services/lnd/create-user-lnd-service';
 import { SaveUserLndDto } from './dto/save-user-lnd-dto';
 import { CustomLndDto } from './dto/custom-lnd-dto';
@@ -36,6 +36,7 @@ import { SingleStaticChannelBackupDto } from './dto/lnd/static-channel-backup/si
 import { getMillisecondsToNextStaticChannekBackup } from '../domain/services/lnd/static-channel-backup/static-channel-backup-scheduler-service';
 import { getLnFullBackup } from '../domain/services/lnd/backup/ln-backup-service';
 import { LndFullBackupDto } from './dto/lnd/backup/lnd-full-backup-dto';
+import { LndConnectUriDto } from './dto/lnd/lnd-connect-uri-dto';
 
 @JsonController('/lnd')
 @Authorized()
@@ -62,9 +63,9 @@ export class LndController {
 
     @Post('/external')
     async saveExternalLndApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Res() res: Response,
-        @Body({ required: true }) saveUserLndDto: SaveUserLndDto): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response,
+            @Body({ required: true }) saveUserLndDto: SaveUserLndDto): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
             await addExternalLnd(userEmail, saveUserLndDto);
@@ -81,8 +82,8 @@ export class LndController {
 
     @Get('/user')
     async getUserLndApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Res() res: Response): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         const userLndDto: UserLndDto | undefined = await getUserLnd(userEmail);
         if (userLndDto) {
@@ -136,10 +137,10 @@ export class LndController {
 
     @Post('/:lndId/unlock')
     async unlockLndApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Param('lndId') lndId: string,
-        @Body({ required: true }) unlockLndDto: UnlockLndDto,
-        @Res() res: Response): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Param('lndId') lndId: string,
+            @Body({ required: true }) unlockLndDto: UnlockLndDto,
+            @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         const unlocked: boolean = await unlockLnd(userEmail, lndId, unlockLndDto.password);
         if (unlocked) {
@@ -151,9 +152,9 @@ export class LndController {
 
     @Get('/:lndId/restart')
     async restartLndApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Param('lndId') lndId: string,
-        @Res() res: Response): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Param('lndId') lndId: string,
+            @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
             await restartLnd(lndId, userEmail);
@@ -326,4 +327,18 @@ export class LndController {
         }
     }
 
+    @Get('/:lndId/connecturi')
+    async getLndConnectUriDetails(
+            @Param('lndId') lndId: string,
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        const lndConnectUriDto: LndConnectUriDto | undefined = await getUserLndConnectUriDetails(userEmail);
+        if (lndConnectUriDto) {
+            return res.status(200).send(lndConnectUriDto);
+        } else {
+            logError(`Returning LN connect uri details for user ${userEmail} and lndId ${lndId} failed`);
+            return res.sendStatus(400);
+        }
+    }
 }

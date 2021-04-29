@@ -32,12 +32,12 @@ export class UserController {
                 await registerNewUser(registerUserDto);
                 logInfo(`User ${registerUserDto.email} registered successfully`);
                 // ### OPTIONAL
-                try {
-                    const usersCounter: number = await countUsers();
-                    await sendUserRegisterMail(usersCounter);
-                } catch (err) {
-                    logError('Ups dont know why but sending user registered mail to me failed!', err);
-                }
+                // try {
+                    // const usersCounter: number = await countUsers();
+                    // await sendUserRegisterMail(usersCounter);
+                // } catch (err) {
+                //     logError('Ups dont know why but sending user registered mail to me failed!', err);
+                // }
                 // ###
                 return res.sendStatus(204);
             } else {

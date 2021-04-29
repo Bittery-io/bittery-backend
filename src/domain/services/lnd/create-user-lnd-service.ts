@@ -19,7 +19,6 @@ import { Lnd } from '../../model/lnd/lnd';
 import { LndType } from '../../model/lnd/lnd-type';
 import { Rtl } from '../../model/lnd/hosted/rtl/rtl';
 import { LndStatusEnum } from '../../model/lnd/lnd-status-enum';
-import { getLndConnectUri } from './lnd-zap-connection-uri-service';
 import { DigitalOceanLndHosting } from '../../model/lnd/digital-ocean-lnd-hosting';
 import { lndGetInfo, lndUnlockWallet } from './api/lnd-api-service';
 import { LndWalletNotInitException } from '../../model/lnd/api/lnd-wallet-not-init-exception';
@@ -33,13 +32,11 @@ import { LndSetupBacklog } from '../../model/lnd/setup-backlog/lnd-setup-backlog
 import { insertBilling } from '../../repository/billings-repository';
 import { Billing } from '../../model/billings/billing';
 import { Product } from '../../model/billings/product';
-import { saveBitteryInvoice } from '../payments/bittery-invoice-service';
-import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
-import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
 import { addDays } from '../utils/date-service';
 import { BillingStatus } from '../../model/billings/billing-status';
-import { ln } from 'shelljs';
-import { formatLndUri, getLndUri } from '../../../application/lnd-connect-service';
+import { formatLndUri } from '../../../application/lnd-connect-service';
+import { LndConnectUriDto } from '../../../interfaces/dto/lnd/lnd-connect-uri-dto';
+import { findAdminMacaroonArtefact } from '../../repository/user-encrypted-ln-artefacts-repository';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -78,8 +75,10 @@ export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): 
 };
 
 export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveUserLndDto): Promise<void> => {
-    const lndInfo: LndInfo | undefined = await lndGetInfo(saveUserLndDto.macaroonHex,
-        saveUserLndDto.lndRestAddress, saveUserLndDto.tlsCertFileText);
+    const lndInfo: LndInfo | undefined = await lndGetInfo(
+        saveUserLndDto.lndRestAddress,
+        saveUserLndDto.macaroonHex,
+        saveUserLndDto.tlsCertFileText);
     logInfo(`Successfully connected to user custom LND node address: ${saveUserLndDto.lndRestAddress}`);
     if (lndInfo) {
         const lndId: string = generateUuid();
@@ -111,7 +110,6 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
         let rtlAddress: string | undefined = rtl ? `https://${lnd.lndIpAddress}/rtl` : undefined;
         let rtlOneTimeInitPassword: string | undefined = rtl ? rtl.rtlOneTimeInitPassword : undefined;
         const hostedLndType: HostedLndType | undefined = rtl ? HostedLndType.STANDARD : HostedLndType.ENCRYPTED;
-        let lndConnectUri: string | undefined = undefined;
         let lndInfo: LndInfo | undefined = undefined;
         let lndStatus: LndStatusEnum = LndStatusEnum.TURNED_OFF;
         let lndUri: string | undefined = undefined;
@@ -131,7 +129,6 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
                     }
                 }
             }
-            lndConnectUri = await getLndConnectUri(lnd.lndIpAddress, lnd.tlsCert, lnd.macaroonHex);
         } else {
             rtlAddress = undefined;
             rtlOneTimeInitPassword = undefined;
@@ -153,7 +150,6 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
             lnd.lndType,
             lndUri,
             hostedLndType,
-            lndConnectUri,
             rtlAddress,
             rtlOneTimeInitPassword,
             lndInfo,
@@ -182,4 +178,21 @@ export const getCustomUserLnd = async (userEmail: string): Promise<CustomLndDto 
     // }
     // todo zrobic
     return undefined;
+};
+
+export const getUserLndConnectUriDetails = async (userEmail: string): Promise<LndConnectUriDto | undefined> => {
+    const lnd: Lnd | undefined = await findUserLnd(userEmail);
+    if (lnd) {
+        const adminMacaroonArtefact: string | undefined = await findAdminMacaroonArtefact(userEmail, lnd.lndId);
+        if (adminMacaroonArtefact) {
+            return new LndConnectUriDto(
+                lnd.lndIpAddress,
+                lnd.tlsCert,
+                adminMacaroonArtefact,
+            );
+        } else {
+            logError(`Returning user LN connect uri details failed because admin macaroon artefact not found for email ${userEmail} and lnd id ${lnd.lndId}`);
+            return undefined;
+        }
+    }
 };

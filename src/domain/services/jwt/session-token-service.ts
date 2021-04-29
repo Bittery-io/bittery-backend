@@ -10,8 +10,7 @@ export const generateJwtToken = (userId: string, sha256PasswordProof?: string): 
         },
         getProperty('OAUTH2_TOKEN_CLIENT_SECRET'),
         {
-            // expiresIn: `${getProperty('SESSION_EXPIRES_IN_HOURS')}h`,
-            expiresIn: `10s`,
+            expiresIn: `${getProperty('SESSION_EXPIRES_IN_HOURS')}h`,
         },
     );
 };
