@@ -24,7 +24,7 @@ import { restartLnd } from '../domain/services/lnd/restart-lnd-service';
 import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
 import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
 import {
-    findAdminMacaroonArtefact,
+    findAdminMacaroonHexArtefact,
     findLnPasswordArtefact, findLnSeedArtefact, findUserEncryptedArtefacts,
     updateAdminMacaroonArtefact,
 } from '../domain/repository/user-encrypted-ln-artefacts-repository';
@@ -114,17 +114,17 @@ export class LndController {
             @Body({ required: true }) saveEncryptedAdminMacaroonDto: SaveEncryptedAdminMacaroonDto,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        await updateAdminMacaroonArtefact(userEmail, lndId, saveEncryptedAdminMacaroonDto.adminMacaroon);
+        await updateAdminMacaroonArtefact(userEmail, lndId, saveEncryptedAdminMacaroonDto.encryptedAdminMacaroonHex);
         logInfo(`Successfully updated admin macaroon for user ${userEmail} and lnd id ${lndId}`);
         return res.sendStatus(200);
     }
 
     @Post('/:lndId/initwallet')
     async initLndWalletApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Param('lndId') lndId: string,
-        @Body({ required: true }) initWalletDto: LndInitWalletDto,
-        @Res() res: Response): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Param('lndId') lndId: string,
+            @Body({ required: true }) initWalletDto: LndInitWalletDto,
+            @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         const lndInitWalletResponseDto: LndInitWalletResponseDto | undefined = await initLndWallet(userEmail, lndId,
             initWalletDto);
@@ -217,16 +217,16 @@ export class LndController {
     }
 
     @Get('/:lndId/files/macaroon')
-    async getAdminMacaroonFileApi(
+    async getAdminMacaroonHexApi(
             @Param('lndId') lndId: string,
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const encryptedAdminMacaroon: string | undefined = await findAdminMacaroonArtefact(userEmail, lndId);
-            if (encryptedAdminMacaroon) {
+            const encryptedAdminMacaroonHex: string | undefined = await findAdminMacaroonHexArtefact(userEmail, lndId);
+            if (encryptedAdminMacaroonHex) {
                 logInfo(`Successfully returned encrypted admin macaroon for email ${userEmail} and lnd id ${lndId}`);
-                return res.status(200).send(new EncryptedArtefactDto(encryptedAdminMacaroon));
+                return res.status(200).send(new EncryptedArtefactDto(encryptedAdminMacaroonHex));
             } else {
                 logInfo(`Failed to return encrypted admin macaroon for email ${userEmail} and lnd id ${lndId} because LND not found`);
                 return res.sendStatus(400);

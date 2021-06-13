@@ -28,7 +28,7 @@ export const getLnFullBackup = async (userEmail: string,
         tlsCert = await findUserLndTls(userEmail, lndId);
     }
     return new LndFullBackupDto(
-        macaroonBackup ? userEncryptedLnArtefacts.adminMacaroon : undefined,
+        macaroonBackup ? userEncryptedLnArtefacts.adminMacaroonHex : undefined,
         passwordBackup ? userEncryptedLnArtefacts.lnPassword : undefined,
         seedBackup ? userEncryptedLnArtefacts.lnSeed : undefined,
         tlsBackup ? tlsCert! : undefined,

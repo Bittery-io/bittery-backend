@@ -36,7 +36,7 @@ import { addDays } from '../utils/date-service';
 import { BillingStatus } from '../../model/billings/billing-status';
 import { formatLndUri } from '../../../application/lnd-connect-service';
 import { LndConnectUriDto } from '../../../interfaces/dto/lnd/lnd-connect-uri-dto';
-import { findAdminMacaroonArtefact } from '../../repository/user-encrypted-ln-artefacts-repository';
+import { findAdminMacaroonHexArtefact } from '../../repository/user-encrypted-ln-artefacts-repository';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -183,7 +183,7 @@ export const getCustomUserLnd = async (userEmail: string): Promise<CustomLndDto 
 export const getUserLndConnectUriDetails = async (userEmail: string): Promise<LndConnectUriDto | undefined> => {
     const lnd: Lnd | undefined = await findUserLnd(userEmail);
     if (lnd) {
-        const adminMacaroonArtefact: string | undefined = await findAdminMacaroonArtefact(userEmail, lnd.lndId);
+        const adminMacaroonArtefact: string | undefined = await findAdminMacaroonHexArtefact(userEmail, lnd.lndId);
         if (adminMacaroonArtefact) {
             return new LndConnectUriDto(
                 lnd.lndIpAddress,

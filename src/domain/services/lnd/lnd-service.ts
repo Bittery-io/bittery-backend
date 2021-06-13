@@ -26,26 +26,26 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
     const lndRestAddress: string | undefined = await findLndRestAddress(lndId, userEmail);
     if (lndRestAddress) {
         // If stateless init - then macaroon will be returned on wallet init
-        let adminMacaroon: string | undefined = await lndInitWallet(lndRestAddress, lndInitWalletDto);
-        if (!adminMacaroon) {
+        let adminMacaroonBase64: string | undefined = await lndInitWallet(lndRestAddress, lndInitWalletDto);
+        if (!adminMacaroonBase64) {
             // otherwise it must be downloaded
             const dropletIp: string = await findDropletIp(lndId, userEmail);
-            adminMacaroon = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
+            adminMacaroonBase64 = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
         }
         await sleep(5000);
-        const bitteryBakedMacaroonHex: string | undefined =
-            await lndBakeMacaroonForBtcPay(lndRestAddress, Buffer.from(adminMacaroon, 'base64').toString('hex'));
+        const adminMacaroonHex: string = Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
+        const bitteryBakedMacaroonHex: string | undefined = await lndBakeMacaroonForBtcPay(lndRestAddress, adminMacaroonHex);
         await runInTransaction(async (client) => {
             // todo this is kind of hack of pushing adminMacaroon not encrypted - it will be saved again client side encrypted
             // todo after this call ends however I do it here for being sure it's saved... to be fixed/done better rather
-            await insertUserEncryptedLnArtefacts(client, new UserEncryptedLnArtefacts(userEmail, lndId, adminMacaroon!,
+            await insertUserEncryptedLnArtefacts(client, new UserEncryptedLnArtefacts(userEmail, lndId, adminMacaroonHex,
                 lndInitWalletDto.seedMnemonicEncrypted, lndInitWalletDto.passwordEncrypted));
             if (bitteryBakedMacaroonHex) {
                 await updateLndSetMacaroonHex(client, lndId, bitteryBakedMacaroonHex);
                 logInfo(`Updated Bittery permissions baked macaroon hex for LND with id ${lndId} for user ${userEmail}`);
             }
         });
-        return new LndInitWalletResponseDto(adminMacaroon);
+        return new LndInitWalletResponseDto(adminMacaroonHex);
     } else {
         logError(`Cannot generate seed for user ${userEmail} and lnd id ${lndId}
                           because matching LND was not found in db!`);

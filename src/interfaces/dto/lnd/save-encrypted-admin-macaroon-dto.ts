@@ -4,9 +4,9 @@ export class SaveEncryptedAdminMacaroonDto {
 
     @IsString()
     @IsDefined()
-    adminMacaroon: string;
+    encryptedAdminMacaroonHex: string;
 
     constructor(adminMacaroon: string) {
-        this.adminMacaroon = adminMacaroon;
+        this.encryptedAdminMacaroonHex = adminMacaroon;
     }
 }

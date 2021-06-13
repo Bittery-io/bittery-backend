@@ -45,7 +45,7 @@ exports.up = function(db) {
         mapping: 'lnd_id'
       },
     },
-    admin_macaroon: { type: 'string', notNull: false },
+    admin_macaroon_hex: { type: 'string', notNull: false },
     ln_seed: { type: 'string', notNull: false },
     ln_password: { type: 'string',  notNull: false }
   });

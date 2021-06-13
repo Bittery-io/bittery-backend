@@ -4,9 +4,9 @@ export class LndInitWalletResponseDto {
 
     @IsString()
     @IsDefined()
-    adminMacaroon: string;
+    adminMacaroonHex: string;
 
-    constructor(adminMacaroon: string) {
-        this.adminMacaroon = adminMacaroon;
+    constructor(adminMacaroonHex: string) {
+        this.adminMacaroonHex = adminMacaroonHex;
     }
 }

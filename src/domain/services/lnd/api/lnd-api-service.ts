@@ -9,6 +9,11 @@ import { Lnd } from '../../../model/lnd/lnd';
 
 export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string, tlsCert?: string): Promise<LndInfo | undefined> => {
     try {
+        // tslint:disable-next-line:no-parameter-reassignment
+        tlsCert = undefined;
+        // todo tu mam podejrzenie ze nigdy nie jest ten cert przekazywany
+        // w ogole jak jest przekazany przy external LND to nie dziala...
+        // dziala tylko jak jest undefined
         const httpsAgent = tlsCert ?
             new https.Agent({ ca: [tlsCert!] }) :
             new https.Agent({ rejectUnauthorized: false });
