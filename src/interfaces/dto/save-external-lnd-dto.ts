@@ -1,8 +1,9 @@
-import { IsString } from 'class-validator';
+import { IsHexadecimal, IsString } from 'class-validator';
 
-export class SaveUserLndDto {
+export class SaveExternalLndDto {
 
     @IsString()
+    @IsHexadecimal()
     macaroonHex: string;
 
     @IsString()

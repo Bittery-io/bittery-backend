@@ -42,7 +42,6 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
             undefined;
         const digitalOceanLnd: DigitalOceanLnd = new DigitalOceanLnd(
             userEmail,
-            `${dropletCreationInfo.dropletIpPublic}`,
             `https://${dropletCreationInfo.dropletIpPublic}/lnd-rest/btc`,
             tlsCert,
             tlsCertThumbprint,

@@ -7,16 +7,17 @@ import { LndLockedException } from '../../../model/lnd/api/lnd-locked-exception'
 import { LndInfo } from '../../../model/lnd/api/lnd-info';
 import { Lnd } from '../../../model/lnd/lnd';
 
-export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string, tlsCert?: string): Promise<LndInfo | undefined> => {
+export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string): Promise<LndInfo | undefined> => {
     try {
         // tslint:disable-next-line:no-parameter-reassignment
-        tlsCert = undefined;
+        // tlsCert = undefined;
         // todo tu mam podejrzenie ze nigdy nie jest ten cert przekazywany
         // w ogole jak jest przekazany przy external LND to nie dziala...
         // dziala tylko jak jest undefined
-        const httpsAgent = tlsCert ?
-            new https.Agent({ ca: [tlsCert!] }) :
-            new https.Agent({ rejectUnauthorized: false });
+        // const httpsAgent = tlsCert ?
+        //     new https.Agent({ ca: [tlsCert!] }) :
+        //     new https.Agent({ rejectUnauthorized: false });
+        const httpsAgent = new https.Agent({ rejectUnauthorized: false });
         const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
             httpsAgent,
             headers: {
@@ -33,6 +34,7 @@ export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string, tl
             res.data.num_active_channels,
             res.data.num_pending_channels,
             res.data.version,
+            res.data.uris[0],
             res.data.alias,
         );
     } catch (err) {

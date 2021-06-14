@@ -12,7 +12,8 @@ export const getCertThumbprint = async (tlsCertName: string): Promise<string> =>
 };
 
 export const getCertThumbprintForExternalLnd = async (userEmail: string, tlsCert: string): Promise<string> => {
-    const userTlsCertFilePath: string = `${getProperty('BITTERY_INFRASTRUCTURE_PATH')}/custom-lnd-certs/external-${userEmail}-tls.cert`;
+    fs.promises.mkdir(`${getProperty('LND_HOSTED_FILE_FOLDER_PATH')}/external-lnd-certs`, { recursive: true }).catch(console.error);
+    const userTlsCertFilePath: string = `${getProperty('LND_HOSTED_FILE_FOLDER_PATH')}/external-lnd-certs/external-${userEmail}-tls.cert`;
     await writeFile(userTlsCertFilePath, Buffer.from(tlsCert, 'utf8'));
     return generateSslThumbprint(userTlsCertFilePath);
 };

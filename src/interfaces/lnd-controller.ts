@@ -7,11 +7,9 @@ import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-typ
 import {
     addExternalLnd,
     createLnd,
-    getCustomUserLnd,
     getUserLnd, getUserLndConnectUriDetails,
 } from '../domain/services/lnd/create-user-lnd-service';
-import { SaveUserLndDto } from './dto/save-user-lnd-dto';
-import { CustomLndDto } from './dto/custom-lnd-dto';
+import { SaveExternalLndDto } from './dto/save-external-lnd-dto';
 import { logError, logInfo } from '../application/logging-service';
 import { Authorized, Body, Get, HeaderParam, JsonController, Post, QueryParam, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
@@ -65,7 +63,7 @@ export class LndController {
     async saveExternalLndApi(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response,
-            @Body({ required: true }) saveUserLndDto: SaveUserLndDto): Promise<Response> {
+            @Body({ required: true }) saveUserLndDto: SaveExternalLndDto): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
             await addExternalLnd(userEmail, saveUserLndDto);
@@ -74,7 +72,7 @@ export class LndController {
             if (err instanceof LndCreateException) {
                 return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
             }
-            logError('Failed to add user LND services', err);
+            logError(`Failed to add external LND for user ${userEmail}`, err);
             return res.status(500).send(new ErrorDto('LND services creation failed',
                 LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
         }
@@ -95,9 +93,9 @@ export class LndController {
 
     @Get('/:lndId/seed')
     async generateSeedMnemonic(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Param('lndId') lndId: string,
-        @Res() res: Response): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Param('lndId') lndId: string,
+            @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         const seed: string[] | undefined = await generateLndSeed(userEmail, lndId);
         if (seed) {
@@ -162,19 +160,6 @@ export class LndController {
         } catch (err) {
             logError(`Restarting LND with id ${lndId} for user ${userEmail} failed!`, err);
             return res.status(400).send();
-        }
-    }
-
-    @Get('/custom')
-    async getCustomLndApi(
-            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-            @Res() res: Response): Promise<Response> {
-        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        const customLndDto: CustomLndDto | undefined = await getCustomUserLnd(userEmail);
-        if (customLndDto) {
-            return res.send(customLndDto);
-        } else {
-            return res.status(404).send();
         }
     }
 
@@ -327,6 +312,7 @@ export class LndController {
         }
     }
 
+    // todo it is only for hosted lnds
     @Get('/:lndId/connecturi')
     async getLndConnectUriDetails(
             @Param('lndId') lndId: string,

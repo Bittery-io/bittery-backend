@@ -10,11 +10,11 @@ export class DigitalOceanLnd extends HostedLnd {
     dropletName: string;
     dropletIp: string;
 
-    constructor(userEmail: string, lndAddress: string, lndRestAddress: string,
+    constructor(userEmail: string, lndRestAddress: string,
                 tlsCert: string, tlsCertThumbprint: string, lndVersion: string, lndId: string,
                 hostedLndType: HostedLndType, dropletId: number, dropletName: string, dropletIp: string,
                 creationDate: string, wumboChannels: boolean, lnAlias?: string, macaroonHex?: string) {
-        super(lndId, userEmail, lndAddress, lndRestAddress, tlsCert, tlsCertThumbprint,
+        super(lndId, userEmail, lndRestAddress, tlsCert, tlsCertThumbprint,
             lndVersion, LndType.HOSTED, hostedLndType, HostedLndProvider.DIGITAL_OCEAN, creationDate, wumboChannels,
             lnAlias, macaroonHex);
         this.dropletId = dropletId;

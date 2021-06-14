@@ -6,20 +6,19 @@ import { LndType } from '../../model/lnd/lnd-type';
 
 export const insertLnd = async (client: PoolClient, lnd: Lnd): Promise<void> => {
     await client.query(`
-        INSERT INTO LNDS(LND_ID, USER_EMAIL, LND_IP_ADDRESS, LND_REST_ADDRESS, MACAROON_HEX,
+        INSERT INTO LNDS(LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
                          TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, CREATION_DATE)
-                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-        [lnd.lndId, lnd.userEmail, lnd.lndIpAddress, lnd.lndRestAddress, lnd.macaroonHex, lnd.tlsCert,
+                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [lnd.lndId, lnd.userEmail, lnd.lndRestAddress, lnd.macaroonHex, lnd.tlsCert,
             lnd.tlsCertThumbprint, lnd.lndVersion, lnd.lndType, lnd.creationDate]);
 };
 
 export const findAllLnds = async (): Promise<Lnd[]> => {
-    const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_IP_ADDRESS, LND_REST_ADDRESS, MACAROON_HEX,
+    const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
                                               TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE FROM LNDS`, []);
     return result.rows.map(row => new Lnd(
         row.lnd_id,
         row.user_email,
-        row.lnd_ip_address,
         row.lnd_rest_address,
         row.tls_cert,
         row.tls_cert_thumbprint,
@@ -46,14 +45,13 @@ export const findLndRestAddress = async (lndId: string, userEmail: string): Prom
 // todo docelowo powinno byc po lndId wtedy user moze miec wiecej, na razie jedno starczy
 // todo zmien LND_ADDRESS na LND_IP_ADDRESS
 export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> => {
-    const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_IP_ADDRESS, LND_REST_ADDRESS, MACAROON_HEX,
+    const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
                                               TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE FROM LNDS WHERE USER_EMAIL = $1`,
         [userEmail]);
     const foundRow = result.rows[0];
     return foundRow ? new Lnd(
         foundRow.lnd_id,
         foundRow.user_email,
-        foundRow.lnd_ip_address,
         foundRow.lnd_rest_address,
         foundRow.tls_cert,
         foundRow.tls_cert_thumbprint,

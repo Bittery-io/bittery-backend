@@ -1,10 +1,9 @@
 import { LndCreateException } from '../../model/lnd/lnd-create-exception';
 import { LndCreationErrorType } from '../../model/lnd/lnd-creation-error-type';
 import { UserLndDto } from '../../../interfaces/dto/user-lnd-dto';
-import { SaveUserLndDto } from '../../../interfaces/dto/save-user-lnd-dto';
+import { SaveExternalLndDto } from '../../../interfaces/dto/save-external-lnd-dto';
 import { getCertThumbprintForExternalLnd } from '../../../application/openssl-service';
 import { generateUuid } from '../utils/id-generator-service';
-import { CustomLndDto } from '../../../interfaces/dto/custom-lnd-dto';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { logError, logInfo, logWarn } from '../../../application/logging-service';
@@ -13,7 +12,7 @@ import { provisionDigitalOceanLnd } from './provisioning/digital-ocean-lnd-provi
 import { findUserLnd, insertLnd, userHasLnd } from '../../repository/lnd/lnds-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { insertHostedLnd } from '../../repository/lnd/lnd-hosted-repository';
-import { insertDigitalOceanLnd } from '../../repository/lnd/digital-ocean-lnds-repository';
+import { findDropletIp, insertDigitalOceanLnd } from '../../repository/lnd/digital-ocean-lnds-repository';
 import { findRtl, insertUserRtl } from '../../repository/lnd/rtls-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { LndType } from '../../model/lnd/lnd-type';
@@ -34,7 +33,6 @@ import { Billing } from '../../model/billings/billing';
 import { Product } from '../../model/billings/product';
 import { addDays } from '../utils/date-service';
 import { BillingStatus } from '../../model/billings/billing-status';
-import { formatLndUri } from '../../../application/lnd-connect-service';
 import { LndConnectUriDto } from '../../../interfaces/dto/lnd/lnd-connect-uri-dto';
 import { findAdminMacaroonHexArtefact } from '../../repository/user-encrypted-ln-artefacts-repository';
 
@@ -74,12 +72,11 @@ export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): 
     }
 };
 
-export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveUserLndDto): Promise<void> => {
+export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveExternalLndDto): Promise<void> => {
     const lndInfo: LndInfo | undefined = await lndGetInfo(
         saveUserLndDto.lndRestAddress,
-        saveUserLndDto.macaroonHex,
-        saveUserLndDto.tlsCertFileText);
-    logInfo(`Successfully connected to user custom LND node address: ${saveUserLndDto.lndRestAddress}`);
+        saveUserLndDto.macaroonHex);
+    logInfo(`Successfully connected to user external LND node address: ${saveUserLndDto.lndRestAddress}`);
     if (lndInfo) {
         const lndId: string = generateUuid();
         const tlsCertThumbprint: string = await getCertThumbprintForExternalLnd(userEmail, saveUserLndDto.tlsCertFileText);
@@ -87,18 +84,18 @@ export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveUser
             await insertLnd(client, new Lnd(
                 lndId,
                 userEmail,
-                'lnd address todo',
                 saveUserLndDto.lndRestAddress,
                 saveUserLndDto.tlsCertFileText,
                 tlsCertThumbprint,
                 lndInfo.version,
                 LndType.EXTERNAL,
+                new Date().toISOString(),
                 saveUserLndDto.macaroonHex,
             ));
         });
         logInfo(`Saved external LND with id ${lndId} for user ${userEmail}`);
     } else {
-        throw new LndCreateException(`Cannot add user ${userEmail} LND because getting node info failed.`,
+        throw new LndCreateException(`Cannot add user ${userEmail} external LND because getting node info failed.`,
             LndCreationErrorType.GETTING_LND_INFO_FAILED);
     }
 };
@@ -106,92 +103,110 @@ export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveUser
 export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefined> => {
     const lnd: Lnd | undefined = await findUserLnd(userEmail);
     if (lnd) {
-        const rtl: Rtl | undefined = lnd.lndType === LndType.HOSTED ? (await findRtl(lnd.lndId)) : undefined;
-        let rtlAddress: string | undefined = rtl ? `https://${lnd.lndIpAddress}/rtl` : undefined;
-        let rtlOneTimeInitPassword: string | undefined = rtl ? rtl.rtlOneTimeInitPassword : undefined;
-        const hostedLndType: HostedLndType | undefined = rtl ? HostedLndType.STANDARD : HostedLndType.ENCRYPTED;
-        let lndInfo: LndInfo | undefined = undefined;
-        let lndStatus: LndStatusEnum = LndStatusEnum.TURNED_OFF;
-        let lndUri: string | undefined = undefined;
-        if (lnd.macaroonHex) {
-            lndInfo = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex);
-            // if response is not undefined and macaroon is set it means it's off
-            if (lndInfo) {
-                lndUri = formatLndUri(lndInfo.publicKey, lnd.lndIpAddress);
-                lndStatus = LndStatusEnum.RUNNING;
+        if (lnd.lndType === LndType.HOSTED) {
+            // todo maybe fetch it in single sql would be best
+            const dropletIp: string = await findDropletIp(lnd.lndId, userEmail);
+            const rtl: Rtl | undefined = await findRtl(lnd.lndId);
+            let rtlAddress: string | undefined = rtl ? `https://${dropletIp}/rtl` : undefined;
+            let rtlOneTimeInitPassword: string | undefined = rtl ? rtl.rtlOneTimeInitPassword : undefined;
+            const hostedLndType: HostedLndType | undefined = rtl ? HostedLndType.STANDARD : HostedLndType.ENCRYPTED;
+            let lndInfo: LndInfo | undefined = undefined;
+            let lndStatus: LndStatusEnum = LndStatusEnum.TURNED_OFF;
+            let lndUri: string | undefined = undefined;
+            if (lnd.macaroonHex) {
+                lndInfo = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex);
+                // if response is not undefined and macaroon is set it means it's off
+                if (lndInfo) {
+                    lndUri = lndInfo.uri;
+                    lndStatus = LndStatusEnum.RUNNING;
+                } else {
+                    try {
+                        await lndUnlockWallet(lnd.lndRestAddress, '');
+                    } catch (err) {
+                        lndStatus = LndStatusEnum.STOPPED;
+                        if (err instanceof LndLockedException) {
+                            lndStatus = LndStatusEnum.UNLOCK_REQUIRED;
+                        }
+                    }
+                }
             } else {
+                rtlAddress = undefined;
+                rtlOneTimeInitPassword = undefined;
                 try {
                     await lndUnlockWallet(lnd.lndRestAddress, '');
                 } catch (err) {
-                    lndStatus = LndStatusEnum.STOPPED;
+                    if (err instanceof LndWalletNotInitException) {
+                        lndStatus = LndStatusEnum.INIT_REQUIRED;
+                    }
                     if (err instanceof LndLockedException) {
                         lndStatus = LndStatusEnum.UNLOCK_REQUIRED;
                     }
                 }
             }
-        } else {
-            rtlAddress = undefined;
-            rtlOneTimeInitPassword = undefined;
-            try {
-                await lndUnlockWallet(lnd.lndRestAddress, '');
-            } catch (err) {
-                if (err instanceof LndWalletNotInitException) {
-                    lndStatus = LndStatusEnum.INIT_REQUIRED;
-                }
-                if (err instanceof LndLockedException) {
-                    lndStatus = LndStatusEnum.UNLOCK_REQUIRED;
+            return new UserLndDto(
+                lnd.lndId,
+                lnd.lndRestAddress,
+                lndStatus,
+                lnd.lndType,
+                lndUri,
+                hostedLndType,
+                rtlAddress,
+                rtlOneTimeInitPassword,
+                lndInfo,
+            );
+        } else if (lnd.lndType === LndType.EXTERNAL) {
+            let lndInfo: LndInfo | undefined = undefined;
+            let lndStatus: LndStatusEnum = LndStatusEnum.TURNED_OFF;
+            let lndUri: string | undefined = undefined;
+            if (lnd.macaroonHex) {
+                lndInfo = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex);
+                // if response is not undefined and macaroon is set it means it's off
+                if (lndInfo) {
+                    lndUri = lndInfo.uri;
+                    lndStatus = LndStatusEnum.RUNNING;
+                } else {
+                    try {
+                        await lndUnlockWallet(lnd.lndRestAddress, '');
+                    } catch (err) {
+                        lndStatus = LndStatusEnum.STOPPED;
+                        if (err instanceof LndLockedException) {
+                            lndStatus = LndStatusEnum.UNLOCK_REQUIRED;
+                        }
+                    }
                 }
             }
+            return new UserLndDto(
+                lnd.lndId,
+                lnd.lndRestAddress,
+                lndStatus,
+                LndType.EXTERNAL,
+                lndUri,
+                undefined,
+                undefined,
+                undefined,
+                lndInfo,
+            );
         }
-        return new UserLndDto(
-            lnd.lndId,
-            lnd.lndRestAddress,
-            lndStatus,
-            lnd.lndType,
-            lndUri,
-            hostedLndType,
-            rtlAddress,
-            rtlOneTimeInitPassword,
-            lndInfo,
-        );
+
     } else {
         logError(`Cannot return user lnd for user ${userEmail} because has no LND added in Bittery!`);
         return undefined;
     }
 };
 
-export const getCustomUserLnd = async (userEmail: string): Promise<CustomLndDto | undefined> => {
-    // const customLnd: Lnd | undefined = await findCustomLnd(userEmail);
-    // if (customLnd) {
-    //     const lndUrl: string | undefined = await getLndUrl(customLnd.macaroonHex, customLnd.lndRestAddress, customLnd.tlsCert);
-    //     const lndStatus: LndStatusEnum = lndUrl ? LndStatusEnum.WORKING : LndStatusEnum.STOPPED;
-    //     return new CustomLndDto(
-    //         customLnd.lndRestAddress,
-    //         customLnd.macaroonHex,
-    //         customLnd.tlsCert,
-    //         lndUrl ? lndUrl : 'Connection to node failed.',
-    //         lndStatus,
-    //     );
-    // } else {
-    //     logError(`Cannot return custom lnd for user ${userEmail} because has no custom lnd!`);
-    //     return undefined;
-    // }
-    // todo zrobic
-    return undefined;
-};
-
 export const getUserLndConnectUriDetails = async (userEmail: string): Promise<LndConnectUriDto | undefined> => {
     const lnd: Lnd | undefined = await findUserLnd(userEmail);
     if (lnd) {
+        const dropletIp: string = await findDropletIp(lnd.lndId, userEmail);
         const adminMacaroonArtefact: string | undefined = await findAdminMacaroonHexArtefact(userEmail, lnd.lndId);
         if (adminMacaroonArtefact) {
             return new LndConnectUriDto(
-                lnd.lndIpAddress,
+                dropletIp,
                 lnd.tlsCert,
                 adminMacaroonArtefact,
             );
         } else {
-            logError(`Returning user LN connect uri details failed because admin macaroon artefact not found for email ${userEmail} and lnd id ${lnd.lndId}`);
+            logError(`Returning user LN connect uri details failed because LND with id ${lnd.lndId} was not found for user ${userEmail}`);
             return undefined;
         }
     }

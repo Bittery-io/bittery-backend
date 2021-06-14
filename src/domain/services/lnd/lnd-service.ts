@@ -34,6 +34,7 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
         }
         await sleep(5000);
         const adminMacaroonHex: string = Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
+        console.log('ADMIN MACAROON HEX: ', adminMacaroonHex);
         const bitteryBakedMacaroonHex: string | undefined = await lndBakeMacaroonForBtcPay(lndRestAddress, adminMacaroonHex);
         await runInTransaction(async (client) => {
             // todo this is kind of hack of pushing adminMacaroon not encrypted - it will be saved again client side encrypted

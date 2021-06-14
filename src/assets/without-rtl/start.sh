@@ -23,8 +23,11 @@ echo 'bitcoind.rpchost='${BITCOIND_RPC_HOST}':43783' >> lnd.conf
 echo 'bitcoind.zmqpubrawblock=tcp://'${BITCOIND_RPC_HOST}':28334' >> lnd.conf
 echo 'bitcoind.zmqpubrawtx=tcp://'${BITCOIND_RPC_HOST}':28335' >> lnd.conf
 echo '[Application Options]' >> lnd.conf
+# tymczasowo to komentuje, zobaczymy
+# to zrobilem po to zeby z getinfo mieć uris=[pubkey@ip:port] a nie pubkey@0.0.0.0:port
+#echo 'externalip=0.0.0.0:9735' >> lnd.conf
+echo 'externalip='${LND_IP}':9735' >> lnd.conf
 echo 'listen=0.0.0.0:9735' >> lnd.conf
-echo 'externalip=0.0.0.0:9735' >> lnd.conf
 echo 'rpclisten=0.0.0.0:10009' >> lnd.conf
 echo 'tlsextraip='${LND_IP} >> lnd.conf
 echo 'restlisten=0.0.0.0:8080' >> lnd.conf
