@@ -28,7 +28,7 @@ export const initializeBtcpayServices = async (
     await loginToBtcpay(page);
     const storeId: string = await createStore(storeName, page);
     await addBtcRootPublicKeyToStore(storeId, page, browser, bip49RootPublicKey);
-    const lndAddress = generateBtcPayCustomLndAddress(
+    const lndAddress: string = generateBtcPayCustomLndAddress(
         lnd.lndRestAddress,
         lnd.macaroonHex!,
         lnd.tlsCertThumbprint,
@@ -38,6 +38,7 @@ export const initializeBtcpayServices = async (
     const pairingCode: string = await getBtcpayPairingCode(storeName, storeId, page);
     const btcpayUserAuthToken: BtcpayUserAuthToken = await generateApiToken(pairingCode);
     return new UserBtcpayDetails(userEmail, storeId, btcpayUserAuthToken);
+    // return new UserBtcpayDetails(userEmail, storeId, new BtcpayUserAuthToken('asdf', 'asdf'));
 };
 
 const getBrowser = async() => {
@@ -53,6 +54,7 @@ const getBrowser = async() => {
                     headless: true,
                     ignoreDefaultArgs: ['--disable-extensions'],
                     args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                    defaultViewport : { width: 1024, height: 1600 },
                 });
             } else {
                 console.warn(
@@ -66,7 +68,7 @@ const getBrowser = async() => {
 };
 
 export const loginToBtcpay = async (page: any): Promise<void> => {
-    await page.setDefaultTimeout(100 * 1000);
+    await page.setDefaultTimeout(10 * 1000);
     await page.goto(`${getProperty('BTCPAY_URL')}/Account/Login`);
     await page.type('#Email', USER_NAME);
     await page.type('#Password', PASSWORD);
@@ -109,6 +111,9 @@ const createStore = async (storeName: string, page: any): Promise<string> => {
     await page.waitForSelector('input#Name');
     await page.waitForSelector('[type="submit"]');
     await page.type('#Name', storeName);
+    // await page.click('button');
+    // await page.waitForSelector('button#ApprovePairing');
+    // await page.click('button#ApprovePairing');
     await page.click('[type="submit"]');
     await page.waitForSelector('button[type="submit"]');
     await page.click('[type="submit"]');
@@ -120,13 +125,16 @@ const createStore = async (storeName: string, page: any): Promise<string> => {
 };
 
 const addLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: any): Promise<void> => {
-    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
-    await page.waitForSelector('a#Modify-LightningBTC');
-    await page.click('a#Modify-LightningBTC');
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}/lightning/BTC`);
+    const label = await page.evaluateHandle(() => {
+        return [...document.querySelectorAll('label')].find(h1 => h1.innerText === 'Use custom node');
+    });
+    await label.click();
     await page.waitForSelector('input#ConnectionString');
     await page.type('#ConnectionString', lndBtcpayUrl);
-    await page.waitForSelector('button[type="submit"]');
-    await page.click('[type="submit"]');
+    // await page.waitForSelector('button[type=submit]');
+    // await page.screenshot({ path: 'example.png' });
+    await page.click('button#save');
     await page.waitForSelector('input#Id');
     logInfo(`Added btcpay lnd address for store with id ${storeId}`);
 };
@@ -137,8 +145,10 @@ const setExpirationMinutesToStore = async (storeId: string, paymentExpirationMin
     // @ts-ignore
     await page.evaluate(() => document.getElementById('InvoiceExpiration').value = '');
     await page.type('#InvoiceExpiration', paymentExpirationMinutes);
-    await page.waitForSelector('button[type="submit"]');
-    await page.click('[type="submit"]');
+    // await page.waitForSelector('button[type="submit"]');
+    // await page.click('[type="submit"]');
+    await page.waitForSelector('button#Save');
+    await page.click('button#Save');
     await page.waitForSelector('div.alert.alert-success.alert-dismissible');
     logInfo(`Set invoice expiration time ${paymentExpirationMinutes} minutes for store ${storeId}`);
 };
@@ -146,7 +156,30 @@ const setExpirationMinutesToStore = async (storeId: string, paymentExpirationMin
 export const addBtcRootPublicKeyToStore = async (storeId: string, page: any, browser: any, bip49RootPublicKey: string): Promise<void> => {
     await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}`);
     await page.waitForSelector('a#ModifyBTC');
-    await page.click('a#ModifyBTC');
+    // await page.screenshot({ path: 'example.png' });
+    const aHref = await page.evaluate(
+        () => Array.from(
+            document.querySelectorAll('a#ModifyBTC'),
+            a => a.getAttribute('href'),
+        ),
+    );
+    await page.goto(`${getProperty('BTCPAY_URL')}${aHref}`);
+    await page.waitForSelector('a#ImportWalletOptionsLink');
+    const aHref2 = await page.evaluate(
+        () => Array.from(
+            document.querySelectorAll('a#ImportWalletOptionsLink'),
+            a => a.getAttribute('href'),
+        ),
+    );
+    await page.goto(`${getProperty('BTCPAY_URL')}${aHref2}`);
+    await page.waitForSelector('a#ImportXpubLink');
+    const aHref3 = await page.evaluate(
+        () => Array.from(
+            document.querySelectorAll('a#ImportXpubLink'),
+            a => a.getAttribute('href'),
+        ),
+    );
+    await page.goto(`${getProperty('BTCPAY_URL')}${aHref3}`);
     await page.waitForSelector('textarea#DerivationScheme');
     await page.type('#DerivationScheme', bip49RootPublicKey);
     await page.waitForSelector('button#Continue');
@@ -154,24 +187,5 @@ export const addBtcRootPublicKeyToStore = async (storeId: string, page: any, bro
     await page.waitForSelector('button#Confirm');
     await page.click('button#Confirm');
     await page.waitForSelector('div.alert.alert-success.alert-dismissible');
-    // await page.waitForSelector('button#nbxplorergeneratewalletbtn');
-    // await page.click('button#nbxplorergeneratewalletbtn');
-    // await page.waitForSelector('div.modal.fade.show');
-    // await page.waitForSelector('button#btn-generate');
-    // const pages = (await browser.pages());
-    // const popup = pages[pages.length - 1];
-    // await popup.waitForSelector('button#btn-generate');
-    // await popup.click('button#btn-generate');
-    // await page.waitForSelector('div.alert.alert-success.alert-dismissible');
-    // await page.waitForSelector('code.alert-link');
-    // const contents = await page.evaluate(() => {
-    //     const el = document.querySelector(
-    //         'code.alert-link',
-    //     );
-    //     if (el === null) {
-    //         return '';
-    //     }
-    //     return el.innerHTML;
-    // });
     logInfo(`Successfully added Bitcoin root public key for store with id ${storeId}`);
 };

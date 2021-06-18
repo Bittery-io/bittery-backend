@@ -23,7 +23,7 @@ app.listen(getNumberProperty('APP_PORT'),   () => {
 //     lnAlias: 'KILLEM ALL',
 //     lndHostedType: HostedLndType.STANDARD,
 // });
-startStaticChannelBackupScheduler();
+// startStaticChannelBackupScheduler();
 exports.express = app;
 // tslint:disable-next-line
 // lndUnlockWallet('https://174.138.5.158/lnd-rest/btc', 'dupa');
