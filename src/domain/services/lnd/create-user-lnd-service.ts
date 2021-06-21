@@ -34,7 +34,7 @@ import { Product } from '../../model/billings/product';
 import { addDays } from '../utils/date-service';
 import { BillingStatus } from '../../model/billings/billing-status';
 import { LndConnectUriDto } from '../../../interfaces/dto/lnd/lnd-connect-uri-dto';
-import { findAdminMacaroonHexArtefact } from '../../repository/user-encrypted-ln-artefacts-repository';
+import { findAdminMacaroonHexEncryptedArtefact } from '../../repository/encrypted/user-encrypted-ln-artefacts-repository';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -198,7 +198,7 @@ export const getUserLndConnectUriDetails = async (userEmail: string): Promise<Ln
     const lnd: Lnd | undefined = await findUserLnd(userEmail);
     if (lnd) {
         const dropletIp: string = await findDropletIp(lnd.lndId, userEmail);
-        const adminMacaroonArtefact: string | undefined = await findAdminMacaroonHexArtefact(userEmail, lnd.lndId);
+        const adminMacaroonArtefact: string | undefined = await findAdminMacaroonHexEncryptedArtefact(userEmail, lnd.lndId);
         if (adminMacaroonArtefact) {
             return new LndConnectUriDto(
                 dropletIp,

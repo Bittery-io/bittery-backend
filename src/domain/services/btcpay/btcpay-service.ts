@@ -13,9 +13,7 @@ import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../application/logging-service';
 import { findUserLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
-import {
-    insertStandardWalletSeedArtefact,
-} from '../../repository/user-encrypted-bitcoin-wallet-artefacts-repository';
+import { insertStandardWalletSeedEncryptedArtefact } from '../../repository/encrypted/user-encrypted-store-artefacts-repository';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -46,7 +44,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
                 new Date().toDateString(),
             ));
             if (createUserBtcpayDto.encryptedStandardWalletSeed) {
-                await insertStandardWalletSeedArtefact(
+                await insertStandardWalletSeedEncryptedArtefact(
                     client,
                     userEmail,
                     userBtcpayDetails.storeId,

@@ -16,9 +16,9 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('user_encrypted_ln_artefacts', {
+    id: {type: 'UUID', notNull: true, primaryKey: true},
     user_email: {
       type: 'string',
-      primaryKey: true,
       length: 500,
       notNull: true,
       foreignKey: {
@@ -33,7 +33,6 @@ exports.up = function(db) {
     },
     lnd_id: {
       type: 'UUID',
-      primaryKey: true,
       notNull: true,
       foreignKey: {
         name: 'user_encrypted_artefacts_lnd_id_fk',
@@ -45,9 +44,9 @@ exports.up = function(db) {
         mapping: 'lnd_id'
       },
     },
-    admin_macaroon_hex: { type: 'string', notNull: false },
-    ln_seed: { type: 'string', notNull: false },
-    ln_password: { type: 'string',  notNull: false }
+    encrypted_ln_artefact_type: { type: 'string', length: 50, notNull: false },
+    encrypted_artefact: { type: 'string', notNull: false },
+    creation_date: { type: 'timestamp', timezone: true, notNull: true },
   });
 };
 

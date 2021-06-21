@@ -15,10 +15,10 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('user_encrypted_bitcoin_wallet_artefacts', {
+  return db.createTable('user_encrypted_store_artefacts', {
+    id: { type: 'UUID', notNull: true, primaryKey: true },
     user_email: {
       type: 'string',
-      primaryKey: true,
       length: 500,
       notNull: true,
       foreignKey: {
@@ -34,7 +34,6 @@ exports.up = function(db) {
     store_id: {
       type: 'string',
       length: 500,
-      primaryKey: true,
       unique: true,
       notNull: true,
       foreignKey: {
@@ -47,12 +46,14 @@ exports.up = function(db) {
         mapping: 'store_id'
       },
     },
-    standard_wallet_seed: { type: 'string', notNull: false },
+    encrypted_store_artefact_type: { type: 'string', length: 50, notNull: false },
+    encrypted_artefact: { type: 'string', notNull: false },
+    creation_date: { type: 'timestamp', timezone: true, notNull: true },
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('user_encrypted_bitcoin_wallet_artefacts');
+  return db.dropTable('user_encrypted_store_artefacts');
 };
 
 exports._meta = {

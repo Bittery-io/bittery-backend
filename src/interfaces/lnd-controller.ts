@@ -22,10 +22,11 @@ import { restartLnd } from '../domain/services/lnd/restart-lnd-service';
 import { findUserLndTls } from '../domain/repository/lnd/lnds-repository';
 import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-macaroon-dto';
 import {
-    findAdminMacaroonHexArtefact,
-    findLnPasswordArtefact, findLnSeedArtefact, findUserEncryptedArtefacts,
-    updateAdminMacaroonArtefact,
-} from '../domain/repository/user-encrypted-ln-artefacts-repository';
+    findAdminMacaroonHexEncryptedArtefact,
+    findLnPasswordEncryptedArtefact,
+    findLnSeedMnemonicEncryptedArtefact, findUserEncryptedLnArtefacts,
+    updateAdminMacaroonHexEncryptedArtefact,
+} from '../domain/repository/encrypted/user-encrypted-ln-artefacts-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
 import { getLndStaticChannelBackupClientReadViews } from '../domain/repository/lnd/static-channel-backup/lnd-static-channek-backup-repository';
 import { LndStaticChannelBackupClientReadView } from '../domain/model/lnd/static-channel-backup/lnd-static-channel-backup-client-read-view';
@@ -112,7 +113,7 @@ export class LndController {
             @Body({ required: true }) saveEncryptedAdminMacaroonDto: SaveEncryptedAdminMacaroonDto,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        await updateAdminMacaroonArtefact(userEmail, lndId, saveEncryptedAdminMacaroonDto.encryptedAdminMacaroonHex);
+        await updateAdminMacaroonHexEncryptedArtefact(userEmail, lndId, saveEncryptedAdminMacaroonDto.encryptedAdminMacaroonHex);
         logInfo(`Successfully updated admin macaroon for user ${userEmail} and lnd id ${lndId}`);
         return res.sendStatus(200);
     }
@@ -208,12 +209,12 @@ export class LndController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const encryptedAdminMacaroonHex: string | undefined = await findAdminMacaroonHexArtefact(userEmail, lndId);
+            const encryptedAdminMacaroonHex: string | undefined = await findAdminMacaroonHexEncryptedArtefact(userEmail, lndId);
             if (encryptedAdminMacaroonHex) {
                 logInfo(`Successfully returned encrypted admin macaroon for email ${userEmail} and lnd id ${lndId}`);
                 return res.status(200).send(new EncryptedArtefactDto(encryptedAdminMacaroonHex));
             } else {
-                logInfo(`Failed to return encrypted admin macaroon for email ${userEmail} and lnd id ${lndId} because LND not found`);
+                logError(`Failed to return encrypted admin macaroon for email ${userEmail} and lnd id ${lndId} because LND not found`);
                 return res.sendStatus(400);
             }
         } catch (err) {
@@ -229,7 +230,7 @@ export class LndController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const encryptedAdminMacaroon: string | undefined = await findLnPasswordArtefact(userEmail, lndId);
+            const encryptedAdminMacaroon: string | undefined = await findLnPasswordEncryptedArtefact(userEmail, lndId);
             if (encryptedAdminMacaroon) {
                 logInfo(`Successfully returned encrypted LN node password for email ${userEmail} and lnd id ${lndId}`);
                 return res.status(200).send(new EncryptedArtefactDto(encryptedAdminMacaroon));
@@ -249,7 +250,7 @@ export class LndController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const encryptedLnNodeWalletSeed: string | undefined = await findLnSeedArtefact(userEmail);
+            const encryptedLnNodeWalletSeed: string | undefined = await findLnSeedMnemonicEncryptedArtefact(userEmail);
             if (encryptedLnNodeWalletSeed) {
                 logInfo(`Successfully returned default encrypted LN node wallet seed for email ${userEmail}`);
                 return res.status(200).send(new EncryptedArtefactDto(encryptedLnNodeWalletSeed));

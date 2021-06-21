@@ -2,10 +2,10 @@ import { Response } from 'express-serve-static-core';
 import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { getUserBtcWallet } from '../domain/services/btc/user-btc-wallet-service';
 import { Authorized, Get, HeaderParam, JsonController, Res } from 'routing-controllers/index';
-import { findStandardWalletSeedArtefact } from '../domain/repository/user-encrypted-bitcoin-wallet-artefacts-repository';
 import { logError, logInfo } from '../application/logging-service';
 import { StandardWalletSeedDto } from './dto/wallet/standard-wallet-seed-dto';
 import { UserBtcWalletDto } from './dto/wallet/user-btc-wallet-dto';
+import { findStandardWalletSeedEncryptedArtefact } from '../domain/repository/encrypted/user-encrypted-store-artefacts-repository';
 
 @JsonController('/wallet')
 @Authorized()
@@ -29,7 +29,7 @@ export class WalletController {
         @HeaderParam('authorization', { required: true }) authorizationHeader: string,
         @Res() res: Response) {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        const standardWalletSeed: string | undefined = await findStandardWalletSeedArtefact(userEmail);
+        const standardWalletSeed: string | undefined = await findStandardWalletSeedEncryptedArtefact(userEmail);
         if (standardWalletSeed) {
             logInfo(`Return standard wallet seed for ${userEmail} `);
             return res.status(200).send(new StandardWalletSeedDto(standardWalletSeed));

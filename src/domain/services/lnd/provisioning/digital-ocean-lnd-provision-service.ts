@@ -11,6 +11,7 @@ import { DigitalOceanFailure } from '../../../model/lnd/hosted/digital_ocean/dig
 import { logError } from '../../../../application/logging-service';
 import { getMd5 } from '../../utils/checksum-service';
 import { DigitalOceanLndHosting } from '../../../model/lnd/digital-ocean-lnd-hosting';
+import { sendSetupLndFailedForUserEmail } from '../../../../application/mail-service';
 
 export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
                                                createLndDto: CreateLndDto): Promise<DigitalOceanLndHosting | undefined> => {
@@ -21,7 +22,8 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
             false, createLndDto.lnAlias);
     } catch (err) {
         logError(`Failed to create Digital Ocean LND for user with email ${userEmail}. 
-                          Failed on deployment stage: ${err.failedDeploymentStage}`);
+                          Failed on deployment stage: ${err.failedDeploymentStage}.
+                          Error message: ${err.errorMessage}`);
         await insertDigitalOceanFailure(new DigitalOceanFailure(
             userEmail,
             new Date().toISOString(),
@@ -32,6 +34,7 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
             err.dropletIpPublic,
             err.rtlOneTimeInitPassword,
         ));
+        await sendSetupLndFailedForUserEmail(userEmail, err.failedDeploymentStage, err.errorMessage);
         return undefined;
     }
     try {

@@ -29,7 +29,8 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         dropletId = await createDropletAndGetDropletId(userEmail, dropletName);
         logInfo(`2/7 Successfully created droplet with id ${dropletId}, name ${dropletName} for user email ${userEmail}`);
     } catch (err) {
-        throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.DROPLET_CREATION, dropletName);
+        throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.DROPLET_CREATION,
+            dropletName, err.message);
     }
 
     let dropletIpPublic: string;
@@ -37,7 +38,8 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         dropletIpPublic = await getDropletPublicIp(userEmail, dropletId, dropletName);
         logInfo(`3/7 Successfully obtained public IP ${dropletIpPublic} for droplet with id ${dropletId} for user email ${userEmail}`);
     } catch (err) {
-        throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.DROPLET_IP_OBTAIN, dropletName, dropletId);
+        throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.DROPLET_IP_OBTAIN, dropletName,
+            err.message, dropletId);
     }
 
     let ssh: any;
@@ -46,7 +48,7 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         logInfo(`4/7 Successfully SSH connected to droplet with id ${dropletId} for user email ${userEmail}`);
     } catch (err) {
         throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.SSH_CONNECTION,
-            dropletName, dropletId, dropletIpPublic);
+            dropletName, err.message, dropletId, dropletIpPublic);
     }
 
     try {
@@ -54,7 +56,7 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         logInfo(`5/7 Successfully put LND directory for droplet with id ${dropletId} for user email ${userEmail}`);
     } catch (err) {
         throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.PUT_LND_FILES,
-            dropletName, dropletId, dropletIpPublic);
+            dropletName, err.message, dropletId, dropletIpPublic);
     }
 
     const rtlOneTimePassword: string = generateUuid();
@@ -63,7 +65,7 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         logInfo(`6/7 Successfully started LND for droplet with id ${dropletId} for user email ${userEmail}`);
     } catch (err) {
         throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.START_LND,
-            dropletName, dropletId, dropletIpPublic, rtlOneTimePassword);
+            dropletName, err.message, dropletId, dropletIpPublic, rtlOneTimePassword);
     }
 
     let tlsCertName: string;
@@ -72,7 +74,7 @@ export const createLndDroplet = async (dropletName: string, userEmail: string, h
         logInfo(`7/7 Successfully downloaded TLS certificate for droplet with id ${dropletId} for user email ${userEmail}`);
     } catch (err) {
         throw new CreateDigitalOceanLndFailedException(DigitalOceanLndDeploymentStageType.DOWNLOAD_TLS_CERT,
-            dropletName, dropletId, dropletIpPublic, rtlOneTimePassword);
+            dropletName, err.message, dropletId, dropletIpPublic, rtlOneTimePassword);
     }
     return new DropletCreationInfo(
         dropletId,

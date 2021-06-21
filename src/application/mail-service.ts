@@ -1,5 +1,7 @@
 import { getProperty } from './property-service';
 import { logError, logInfo } from './logging-service';
+import { DigitalOceanLndDeploymentStageType } from '../domain/model/lnd/hosted/digital_ocean/digital-ocean-lnd-deployment-stage-type';
+import { formatDateWithTime } from '../domain/services/utils/date-service';
 const mailgun = require('mailgun-js');
 
 const apiKey = getProperty('MAILGUN_API_KEY');
@@ -95,7 +97,7 @@ export const sendUserRegisterMail = async (usersCounter: number): Promise<string
     </html>`;
     const data = {
         from: 'Bittery.io <notifications@mail.bittery.io>',
-        to: 'peerzet3@gmail.com',
+        to: getProperty('EMAIL_FOR_ADMIN_NOTIFICATIONS'),
         subject: 'Nowy user w Bittery',
         html: body,
     };
@@ -105,6 +107,35 @@ export const sendUserRegisterMail = async (usersCounter: number): Promise<string
         return sendResponse.id;
     } catch (err) {
         logError(`User register mail send failed`, err);
+        return undefined;
+    }
+};
+
+export const sendSetupLndFailedForUserEmail = async (
+        failedForUserEmail: string,
+        deploymentStage: DigitalOceanLndDeploymentStageType,
+        errorMessage?: string): Promise<string | undefined> => {
+    const body: string = `
+    <html>
+    <body>
+    <h3>Użytkownik ${failedForUserEmail} nie zarejestrował się. Błąd: ${deploymentStage}.<h3>
+    <h3>Godzina: ${formatDateWithTime(new Date().getTime())}<h3>
+    <h3>Szczegóły błędu: ${errorMessage ?? 'brak'}<h3>
+    <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: getProperty('EMAIL_FOR_ADMIN_NOTIFICATIONS'),
+        subject: 'Błąd rejestracji użytkownika w Bittery.io',
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo('Sent user registration failed mail');
+        return sendResponse.id;
+    } catch (err) {
+        logError(`User registration fail mail send failed`, err);
         return undefined;
     }
 };
