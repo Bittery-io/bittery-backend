@@ -76,8 +76,8 @@ export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveExte
     const lndInfo: LndInfo | undefined = await lndGetInfo(
         saveUserLndDto.lndRestAddress,
         saveUserLndDto.macaroonHex);
-    logInfo(`Successfully connected to user external LND node address: ${saveUserLndDto.lndRestAddress}`);
     if (lndInfo) {
+        logInfo(`Successfully connected to user external LND node address: ${saveUserLndDto.lndRestAddress}`);
         const lndId: string = generateUuid();
         const tlsCertThumbprint: string = await getCertThumbprintForExternalLnd(userEmail, saveUserLndDto.tlsCertFileText);
         await runInTransaction(async (client: PoolClient) => {

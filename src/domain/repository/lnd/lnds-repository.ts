@@ -42,6 +42,13 @@ export const findLndRestAddress = async (lndId: string, userEmail: string): Prom
     return foundRow ? result.rows[0].lnd_rest_address : undefined;
 };
 
+export const findLndMacaroonHex = async (lndId: string, userEmail: string): Promise<string | undefined> => {
+    const result = await dbPool.query(`SELECT MACAROON_HEX FROM LNDS WHERE LND_ID = $1 AND USER_EMAIL = $2`,
+        [lndId, userEmail]);
+    const foundRow = result.rows[0];
+    return foundRow ? result.rows[0].macaroon_hex : undefined;
+};
+
 // todo docelowo powinno byc po lndId wtedy user moze miec wiecej, na razie jedno starczy
 // todo zmien LND_ADDRESS na LND_IP_ADDRESS
 export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> => {

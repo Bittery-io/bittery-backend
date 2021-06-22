@@ -24,7 +24,7 @@ import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-ma
 import {
     findAdminMacaroonHexEncryptedArtefact,
     findLnPasswordEncryptedArtefact,
-    findLnSeedMnemonicEncryptedArtefact, findUserEncryptedLnArtefacts,
+    findLnSeedMnemonicEncryptedArtefact,
     updateAdminMacaroonHexEncryptedArtefact,
 } from '../domain/repository/encrypted/user-encrypted-ln-artefacts-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
@@ -55,25 +55,6 @@ export class LndController {
                 return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
             }
             logError('Failed to add user LND services', err);
-            return res.status(500).send(new ErrorDto('LND services creation failed',
-                LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
-        }
-    }
-
-    @Post('/external')
-    async saveExternalLndApi(
-            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-            @Res() res: Response,
-            @Body({ required: true }) saveUserLndDto: SaveExternalLndDto): Promise<Response> {
-        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        try {
-            await addExternalLnd(userEmail, saveUserLndDto);
-            return res.status(200).send();
-        } catch (err) {
-            if (err instanceof LndCreateException) {
-                return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
-            }
-            logError(`Failed to add external LND for user ${userEmail}`, err);
             return res.status(500).send(new ErrorDto('LND services creation failed',
                 LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
         }
@@ -164,23 +145,6 @@ export class LndController {
         }
     }
 
-    @Get('/files/tls/custom')
-    async getCustomTlsFile(
-            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-            @Res() res: Response): Promise<Response> {
-        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        // todo zrobic
-        // const customTlsCertText: string | undefined = await findCustomLndTlsCert(userEmail);
-        const customTlsCertText: string | undefined = undefined;
-        if (customTlsCertText) {
-            const tlsCertificateFile: Buffer = Buffer.from(customTlsCertText, 'utf-8');
-            res.contentType('text/plain');
-            return res.status(200).send(tlsCertificateFile);
-        } else {
-            return res.sendStatus(404);
-        }
-    }
-
     @Get('/:lndId/files/tls')
     async getTlsCertificateFileApi(
             @Param('lndId') lndId: string,
@@ -203,7 +167,7 @@ export class LndController {
     }
 
     @Get('/:lndId/files/macaroon')
-    async getAdminMacaroonHexApi(
+    async getEncryptedAdminMacaroonHexApi(
             @Param('lndId') lndId: string,
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
@@ -224,7 +188,7 @@ export class LndController {
     }
 
     @Get('/:lndId/password')
-    async getLnNodeEncryptedPassword(
+    async getLnNodePassword(
             @Param('lndId') lndId: string,
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
