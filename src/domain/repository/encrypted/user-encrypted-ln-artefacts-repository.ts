@@ -76,5 +76,5 @@ export const findLnSeedMnemonicEncryptedArtefact = async (userEmail: string): Pr
                             WHERE USER_EMAIL = $1
                             AND ENCRYPTED_LN_ARTEFACT_TYPE = $2`,
         [userEmail, EncryptedLnArtefactType.LN_SEED_MNEMONIC]);
-    return result.rows.length === 1 ? result.rows[0].ln_seed : undefined;
+    return result.rows.length === 1 ? result.rows[0].encrypted_artefact : undefined;
 };

@@ -37,8 +37,20 @@ export const initializeBtcpayServices = async (
     await setExpirationMinutesToStore(storeId, String(paymentExpirationMinutes), page);
     const pairingCode: string = await getBtcpayPairingCode(storeName, storeId, page);
     const btcpayUserAuthToken: BtcpayUserAuthToken = await generateApiToken(pairingCode);
+    await addCustomLogoAndCssToStorePaymentWidget(page, storeId);
     return new UserBtcpayDetails(userEmail, storeId, btcpayUserAuthToken);
     // return new UserBtcpayDetails(userEmail, storeId, new BtcpayUserAuthToken('asdf', 'asdf'));
+};
+
+const addCustomLogoAndCssToStorePaymentWidget = async (page: any, storeId: string): Promise<void> => {
+    await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}/checkout`);
+    await page.waitForSelector('input#CustomLogo');
+    await page.type('#CustomLogo', `${getProperty('CLIENT_URL_ADDRESS')}/statics/bittery-glow-last.svg`);
+    await page.type('#CustomCSS', `${getProperty('CLIENT_URL_ADDRESS')}/statics/checkout.css`);
+    await page.waitForSelector('button[type="submit"]');
+    await page.click('[type="submit"]');
+    await page.waitForSelector('div.alert.alert-success.alert-dismissible');
+    logInfo(`Successfully set custom logo and checkout CSS to store with id ${storeId}`);
 };
 
 const getBrowser = async() => {

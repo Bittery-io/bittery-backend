@@ -219,7 +219,7 @@ export class LndController {
                 logInfo(`Successfully returned default encrypted LN node wallet seed for email ${userEmail}`);
                 return res.status(200).send(new EncryptedArtefactDto(encryptedLnNodeWalletSeed));
             } else {
-                logInfo(`Failed to return default encrypted LN node wallet seed for email ${userEmail} because LND not found`);
+                logError(`Failed to return default encrypted LN node wallet seed for email ${userEmail} because LND not found`);
                 return res.sendStatus(400);
             }
         } catch (err) {

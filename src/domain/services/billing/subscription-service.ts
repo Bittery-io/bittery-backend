@@ -111,9 +111,9 @@ export const getUserSubscriptionBillingInvoices = async (userEmail: string): Pro
 const getSubscriptionPlan = (hostedLndType: HostedLndType): SubscriptionPlan => {
     switch (hostedLndType) {
         case HostedLndType.ENCRYPTED:
-            return SubscriptionPlan.LN_NODE_ENCRYPTED;
+            return SubscriptionPlan.BITTERY_ENCRYPTED;
         case HostedLndType.STANDARD:
-            return SubscriptionPlan.LN_NODE_STANDARD;
+            return SubscriptionPlan.BITTERY_STANDARD;
     }
 };
 
