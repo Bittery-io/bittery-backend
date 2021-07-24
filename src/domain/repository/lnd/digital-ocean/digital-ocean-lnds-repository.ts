@@ -1,7 +1,7 @@
-import { DigitalOceanLnd } from '../../model/lnd/hosted/digital_ocean/digital-ocean-lnd';
+import { DigitalOceanLnd } from '../../../model/lnd/hosted/digital_ocean/digital-ocean-lnd';
 import { PoolClient } from 'pg';
-import { dbPool } from '../../../application/db/db';
-import { DigitalOceanLndForRestart } from '../../model/lnd/hosted/digital_ocean/digital-ocean-lnd-for-restart';
+import { dbPool } from '../../../../application/db/db';
+import { DigitalOceanLndForRestart } from '../../../model/lnd/hosted/digital_ocean/digital-ocean-lnd-for-restart';
 
 export const insertDigitalOceanLnd = async (client: PoolClient, digitalOceanLnd: DigitalOceanLnd): Promise<void> => {
     await client.query(`

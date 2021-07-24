@@ -43,10 +43,9 @@ mkdir -p $PWD/volumes/lnd/
 mv $PWD/lnd.conf $PWD/volumes/lnd/lnd.conf
 ###############################
 
-sleep 10
-chmod u+rwx /root/docker-compose.user.without.rtl.yaml
-docker-compose -f /root/docker-compose.user.without.rtl.yaml down
-docker-compose -f /root/docker-compose.user.without.rtl.yaml up -d
+chmod u+rwx $PWD/docker-compose.yaml
+docker-compose -f $PWD/docker-compose.yaml down
+docker-compose -f $PWD/docker-compose.yaml up -d
 cp $PWD/lnd.nginx.conf $PWD/volumes/nginx/conf/lnd.nginx.conf
 
 sleep 2

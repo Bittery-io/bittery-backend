@@ -12,7 +12,6 @@ import { provisionDigitalOceanLnd } from './provisioning/digital-ocean-lnd-provi
 import { findUserLnd, insertLnd, userHasLnd } from '../../repository/lnd/lnds-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { insertHostedLnd } from '../../repository/lnd/lnd-hosted-repository';
-import { findDropletIp, insertDigitalOceanLnd } from '../../repository/lnd/digital-ocean-lnds-repository';
 import { findRtl, insertUserRtl } from '../../repository/lnd/rtls-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { LndType } from '../../model/lnd/lnd-type';
@@ -28,13 +27,14 @@ import {
     lndSetupBacklogExists,
 } from '../../repository/lnd/setup-backlog/lnd-setup-backlog-repository';
 import { LndSetupBacklog } from '../../model/lnd/setup-backlog/lnd-setup-backlog';
-import { insertBilling } from '../../repository/billings-repository';
-import { Billing } from '../../model/billings/billing';
+import { insertBilling } from '../../repository/lnd-billings-repository';
+import { LndBilling } from '../../model/billings/lnd-billing';
 import { Product } from '../../model/billings/product';
 import { addDays } from '../utils/date-service';
 import { BillingStatus } from '../../model/billings/billing-status';
 import { LndConnectUriDto } from '../../../interfaces/dto/lnd/lnd-connect-uri-dto';
 import { findAdminMacaroonHexEncryptedArtefact } from '../../repository/encrypted/user-encrypted-ln-artefacts-repository';
+import { findDropletIp, insertDigitalOceanLnd } from '../../repository/lnd/digital-ocean/digital-ocean-lnds-repository';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
@@ -45,10 +45,10 @@ export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): 
             if (digitalOceanLndHosting) {
                 await runInTransaction(async (client: PoolClient) => {
                     await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                    await insertBilling(client, new Billing(
+                    await insertBilling(client, new LndBilling(
                         generateUuid(),
                         userEmail,
-                        Product.LND,
+                        lndId,
                         'PAID_BY_BITTERY',
                         new Date().toISOString(),
                         new Date(addDays(new Date().getTime(), 3)).toISOString(),

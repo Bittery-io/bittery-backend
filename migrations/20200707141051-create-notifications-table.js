@@ -16,6 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('notifications', {
+    id: { type: 'UUID', primaryKey: true },
     user_email: {
       type: 'string',
       length: 500,
@@ -30,7 +31,7 @@ exports.up = function(db) {
         mapping: 'email'
       },
     },
-    notification_id: {type: 'string', primaryKey: true, notNull: true},
+    notification_message_id: {type: 'string', notNull: true},
     notification_type: { type: 'string', length: 20, notNull: true },
     notification_reason: { type: 'string', length: 50, notNull: true },
     notification_send_date: { type: 'timestamp', timezone: true, notNull: true },

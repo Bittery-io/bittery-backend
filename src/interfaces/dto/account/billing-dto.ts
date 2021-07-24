@@ -12,9 +12,10 @@ export class BillingDto {
     btcPaid: string;
     currency: string;
     price: number;
+    lndId: string;
 
     constructor(invoiceTime: number, description: string, product: Product, invoiceId: string, paidToDate: number, status: BillingStatus,
-                btcPrice: string, btcPaid: string, currency: string, price: number) {
+                btcPrice: string, btcPaid: string, currency: string, price: number, lndId: string) {
         this.invoiceTime = invoiceTime;
         this.description = description;
         this.product = product;
@@ -25,5 +26,6 @@ export class BillingDto {
         this.btcPaid = btcPaid;
         this.currency = currency;
         this.price = price;
+        this.lndId = lndId;
     }
 }

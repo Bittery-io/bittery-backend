@@ -52,12 +52,11 @@ if [ -f "$PWD/RTL-Config.json" ]; then
   $PWD/RTL-Config.json | sed -e $'s/\\\\n/\\\n        /g')" > $PWD/RTL-Config.json
   mv $PWD/RTL-Config.json $PWD/volumes/rtl/config/RTL-Config.json
 fi
-sleep 10
-chmod u+rwx /root/docker-compose.user.with.rtl.yaml
-docker-compose -f /root/docker-compose.user.with.rtl.yaml down
-docker-compose -f /root/docker-compose.user.with.rtl.yaml up -d
-cp $PWD/lnd.nginx.conf $PWD/volumes/nginx/conf/lnd.nginx.conf
 
+chmod u+rwx $PWD/docker-compose.yaml
+docker-compose -f $PWD/docker-compose.yaml down
+docker-compose -f $PWD/docker-compose.yaml up -d
+cp $PWD/lnd.nginx.conf $PWD/volumes/nginx/conf/lnd.nginx.conf
 
 sleep 2
 docker exec -t nginx sh -c 'nginx -s reload' 2>&1

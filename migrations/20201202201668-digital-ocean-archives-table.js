@@ -15,13 +15,13 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('digital_ocean_lnds', {
+  return db.createTable('digital_ocean_archives', {
     lnd_id: {
       type: 'UUID',
       primaryKey: true,
       notNull: true,
       foreignKey: {
-        name: 'digital_ocean_lnds_lnds_lnd_id_fk',
+        name: 'digital_ocean_archives_lnds_lnd_id_fk',
         table: 'lnds',
         rules: {
           onDelete: 'CASCADE',
@@ -30,14 +30,13 @@ exports.up = function(db) {
         mapping: 'lnd_id'
       },
     },
-    droplet_id: { type: 'int', notNull: true, unique: true },
-    droplet_name: { type: 'string', length: 100, notNull: true },
-    droplet_ip: { type: 'string', length: 20, notNull: true, },
+    archive_date: { type: 'timestamp', timezone: true, notNull: true },
+    backup_name: {type: 'string', length: 200, notNull: true},
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('digital_ocean_lnds');
+  return db.dropTable('digital_ocean_archives');
 };
 
 exports._meta = {

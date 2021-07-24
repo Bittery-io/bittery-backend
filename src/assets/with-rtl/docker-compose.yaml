@@ -6,9 +6,9 @@ networks:
 services:
 
   lnd_bitcoin:
+    restart: unless-stopped
     image: lightninglabs/lnd:${LND_HOSTED_VERSION}
     container_name: lnd_bitcoin
-    restart: unless-stopped
     volumes:
       - ./volumes/lnd:/root/.lnd
     networks:
@@ -18,6 +18,21 @@ services:
       - 10009
     ports:
       - 9735:9735
+
+  rtl:
+    restart: unless-stopped
+    image: bitteryio/rtl:${RTL_HOSTED_VERSION}
+    container_name: rtl
+    environment:
+      - RTL_CONFIG_PATH=/config
+    volumes:
+      - ./volumes/lnd/data/chain/bitcoin/mainnet:/data/macaroon:ro
+      - ./volumes/rtl/channel_backup:/data/channel_backup
+      - ./volumes/rtl/config:/config
+    networks:
+      - bittery-net
+    expose:
+      - 3000
 
   nginx:
     restart: unless-stopped
@@ -33,4 +48,5 @@ services:
       - bittery-net
     ports:
       - 443:443
+#      To jest potrzebne dla ZAP'a i w ogole aby polaczyc sie przez wallet
       - 10009:10009

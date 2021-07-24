@@ -2,8 +2,6 @@ import { HostedLndType } from './hosted-lnd-type';
 import { Lnd } from '../lnd';
 import { LndType } from '../lnd-type';
 import { HostedLndProvider } from './hosted-lnd-provider';
-import { Rtl } from './rtl/rtl';
-import { ln } from 'shelljs';
 
 export class HostedLnd extends Lnd {
 

@@ -6,11 +6,7 @@ import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-excep
 import { UserBtcpayErrorType } from '../domain/services/btcpay/user-btcpay-error-type';
 import { CreateUserBtcpayDto } from './dto/create-user-btcpay-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
-import { getBooleanProperty } from '../application/property-service';
-import { saveInvoice } from '../domain/services/payments/invoice-service';
-import { LndCreateException } from '../domain/model/lnd/lnd-create-exception';
-import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-type';
+import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers/index';
 import { ExtendSubscriptionDto } from './dto/account/extend-subscription-dto';
 import {
     extendSubscription,
@@ -20,6 +16,7 @@ import {
 import { SubscriptionDto } from './dto/account/subscription-dto';
 import { ExtendSubscriptionResultDto } from './dto/account/extend-subscription-result-dto';
 import { BillingDto } from './dto/account/billing-dto';
+const crypto = require('crypto');
 
 @JsonController('/account')
 @Authorized()

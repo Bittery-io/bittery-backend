@@ -1,5 +1,6 @@
 export enum BillingStatus {
     PAID = 'PAID',
     PENDING = 'PENDING',
-    CANCELLED = 'CANCELLED',
+    REPLACED_BY_NEWER = 'REPLACED_BY_NEWER',
+    EXPIRED = 'EXPIRED',
 }

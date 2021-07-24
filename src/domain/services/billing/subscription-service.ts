@@ -2,9 +2,10 @@ import {
     findBillingsNewestFirst,
     findLatestCreatedBillingWithStatus,
     insertBilling,
-} from '../../repository/billings-repository';
+    updateAllBillingsWithGivenStatusSetNewStatus,
+} from '../../repository/lnd-billings-repository';
 import { Product } from '../../model/billings/product';
-import { Billing } from '../../model/billings/billing';
+import { LndBilling } from '../../model/billings/lnd-billing';
 import { BillingStatus } from '../../model/billings/billing-status';
 import { addMonthsToDate, isFirstDateAfterSecond } from '../utils/date-service';
 import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
@@ -15,19 +16,19 @@ import { generateUuid } from '../utils/id-generator-service';
 import { logError, logInfo } from '../../../application/logging-service';
 import { SubscriptionStatus } from '../../model/account/subscription-status';
 import { SubscriptionDto } from '../../../interfaces/dto/account/subscription-dto';
-import { findUserHostedLndType } from '../../repository/lnd/lnd-hosted-repository';
+import { findUserHostedLnd } from '../../repository/lnd/lnd-hosted-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { ExtendSubscriptionDto } from '../../../interfaces/dto/account/extend-subscription-dto';
 import { SubscriptionPlan } from '../../model/account/subscription-plan';
 import { BillingDto } from '../../../interfaces/dto/account/billing-dto';
 import { Invoice } from 'btcpay';
 import { getNumberProperty } from '../../../application/property-service';
+import { HostedLnd } from '../../model/lnd/hosted/hosted-lnd';
 
 const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE_USD');
 
 export const extendSubscription = async (userEmail: string, extendSubscriptionDto: ExtendSubscriptionDto): Promise<string | undefined> => {
-    const latestPaidUserBilling: Billing = (await findLatestCreatedBillingWithStatus(
-        userEmail, Product.LND, BillingStatus.PAID))!;
+    const latestPaidUserBilling: LndBilling = (await findLatestCreatedBillingWithStatus(userEmail, BillingStatus.PAID))!;
     const latestPaidToTime: number = new Date(latestPaidUserBilling.paidToDate).getTime();
     if (isFirstDateAfterSecond(latestPaidToTime, new Date().getTime())) {
         const newPaidToDate: Date = new Date(addMonthsToDate(latestPaidToTime, extendSubscriptionDto.subscriptionTimeMonths));
@@ -40,10 +41,11 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
                 `Bittery LND ${extendSubscriptionDto.subscriptionTimeMonths} months plan`,
                 userEmail));
         await runInTransaction((client) => {
-            insertBilling(client, new Billing(
+            updateAllBillingsWithGivenStatusSetNewStatus(userEmail, BillingStatus.PENDING, BillingStatus.REPLACED_BY_NEWER);
+            insertBilling(client, new LndBilling(
                 generateUuid(),
                 userEmail,
-                Product.LND,
+                latestPaidUserBilling.lndId,
                 btcpayInvoice.id,
                 new Date().toISOString(),
                 newPaidToDate.toISOString(),
@@ -60,17 +62,18 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
 };
 
 export const getUserSubscription = async (userEmail: string): Promise<SubscriptionDto> => {
-    const latestPaidUserBilling: Billing = (await findLatestCreatedBillingWithStatus(
-        userEmail, Product.LND, BillingStatus.PAID))!;
-    const hostedLndType: HostedLndType | undefined = await findUserHostedLndType(userEmail);
-    if (hostedLndType) {
+    const hostedLnds: HostedLnd[] = await findUserHostedLnd(userEmail);
+    if (hostedLnds.length > 0) {
+        // todo currently only for single LND per user
+        const hostedLnd: HostedLnd = hostedLnds[0];
+        const latestPaidUserBilling: LndBilling = (await findLatestCreatedBillingWithStatus(userEmail, BillingStatus.PAID))!;
         const latestPaidToTime: number = new Date(latestPaidUserBilling.paidToDate).getTime();
         const subscriptionStatus: SubscriptionStatus = isFirstDateAfterSecond(latestPaidToTime, new Date().getTime()) ?
             SubscriptionStatus.ACTIVE : SubscriptionStatus.EXPIRED;
         return new SubscriptionDto(
             subscriptionStatus,
             new Date(latestPaidUserBilling.paidToDate).getTime(),
-            getSubscriptionPlan(hostedLndType),
+            getSubscriptionPlan(hostedLnd.hostedLndType),
             BITTERY_SUBSCRIPTION_PRICE_USD.toFixed(2),
             [],
         );
@@ -87,14 +90,14 @@ export const getUserSubscription = async (userEmail: string): Promise<Subscripti
 
 export const getUserSubscriptionBillingInvoices = async (userEmail: string): Promise<BillingDto[]> => {
     const billingDtos: BillingDto[] = [];
-    const userBillings: Billing[] = await findBillingsNewestFirst(userEmail);
+    const userBillings: LndBilling[] = await findBillingsNewestFirst(userEmail);
     for (const billing of userBillings) {
         if (billing.invoiceId !== 'PAID_BY_BITTERY') {
-            const bitteryInvoice: Invoice =  await getBitteryInvoice(userEmail, billing.invoiceId);
+            const bitteryInvoice: Invoice =  await getBitteryInvoice(billing.invoiceId);
             billingDtos.push(new BillingDto(
                 new Date(billing.creationDate).getTime(),
                 bitteryInvoice.itemDesc!,
-                billing.product,
+                Product.LND,
                 billing.invoiceId,
                 new Date(billing.paidToDate).getTime(),
                 billing.status,
@@ -102,6 +105,7 @@ export const getUserSubscriptionBillingInvoices = async (userEmail: string): Pro
                 bitteryInvoice.btcPaid,
                 bitteryInvoice.currency,
                 bitteryInvoice.price,
+                billing.lndId,
             ));
         }
     }

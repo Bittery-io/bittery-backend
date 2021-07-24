@@ -6,12 +6,12 @@ import { getCertThumbprint } from '../../../../application/openssl-service';
 import { Rtl } from '../../../model/lnd/hosted/rtl/rtl';
 import { HostedLndType } from '../../../model/lnd/hosted/hosted-lnd-type';
 import { createLndDroplet } from './lnd-droplet-digital-ocean-provision-service';
-import { insertDigitalOceanFailure } from '../../../repository/lnd/digital-ocean-failures-repository';
 import { DigitalOceanFailure } from '../../../model/lnd/hosted/digital_ocean/digital-ocean-failure';
 import { logError } from '../../../../application/logging-service';
 import { getMd5 } from '../../utils/checksum-service';
 import { DigitalOceanLndHosting } from '../../../model/lnd/digital-ocean-lnd-hosting';
 import { sendSetupLndFailedForUserEmail } from '../../../../application/mail-service';
+import { insertDigitalOceanFailure } from '../../../repository/lnd/digital-ocean/digital-ocean-failures-repository';
 
 export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
                                                createLndDto: CreateLndDto): Promise<DigitalOceanLndHosting | undefined> => {

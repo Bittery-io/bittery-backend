@@ -4,13 +4,13 @@ import { logError, logInfo } from '../../../application/logging-service';
 import { LndInitWalletDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-dto';
 import { LndInitWalletResponseDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-response-dto';
 import { sleep } from '../utils/sleep-service';
-import { findDropletIp } from '../../repository/lnd/digital-ocean-lnds-repository';
 import { readAdminMacaroonBase64FromLnd } from './lnd-files-service';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { insertUserEncryptedLnArtefacts } from '../../repository/encrypted/user-encrypted-ln-artefacts-repository';
 import { UserEncryptedLnArtefact } from '../../model/encrypted/user-encrypted-ln-artefact';
 import { generateUuid } from '../utils/id-generator-service';
 import { EncryptedLnArtefactType } from '../../model/encrypted/encrypted-ln-artefact-type';
+import { findDropletIp } from '../../repository/lnd/digital-ocean/digital-ocean-lnds-repository';
 
 export const generateLndSeed = async (userEmail: string, lndId: string): Promise<string[] | undefined> => {
     const lndRestAddress: string | undefined = await findLndRestAddress(lndId, userEmail);

@@ -35,9 +35,9 @@ export class LndController {
 
     @Post('/')
     async saveExternalLndApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Res() res: Response,
-        @Body({ required: true }) saveUserLndDto: SaveExternalLndDto): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response,
+            @Body({ required: true }) saveUserLndDto: SaveExternalLndDto): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
             await addExternalLnd(userEmail, saveUserLndDto);

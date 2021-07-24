@@ -16,16 +16,16 @@ exports.setup = function (options, seedLink) {
 
 exports.up = function (db) {
   return db.addIndex(
-      'billings',
-      'billings_creation_date_index',
-      ['user_email', 'creation_date']
+      'lnd_billings',
+      'lnd_billings_paid_to_date_index',
+      ['user_email', 'paid_to_date']
   );
 };
 
 exports.down = function (db) {
   return db.removeIndex(
-      'billings',
-      'billings_creation_date_index'
+      'lnd_billings',
+      'lnd_billings_paid_to_date_index'
   );
 };
 

@@ -1,15 +1,17 @@
-import { dbPool } from '../../application/db/db';
-import { Notification } from '../model/notification/notification';
-import { NotificationTypeEnum } from '../model/notification/notification-type-enum';
+import { dbPool } from '../../../application/db/db';
+import { Notification } from '../../model/notification/notification';
+import { NotificationTypeEnum } from '../../model/notification/notification-type-enum';
 import { PoolClient } from 'pg';
 
 export const insertNotification = async (client: PoolClient, notification: Notification): Promise<void> => {
     await client.query(`
-                INSERT INTO NOTIFICATIONS(USER_EMAIL, NOTIFICATION_ID, NOTIFICATION_TYPE, NOTIFICATION_REASON,
+                INSERT INTO NOTIFICATIONS(ID, USER_EMAIL, NOTIFICATION_MESSAGE_ID, NOTIFICATION_TYPE, NOTIFICATION_REASON,
                                           NOTIFICATION_SEND_DATE)
-                VALUES ($1, $2, $3, $4, $5)`,
-        [notification.userEmail,
-            notification.notificationId,
+                VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+            notification.id,
+            notification.userEmail,
+            notification.notificationMessageId,
             notification.notificationType,
             notification.notificationReason,
             notification.notificationSendDate]);

@@ -139,3 +139,72 @@ export const sendSetupLndFailedForUserEmail = async (
         return undefined;
     }
 };
+
+export const sendSubscriptionEndsSoonEmail = async (toEmail: string, subscriptionDaysLeft: number): Promise<string | undefined> => {
+    const url = `${getProperty('CLIENT_URL_ADDRESS')}/account`;
+    const body: string = `
+    <html>
+    <body>
+    <h2>Bittery.io - better Bitcoin payments subscription ends soon</h2>
+    <br>
+    <p>Your Bittery.io subscription ends in <b>${subscriptionDaysLeft} days</b>.</p>
+    <p>Please extend your subscription otherwise it will be disabled.</b></p>
+    <p style="color: red">Your personal Lightning Network node will be <b>turned off and archived</b>.</p>
+    <br>
+    <p>You can <b>extend your subscription</b> here: <a href='${url}'>${url}</a></p>
+    <br><br>
+    --------------------------------------------------- <br>
+      Bittery.io<br>
+      Website: <a href='https://bittery.io'> https://bittery.io </a> <br>
+      E-mail: bitteryio@protonmail.com <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: toEmail,
+        subject: `Your Bittery.io subscription ends in ${subscriptionDaysLeft} days.`,
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo(`Successfully sent subscription ends in ${subscriptionDaysLeft} days email to ${toEmail}. ${sendResponse}`);
+        return sendResponse.id;
+    } catch (err) {
+        logError(`Sending subscription ends in ${subscriptionDaysLeft} days email to ${toEmail} failed`, err);
+        return undefined;
+    }
+};
+
+export const subscriptionEndedEmail = async (toEmail: string): Promise<string | undefined> => {
+    const url = `${getProperty('CLIENT_URL_ADDRESS')}/subscribe`;
+    const body: string = `
+    <html>
+    <body>
+    <h2>Bittery.io - better Bitcoin payments subscription just ended</h2>
+    <br>
+    <p>Your Bittery.io subscription just neded. You can still sign in but your payment services are now disabled.</p>
+    <p style="color: red">Your personal Lightning Network Node was turned off and archived.</p>
+    <br>
+    <p>You can <b>renew your subscription</b> anytime here: <a href='${url}'>${url}</a></p>
+    <br><br>
+    --------------------------------------------------- <br>
+      Bittery.io<br>
+      Website: <a href='https://bittery.io'> https://bittery.io </a> <br>
+      E-mail: bitteryio@protonmail.com <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: toEmail,
+        subject: `Your Bittery.io subscription just ended`,
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo(`Successfully sent subscription ended email to ${toEmail}. ${sendResponse}`);
+        return sendResponse.id;
+    } catch (err) {
+        logError(`Sending subscription ended email to ${toEmail} failed`, err);
+        return undefined;
+    }
+};

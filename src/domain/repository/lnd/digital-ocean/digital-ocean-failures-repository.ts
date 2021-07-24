@@ -1,5 +1,5 @@
-import { DigitalOceanFailure } from '../../model/lnd/hosted/digital_ocean/digital-ocean-failure';
-import { dbPool } from '../../../application/db/db';
+import { DigitalOceanFailure } from '../../../model/lnd/hosted/digital_ocean/digital-ocean-failure';
+import { dbPool } from '../../../../application/db/db';
 
 export const insertDigitalOceanFailure = async (digitalOceanFailure: DigitalOceanFailure): Promise<void> => {
     await dbPool.query(`

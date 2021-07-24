@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('billings', {
+  return db.createTable('lnd_billings', {
     id: {type: 'UUID', notNull: true, primaryKey: true},
     user_email: {
       type: 'string',
@@ -31,7 +31,19 @@ exports.up = function(db) {
         mapping: 'email'
       },
     },
-    product: { type: 'string', length: 20, notNull: true },
+    lnd_id: {
+      type: 'UUID',
+      notNull: true,
+      foreignKey: {
+        name: 'lnd_billings_lnds_lnd_id_fk',
+        table: 'lnds',
+        rules: {
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE'
+        },
+        mapping: 'lnd_id'
+      },
+    },
     invoice_id: { type: 'string', length: 100, notNull: true },
     creation_date: { type: 'timestamp', timezone: true, notNull: true },
     paid_to_date: { type: 'timestamp', timezone: true, notNull: true },
@@ -40,7 +52,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('billings');
+  return db.dropTable('lnd_billings');
 };
 
 exports._meta = {

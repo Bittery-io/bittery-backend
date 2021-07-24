@@ -11,7 +11,7 @@ import { generateUuid } from '../../utils/id-generator-service';
 import { CreateDigitalOceanLndFailedException } from '../../../model/lnd/hosted/digital_ocean/create-digital-ocean-lnd-failed-exception';
 import { DigitalOceanLndDeploymentStageType } from '../../../model/lnd/hosted/digital_ocean/digital-ocean-lnd-deployment-stage-type';
 
-const DIGITAL_OCEAN_TOKEN: string = 'd73fbdd7581ca76295539e499aabf8a7d6128ba0695898b5216502d2fb84fa96';
+export const DIGITAL_OCEAN_TOKEN: string = getProperty('DIGITAL_OCEAN_TOKEN');
 const readFile = util.promisify(fs.readFile);
 
 const { NodeSSH } = require('node-ssh');

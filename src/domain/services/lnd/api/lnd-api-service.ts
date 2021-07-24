@@ -6,7 +6,14 @@ import { LndInitWalletDto } from '../../../../interfaces/dto/lnd/lnd-init-wallet
 import { LndLockedException } from '../../../model/lnd/api/lnd-locked-exception';
 import { LndInfo } from '../../../model/lnd/api/lnd-info';
 
+// 5 secs
+const LND_TIMEOUT = 3500;
 export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string): Promise<LndInfo | undefined> => {
+    const source = axios.CancelToken.source();
+    const timeout = setTimeout(() => {
+        source.cancel();
+        // Timeout Logic
+    }, LND_TIMEOUT);
     try {
         // tslint:disable-next-line:no-parameter-reassignment
         // tlsCert = undefined;
@@ -19,11 +26,14 @@ export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string): P
         const httpsAgent = new https.Agent({ rejectUnauthorized: false });
         const res = await axios.get(`${lndRestAddress}/v1/getinfo`, {
             httpsAgent,
+            cancelToken: source.token,
             headers: {
                 'Grpc-Metadata-macaroon': macaroonHex,
             },
-            timeout: 6000,
+            // 10 secs
+            timeout: 2000,
         });
+        clearTimeout(timeout);
         return new LndInfo(
             res.data.identity_pubkey,
             res.data.synced_to_chain,
@@ -37,6 +47,7 @@ export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string): P
             res.data.alias,
         );
     } catch (err) {
+        clearTimeout(timeout);
         logError(`Get info of LND with address ${lndRestAddress} failed!`, err.message);
         return undefined;
     }
@@ -98,16 +109,24 @@ export const lndBakeMacaroonForBtcPay = async (lndRestAddress: string, macaroonH
 };
 
 export const lndUnlockWallet = async (lndRestAddress: string, walletPassword: string): Promise<boolean> => {
+    const source = axios.CancelToken.source();
+    const timeout = setTimeout(() => {
+        source.cancel();
+        // Timeout Logic
+    }, LND_TIMEOUT);
     try {
         await axios.post(`${lndRestAddress}/v1/unlockwallet`, {
             wallet_password: Buffer.from(walletPassword).toString('base64'),
         }, {
+            cancelToken: source.token,
             httpsAgent: new https.Agent({
                 rejectUnauthorized: false,
             }),
         });
+        clearTimeout(timeout);
         return true;
     } catch (err) {
+        clearTimeout(timeout);
         logError(`Unlock for LND with address ${lndRestAddress} failed!`, err.message);
         if (err.response && err.response.data && err.response.data.code === 2 &&
                 err.response.data.message === 'invalid passphrase for master public key') {

@@ -31,7 +31,7 @@ export const findUser = async (email: string): Promise<User | undefined> => {
     const query: string = `SELECT * FROM USERS WHERE EMAIL = $1`;
     const result = await dbPool.query(query, [email]);
     return result.rows.length === 1 ?
-        new User(
+        new User( 
             result.rows[0].email,
             result.rows[0].password,
             result.rows[0].active,

@@ -21,6 +21,28 @@ export const createBtcpayInvoice = async (saveInvoiceDto: SaveInvoiceDto, btcpay
     return new BtcpayInvoice(res.id, res.url);
 };
 
+export const createBtcpayInvoiceForBitterySubscription = async (
+        saveInvoiceDto: SaveInvoiceDto, btcpayUserAuthToken: BtcpayUserAuthToken, invoiceOwnerEmail: string): Promise<BtcpayInvoice> => {
+    const keyPair = btcpay.crypto.load_keypair(Buffer.from(btcpayUserAuthToken.privateKey, 'hex'));
+    const clientFinal = new btcpay.BTCPayClient(getProperty('BTCPAY_URL'),
+        keyPair, { merchant: btcpayUserAuthToken.merchantToken });
+    const invoiceOwnerEmailBase64: string = Buffer.from(invoiceOwnerEmail).toString('base64');
+    const res = await clientFinal.create_invoice({
+        currency: saveInvoiceDto.currency,
+        price: saveInvoiceDto.amount,
+        itemDesc: saveInvoiceDto.itemDesc,
+        buyer: {
+            name: saveInvoiceDto.buyer,
+        },
+        extendedNotifications: true,
+        fullNotifications: true,
+        notificationURL: `http://172.18.0.1:3001/btcpay/billing/invoice/${getProperty('BTCPAY_WEBHOOK_SECRET_KEY')}/${invoiceOwnerEmailBase64}`,
+        // za 60 sekund!!!
+        expirationTime: new Date().getTime() + 1000 * 60,
+    });
+    return new BtcpayInvoice(res.id, res.url);
+};
+
 const getClient = (btcpayUserAuthToken: BtcpayUserAuthToken) => {
     const keyPair = btcpay.crypto.load_keypair(Buffer.from(btcpayUserAuthToken.privateKey, 'hex'));
     return new btcpay.BTCPayClient(getProperty('BTCPAY_URL'),

@@ -62,3 +62,7 @@ export const isFirstDateAfterSecond = (firstDate: number, secondDate: number) =>
 export const addMonthsToDate = (date: number, months: number): number => {
     return dayjs(date).add(months, 'month').valueOf();
 };
+
+export const isNowPlusGivenDaysAfterGivenDate = (date: number, days: number): boolean => {
+    return !dayjs().add(days, 'day').isBefore(dayjs(date));
+};

@@ -23,13 +23,13 @@ import { ConfirmRegistrationDto } from '../../../../interfaces/dto/confirm-regis
 import { sendRegistrationEmail } from '../../../../application/mail-service';
 import { verifyCaptcha } from '../../../../application/recaptcha-service';
 import { validatePlainPassword, validatePlainPasswords } from '../../validation/password-validation-service';
-import { insertNotification } from '../../../repository/notifications-repository';
 import { Notification } from '../../../model/notification/notification';
 import { NotificationTypeEnum } from '../../../model/notification/notification-type-enum';
 import { NotificationReasonEnum } from '../../../model/notification/notification-reason-enum';
 import { runInTransaction } from '../../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../../application/logging-service';
+import { insertNotification } from '../../../repository/notifications/notifications-repository';
 
 export const registerNewUser = async (registerUserDto: RegisterUserDto): Promise<void> => {
     if (await verifyCaptcha(registerUserDto.captchaCode)) {
@@ -100,6 +100,7 @@ const sendConfirmationEmailAndSaveInDb = async (registerUserDto: RegisterUserDto
                 sendDate,
             ));
             await insertNotification(client, new Notification(
+                generateUuid(),
                 registerUserDto.email,
                 messageId,
                 NotificationTypeEnum.EMAIL,

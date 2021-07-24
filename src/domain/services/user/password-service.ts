@@ -15,13 +15,16 @@ import { updateUserPassword, userExists } from '../../repository/user-repository
 import { PasswordResetErrorType } from '../../model/user/password-reset-error-type';
 import { PasswordResetDto } from '../../../interfaces/dto/password-reset-dto';
 import { verifyCaptcha } from '../../../application/recaptcha-service';
-import { insertNotification, notificationsLimitNotExceededForUser } from '../../repository/notifications-repository';
 import { Notification } from '../../model/notification/notification';
 import { NotificationTypeEnum } from '../../model/notification/notification-type-enum';
 import { NotificationReasonEnum } from '../../model/notification/notification-reason-enum';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { Pool, PoolClient } from 'pg';
 import { logError } from '../../../application/logging-service';
+import {
+    insertNotification,
+    notificationsLimitNotExceededForUser,
+} from '../../repository/notifications/notifications-repository';
 
 export const encodePassword = (password: string): string => {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(Number(getProperty('ENCRYPTION_PASSWORD_SALT_ROUNDS'))));
@@ -56,6 +59,7 @@ export const resetPassword = async (passwordResetDto: PasswordResetDto): Promise
                             sendDate,
                         ));
                         await insertNotification(client, new Notification(
+                            generateUuid(),
                             passwordResetDto.email,
                             messageId,
                             NotificationTypeEnum.EMAIL,

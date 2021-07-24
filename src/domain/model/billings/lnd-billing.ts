@@ -1,20 +1,19 @@
-import { Product } from './product';
 import { BillingStatus } from './billing-status';
 
-export class Billing {
+export class LndBilling {
     id: string;
     userEmail: string;
-    product: Product;
+    lndId: string;
     invoiceId: string;
     creationDate: string;
     paidToDate: string;
     status: BillingStatus;
 
-    constructor(id: string, userEmail: string, product: Product, invoiceId: string, creationDate: string, paidToDate: string,
+    constructor(id: string, userEmail: string, lndId: string, invoiceId: string, creationDate: string, paidToDate: string,
                 status: BillingStatus) {
         this.id = id;
         this.userEmail = userEmail;
-        this.product = product;
+        this.lndId = lndId;
         this.invoiceId = invoiceId;
         this.creationDate = creationDate;
         this.paidToDate = paidToDate;
