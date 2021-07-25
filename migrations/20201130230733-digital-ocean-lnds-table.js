@@ -18,7 +18,6 @@ exports.up = function(db) {
   return db.createTable('digital_ocean_lnds', {
     lnd_id: {
       type: 'UUID',
-      primaryKey: true,
       notNull: true,
       foreignKey: {
         name: 'digital_ocean_lnds_lnds_lnd_id_fk',
@@ -30,7 +29,7 @@ exports.up = function(db) {
         mapping: 'lnd_id'
       },
     },
-    droplet_id: { type: 'int', notNull: true, unique: true },
+    droplet_id: { type: 'int', notNull: true, primaryKey: true, unique: true },
     droplet_name: { type: 'string', length: 100, notNull: true },
     droplet_ip: { type: 'string', length: 20, notNull: true, },
   });

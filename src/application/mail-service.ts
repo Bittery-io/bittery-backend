@@ -182,7 +182,7 @@ export const subscriptionEndedEmail = async (toEmail: string): Promise<string | 
     <body>
     <h2>Bittery.io - better Bitcoin payments subscription just ended</h2>
     <br>
-    <p>Your Bittery.io subscription just neded. You can still sign in but your payment services are now disabled.</p>
+    <p>Your Bittery.io subscription just ended. You can still sign in but your payment services are now disabled.</p>
     <p style="color: red">Your personal Lightning Network Node was turned off and archived.</p>
     <br>
     <p>You can <b>renew your subscription</b> anytime here: <a href='${url}'>${url}</a></p>

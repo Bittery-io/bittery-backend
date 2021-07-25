@@ -29,7 +29,6 @@ import {
 import { LndSetupBacklog } from '../../model/lnd/setup-backlog/lnd-setup-backlog';
 import { insertBilling } from '../../repository/lnd-billings-repository';
 import { LndBilling } from '../../model/billings/lnd-billing';
-import { Product } from '../../model/billings/product';
 import { addDays } from '../utils/date-service';
 import { BillingStatus } from '../../model/billings/billing-status';
 import { LndConnectUriDto } from '../../../interfaces/dto/lnd/lnd-connect-uri-dto';
@@ -90,6 +89,7 @@ export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveExte
                 lndInfo.version,
                 LndType.EXTERNAL,
                 new Date().toISOString(),
+                true,
                 saveUserLndDto.macaroonHex,
             ));
         });

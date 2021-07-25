@@ -85,8 +85,7 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
     return undefined;
 };
 
-export const unlockLnd = async (userEmail: string, lndId: string, password: string)
-        : Promise<boolean> => {
+export const unlockLnd = async (userEmail: string, lndId: string, password: string): Promise<boolean> => {
     const lndRestAddress: string | undefined = await findLndRestAddress(lndId, userEmail);
     if (lndRestAddress) {
         return await lndUnlockWallet(lndRestAddress, password);

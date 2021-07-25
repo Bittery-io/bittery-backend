@@ -7,15 +7,15 @@ import { LndType } from '../../model/lnd/lnd-type';
 export const insertLnd = async (client: PoolClient, lnd: Lnd): Promise<void> => {
     await client.query(`
         INSERT INTO LNDS(LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
-                         TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, CREATION_DATE)
-                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                         TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, IS_ACTIVE, CREATION_DATE)
+                         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [lnd.lndId, lnd.userEmail, lnd.lndRestAddress, lnd.macaroonHex, lnd.tlsCert,
-            lnd.tlsCertThumbprint, lnd.lndVersion, lnd.lndType, lnd.creationDate]);
+            lnd.tlsCertThumbprint, lnd.lndVersion, lnd.lndType, lnd.isActive, lnd.creationDate]);
 };
 
 export const findAllLnds = async (): Promise<Lnd[]> => {
     const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
-                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE FROM LNDS`, []);
+                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, IS_ACTIVE FROM LNDS`, []);
     return result.rows.map(row => new Lnd(
         row.lnd_id,
         row.user_email,
@@ -25,6 +25,7 @@ export const findAllLnds = async (): Promise<Lnd[]> => {
         row.lnd_version,
         row.lnd_type,
         row.creation_date,
+        row.is_active,
         row.macaroon_hex,
     ));
 
@@ -53,7 +54,7 @@ export const findLndMacaroonHex = async (lndId: string, userEmail: string): Prom
 // todo zmien LND_ADDRESS na LND_IP_ADDRESS
 export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> => {
     const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
-                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE FROM LNDS WHERE USER_EMAIL = $1`,
+                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, IS_ACTIVE FROM LNDS WHERE USER_EMAIL = $1`,
         [userEmail]);
     const foundRow = result.rows[0];
     return foundRow ? new Lnd(
@@ -65,6 +66,7 @@ export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> =
         foundRow.lnd_version,
         foundRow.lnd_type,
         foundRow.creation_date,
+        foundRow.is_active,
         foundRow.macaroon_hex,
     ) : undefined;
 };
@@ -72,6 +74,11 @@ export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> =
 export const updateLndSetMacaroonHex = async (client: PoolClient, lndId: string, macaroonHex: string): Promise<void> => {
     await client.query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
         [macaroonHex, lndId]);
+};
+
+export const updateLndSetIsActive = async (client: PoolClient, lndId: string, isActive: boolean): Promise<void> => {
+    await client.query('UPDATE LNDS SET IS_ACTIVE = $1 WHERE LND_ID = $2',
+        [isActive, lndId]);
 };
 
 export const findUserLndTls = async (userEmail: string, lndId: string): Promise<string | undefined> => {

@@ -24,6 +24,7 @@ export const findUserHostedLnd = async (userEmail: string): Promise<HostedLnd[]>
         row.hosted_lnd_provider,
         row.creation_date,
         row.wumbo_channels,
+        row.is_active,
         row.ln_alias,
         row.macaroon_hex,
     ));

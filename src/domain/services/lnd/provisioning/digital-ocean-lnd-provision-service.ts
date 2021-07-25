@@ -56,6 +56,7 @@ export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
             dropletCreationInfo.dropletIpPublic,
             new Date().toISOString(),
             false,
+            true,
             createLndDto.lnAlias,
             undefined,
         );

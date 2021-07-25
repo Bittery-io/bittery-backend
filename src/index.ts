@@ -4,7 +4,7 @@ import { getNumberProperty } from './application/property-service';
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
 import 'ts-replace-all';
-import { subscriptionDisableScheduler } from './domain/services/billing/subscription-disabler-scheduler-service';
+import { startSubscriptionDisableScheduler } from './domain/services/billing/subscription-disabler-scheduler';
 
 // Create a new express app instance
 export const routingControllersOptions = {
@@ -24,4 +24,4 @@ exports.express = app;
 // tslint:disable-next-line
 // lndUnlockWallet('https://174.138.5.158/lnd-rest/btc', 'dupa');
 // subscriptionScheduler();
-subscriptionDisableScheduler();
+startSubscriptionDisableScheduler();

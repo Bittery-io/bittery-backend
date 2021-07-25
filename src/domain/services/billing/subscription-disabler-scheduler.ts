@@ -5,19 +5,19 @@ import { BillingStatus } from '../../model/billings/billing-status';
 import { LndBilling } from '../../model/billings/lnd-billing';
 import { NotificationReasonEnum } from '../../model/notification/notification-reason-enum';
 import { backupLndFolderAndGetFileName } from '../lnd/backup/backup-lnd-folder-service';
-import { findUserLnd } from '../../repository/lnd/lnds-repository';
-import { Lnd } from '../../model/lnd/lnd';
 import { deleteDigitalOceanDroplet } from '../lnd/provisioning/digital-ocean-disable-droplet-service';
 import { DigitalOceanLndForRestart } from '../../model/lnd/hosted/digital_ocean/digital-ocean-lnd-for-restart';
 import { insertDigitalOceanArchive } from '../../repository/lnd/digital-ocean/digital-ocean-archives-repository';
 import { DigitalOceanArchive } from '../../model/lnd/digital-ocean-archive';
 import { findDigitalOceanLndForRestart } from '../../repository/lnd/digital-ocean/digital-ocean-lnds-repository';
-import { sendEmailNotificationIfNotYetSend } from './scan-subscription-scheduler-service';
+import { sendEmailNotificationIfNotYetSend } from './subscription-renew-email-scheduler';
+import { runInTransaction } from '../../../application/db/db-transaction';
+import { updateLndSetIsActive } from '../../repository/lnd/lnds-repository';
 
 const schedule = require('node-schedule');
 let nextSchedulerDateEpoch: number;
 
-export const subscriptionDisableScheduler = () => {
+export const startSubscriptionDisableScheduler = () => {
     logInfo('Setting up BITTERY DISABLE scheduler check every 12h scheduler');
     // every 12 hours
     // schedule.scheduleJob('0 */12 * * *', async () => {
@@ -39,10 +39,13 @@ const disableLndDroplet = async (billing: LndBilling): Promise<void> => {
     const digitalOceanLndForRestart: DigitalOceanLndForRestart | undefined =
         await findDigitalOceanLndForRestart(billing.lndId, billing.userEmail);
     await deleteDigitalOceanDroplet(digitalOceanLndForRestart?.dropletId!);
-    await insertDigitalOceanArchive(new DigitalOceanArchive(
-        billing.lndId,
-        new Date().toISOString(),
-        backupedLndFileName,
-    ));
+    await runInTransaction(async (client) => {
+        await insertDigitalOceanArchive(client, new DigitalOceanArchive(
+            billing.lndId,
+            new Date().toISOString(),
+            backupedLndFileName,
+        ));
+        await updateLndSetIsActive(client, billing.lndId, false);
+    });
     logInfo(`Successfully disabled, deleted and archived lnd with id ${billing.lndId} for user email ${billing.userEmail}`);
 };

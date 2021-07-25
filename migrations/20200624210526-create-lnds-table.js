@@ -31,14 +31,14 @@ exports.up = function(db) {
         mapping: 'email'
       },
     },
-    // lnd_ip_address: { type: 'string', length: 500, notNull: true },
     lnd_rest_address: { type: 'string', length: 200, notNull: true },
     macaroon_hex: { type: 'string', length: 1000 },
     tls_cert: { type: 'string', length: 2000, notNull: true },
     tls_cert_thumbprint: { type: 'string', length: 300, notNull: true },
     lnd_version: { type: 'string', length: 200, notNull: true },
     lnd_type: { type: 'string', length: 20, notNull: true },
-    creation_date: { type: 'timestamp', timezone: true, notNull: true }
+    creation_date: { type: 'timestamp', timezone: true, notNull: true },
+    is_active: { type: 'boolean', notNull: true }
   });
 };
 
