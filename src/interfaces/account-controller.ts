@@ -6,13 +6,13 @@ import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-excep
 import { UserBtcpayErrorType } from '../domain/services/btcpay/user-btcpay-error-type';
 import { CreateUserBtcpayDto } from './dto/create-user-btcpay-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
 import { ExtendSubscriptionDto } from './dto/account/extend-subscription-dto';
 import {
     extendSubscription,
     getUserSubscription,
     getUserSubscriptionBillingInvoices,
-} from '../domain/services/billing/subscription-service';
+} from '../domain/services/subscription/subscription-service';
 import { SubscriptionDto } from './dto/account/subscription-dto';
 import { ExtendSubscriptionResultDto } from './dto/account/extend-subscription-result-dto';
 import { BillingDto } from './dto/account/billing-dto';

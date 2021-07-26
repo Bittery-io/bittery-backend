@@ -12,6 +12,8 @@ export const deleteDigitalOceanDroplet = async (dropletId: number): Promise<void
             });
         logInfo(`Successfully deleted droplet with id: ${dropletId}`);
     } catch (err) {
-        logError(`Deleting droplet with id ${dropletId} failed:`, err);
+        const message: string = `Deleting droplet with id ${dropletId} failed: ${err.message}`;
+        logError(message, err);
+        throw new Error(message);
     }
 };

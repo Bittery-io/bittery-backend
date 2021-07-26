@@ -2,6 +2,7 @@ import { getProperty } from './property-service';
 import { logError, logInfo } from './logging-service';
 import { DigitalOceanLndDeploymentStageType } from '../domain/model/lnd/hosted/digital_ocean/digital-ocean-lnd-deployment-stage-type';
 import { formatDateWithTime } from '../domain/services/utils/date-service';
+import { DisableSubscriptionException } from '../domain/model/subscription/disable-subscription-exception';
 const mailgun = require('mailgun-js');
 
 const apiKey = getProperty('MAILGUN_API_KEY');
@@ -128,6 +129,35 @@ export const sendSetupLndFailedForUserEmail = async (
         from: 'Bittery.io <notifications@mail.bittery.io>',
         to: getProperty('EMAIL_FOR_ADMIN_NOTIFICATIONS'),
         subject: 'Błąd rejestracji użytkownika w Bittery.io',
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo('Sent user registration failed mail');
+        return sendResponse.id;
+    } catch (err) {
+        logError(`User registration fail mail send failed`, err);
+        return undefined;
+    }
+};
+
+export const sendDisablingSubscriptionFailed = async (
+        failedForUserEmail: string,
+        failedForLndId: string,
+        disableSubscriptionException: DisableSubscriptionException): Promise<string | undefined> => {
+    const body: string = `
+    <html>
+    <body>
+    <h3>Nie udało się wyłączyć subskrypcji (w tym może usunąć dropletu) dla usera ${failedForUserEmail} i lnd id ${failedForLndId}. Błąd: ${disableSubscriptionException.failedDeploymentStage}.<h3>
+    <h3>Godzina: ${formatDateWithTime(new Date().getTime())}<h3>
+    <h3>Szczegóły błędu: ${disableSubscriptionException.message}<h3>
+    <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: getProperty('EMAIL_FOR_ADMIN_NOTIFICATIONS'),
+        subject: 'Błąd wyłączania subskrypcji dla użytkownika w Bittery.io',
         html: body,
     };
     try {

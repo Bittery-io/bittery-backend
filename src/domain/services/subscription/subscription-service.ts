@@ -14,16 +14,16 @@ import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { generateUuid } from '../utils/id-generator-service';
 import { logError, logInfo } from '../../../application/logging-service';
-import { SubscriptionStatus } from '../../model/account/subscription-status';
 import { SubscriptionDto } from '../../../interfaces/dto/account/subscription-dto';
 import { findUserHostedLnds } from '../../repository/lnd/lnd-hosted-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { ExtendSubscriptionDto } from '../../../interfaces/dto/account/extend-subscription-dto';
-import { SubscriptionPlan } from '../../model/account/subscription-plan';
 import { BillingDto } from '../../../interfaces/dto/account/billing-dto';
 import { Invoice } from 'btcpay';
 import { getNumberProperty } from '../../../application/property-service';
 import { HostedLnd } from '../../model/lnd/hosted/hosted-lnd';
+import { SubscriptionStatus } from '../../model/subscription/subscription-status';
+import { SubscriptionPlan } from '../../model/subscription/subscription-plan';
 
 const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE_USD');
 

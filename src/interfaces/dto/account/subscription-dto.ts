@@ -1,6 +1,6 @@
-import { SubscriptionStatus } from '../../../domain/model/account/subscription-status';
 import { SubscriptionDtoSpecialDiscountDto } from './subscription-dto-special-discount-dto';
-import { SubscriptionPlan } from '../../../domain/model/account/subscription-plan';
+import { SubscriptionPlan } from '../../../domain/model/subscription/subscription-plan';
+import { SubscriptionStatus } from '../../../domain/model/subscription/subscription-status';
 
 export class SubscriptionDto {
 

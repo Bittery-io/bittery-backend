@@ -1,14 +1,8 @@
 import { logInfo } from '../../../application/logging-service';
 import { addHoursGetDate, formatDateWithTime, isNowPlusGivenDaysAfterGivenDate } from '../utils/date-service';
-import {
-    findBillingsWithStatus,
-    findBillingsWithStatusWherePaidToDateIsInFuture,
-    updateBilling,
-} from '../../repository/lnd-billings-repository';
+import { findBillingsWithStatusWherePaidToDateIsInFuture } from '../../repository/lnd-billings-repository';
 import { BillingStatus } from '../../model/billings/billing-status';
 import { LndBilling } from '../../model/billings/lnd-billing';
-import { getBitteryInvoice } from '../payments/bittery-invoice-service';
-import { Invoice } from 'btcpay';
 import { sendSubscriptionEndsSoonEmail, subscriptionEndedEmail } from '../../../application/mail-service';
 import {
     existsSubscriptionEmailNotification,
@@ -26,14 +20,15 @@ const schedule = require('node-schedule');
 let nextSchedulerDateEpoch: number;
 
 export const startSubscriptionRenewEmailScheduler = () => {
-    logInfo('Setting up BITTERY subscription invoices check every 12h scheduler');
+    logInfo('Setting up BITTERY SUBSCRIPTION RENEW SCHEDULER invoices check every 12h scheduler');
     // every 12 hours
     // schedule.scheduleJob('0 */12 * * *', async () => {
     schedule.scheduleJob('* * * * *', async () => {
-        logInfo(`[Subscription scheduler] 1/3 Starting subscriptions status scheduler at ${formatDateWithTime(new Date().getTime())}`);
+        logInfo(`[SUBSCRIPTION RENEW SCHEDULER] 1/3 Starting at ${formatDateWithTime(new Date().getTime())}`);
         nextSchedulerDateEpoch = addHoursGetDate(new Date().getTime(), 12);
         const paidBillingsForValidSubscription: LndBilling[] = await findBillingsWithStatusWherePaidToDateIsInFuture(BillingStatus.PAID);
-        logInfo(`[Subscription scheduler] 2/3 Found all paid billings for valid subscription in db: ${paidBillingsForValidSubscription.length}`);
+        // tslint:disable-next-line:max-line-length
+        logInfo(`[SUBSCRIPTION RENEW SCHEDULER] 2/3 Found all paid billings for valid subscription in db: ${paidBillingsForValidSubscription.length}`);
         for (const billing of paidBillingsForValidSubscription) {
             if (isNowPlusGivenDaysAfterGivenDate(new Date(billing.paidToDate).getTime(), 3)) {
                 await sendEmailNotificationIfNotYetSend(billing, NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_3_DAYS);
@@ -41,6 +36,7 @@ export const startSubscriptionRenewEmailScheduler = () => {
                 await sendEmailNotificationIfNotYetSend(billing, NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_7_DAYS);
             }
         }
+        logInfo(`[SUBSCRIPTION RENEW SCHEDULER] 1/3 Finished at ${formatDateWithTime(new Date().getTime())}`);
     });
 };
 
@@ -78,5 +74,3 @@ export const sendEmailNotificationIfNotYetSend = async (billing: LndBilling, not
         }
     }
 };
-
-// startAllServicesAtStart();
