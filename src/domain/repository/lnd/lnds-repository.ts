@@ -52,9 +52,9 @@ export const findLndMacaroonHex = async (lndId: string, userEmail: string): Prom
 
 // todo docelowo powinno byc po lndId wtedy user moze miec wiecej, na razie jedno starczy
 // todo zmien LND_ADDRESS na LND_IP_ADDRESS
-export const findUserLnd = async (userEmail: string): Promise<Lnd | undefined> => {
+export const findUserActiveLnd = async (userEmail: string): Promise<Lnd | undefined> => {
     const result = await dbPool.query(`SELECT LND_ID, USER_EMAIL, LND_REST_ADDRESS, MACAROON_HEX,
-                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, IS_ACTIVE FROM LNDS WHERE USER_EMAIL = $1`,
+                                              TLS_CERT, TLS_CERT_THUMBPRINT, LND_VERSION, LND_TYPE, IS_ACTIVE FROM LNDS WHERE USER_EMAIL = $1 AND IS_ACTIVE = true`,
         [userEmail]);
     const foundRow = result.rows[0];
     return foundRow ? new Lnd(

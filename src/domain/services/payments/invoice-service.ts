@@ -8,7 +8,7 @@ import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
 import { generateInvoicePdf } from '../pdf/invoice-pdf-generator-service';
 import { Invoice } from 'btcpay';
 import { logInfo } from '../../../application/logging-service';
-import { findUserLnd } from '../../repository/lnd/lnds-repository';
+import { findUserActiveLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { lndGetInfo } from '../lnd/api/lnd-api-service';
 import { LndInfo } from '../../model/lnd/api/lnd-info';
@@ -37,7 +37,7 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
         const invoice: Invoice = await getBtcpayInvoice(userBtcpayDetails.btcpayUserAuthToken, invoiceId);
-        const lnd: Lnd | undefined = await findUserLnd(userEmail);
+        const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
         if (lnd) {
             const lndInfo: LndInfo | undefined = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex!);
             if (lndInfo) {

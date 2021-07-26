@@ -13,8 +13,10 @@ import { DigitalOceanLndHosting } from '../../../model/lnd/digital-ocean-lnd-hos
 import { sendSetupLndFailedForUserEmail } from '../../../../application/mail-service';
 import { insertDigitalOceanFailure } from '../../../repository/lnd/digital-ocean/digital-ocean-failures-repository';
 
-export const provisionDigitalOceanLnd = async (userEmail: string, lndId: string,
-                                               createLndDto: CreateLndDto): Promise<DigitalOceanLndHosting | undefined> => {
+export const provisionDigitalOceanLnd = async (
+        userEmail: string,
+        lndId: string,
+        createLndDto: CreateLndDto): Promise<DigitalOceanLndHosting | undefined> => {
     const dropletName: string = getMd5(userEmail);
     let dropletCreationInfo: DropletCreationInfo;
     try {

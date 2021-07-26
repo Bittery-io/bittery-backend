@@ -11,13 +11,13 @@ import { getNumberProperty } from '../../../application/property-service';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { logError, logInfo } from '../../../application/logging-service';
-import { findUserLnd } from '../../repository/lnd/lnds-repository';
+import { findUserActiveLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { insertStandardWalletSeedEncryptedArtefact } from '../../repository/encrypted/user-encrypted-store-artefacts-repository';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
-        const lnd: Lnd | undefined = await findUserLnd(userEmail);
+        const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
         if (!lnd) {
             // todo obsluga bledu lepsza
             throw new Error('User has not lnd yet');

@@ -16,7 +16,7 @@ import { generateUuid } from '../utils/id-generator-service';
 import { logError, logInfo } from '../../../application/logging-service';
 import { SubscriptionStatus } from '../../model/account/subscription-status';
 import { SubscriptionDto } from '../../../interfaces/dto/account/subscription-dto';
-import { findUserHostedLnd } from '../../repository/lnd/lnd-hosted-repository';
+import { findUserHostedLnds } from '../../repository/lnd/lnd-hosted-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { ExtendSubscriptionDto } from '../../../interfaces/dto/account/extend-subscription-dto';
 import { SubscriptionPlan } from '../../model/account/subscription-plan';
@@ -62,7 +62,7 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
 };
 
 export const getUserSubscription = async (userEmail: string): Promise<SubscriptionDto> => {
-    const hostedLnds: HostedLnd[] = await findUserHostedLnd(userEmail);
+    const hostedLnds: HostedLnd[] = await findUserHostedLnds(userEmail);
     if (hostedLnds.length > 0) {
         // todo currently only for single LND per user
         const hostedLnd: HostedLnd = hostedLnds[0];

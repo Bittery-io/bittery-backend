@@ -9,7 +9,7 @@ import { PoolClient } from 'pg';
 import { logError, logInfo, logWarn } from '../../../application/logging-service';
 import { CreateLndDto } from '../../../interfaces/dto/lnd/create-lnd-dto';
 import { provisionDigitalOceanLnd } from './provisioning/digital-ocean-lnd-provision-service';
-import { findUserLnd, insertLnd, userHasLnd } from '../../repository/lnd/lnds-repository';
+import { findUserActiveLnd, insertLnd, userHasLnd } from '../../repository/lnd/lnds-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { insertHostedLnd } from '../../repository/lnd/lnd-hosted-repository';
 import { findRtl, insertUserRtl } from '../../repository/lnd/rtls-repository';
@@ -101,7 +101,7 @@ export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveExte
 };
 
 export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefined> => {
-    const lnd: Lnd | undefined = await findUserLnd(userEmail);
+    const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
     if (lnd) {
         if (lnd.lndType === LndType.HOSTED) {
             // todo maybe fetch it in single sql would be best
@@ -195,7 +195,7 @@ export const getUserLnd = async (userEmail: string): Promise<UserLndDto | undefi
 };
 
 export const getUserLndConnectUriDetails = async (userEmail: string): Promise<LndConnectUriDto | undefined> => {
-    const lnd: Lnd | undefined = await findUserLnd(userEmail);
+    const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
     if (lnd) {
         const dropletIp: string = await findDropletIp(lnd.lndId, userEmail);
         const adminMacaroonArtefact: string | undefined = await findAdminMacaroonHexEncryptedArtefact(userEmail, lnd.lndId);
