@@ -1,4 +1,5 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional, IsString } from 'class-validator';
+import { InvoiceValidityType } from '../../domain/model/payments/invoice-validity-type';
 
 export class SaveInvoiceDto {
 
@@ -8,6 +9,10 @@ export class SaveInvoiceDto {
     @IsString()
     currency: string;
 
+    @IsDefined()
+    @IsEnum(InvoiceValidityType)
+    invoiceValidity: InvoiceValidityType;
+
     @IsString()
     @IsOptional()
     itemDesc?: string;
@@ -16,9 +21,10 @@ export class SaveInvoiceDto {
     @IsOptional()
     buyer?: string;
 
-    constructor(amount: string, currency: string, itemDesc: string, buyer: string) {
+    constructor(amount: string, currency: string, invoiceValidity: InvoiceValidityType, itemDesc?: string, buyer?: string) {
         this.amount = amount;
         this.currency = currency;
+        this.invoiceValidity = invoiceValidity;
         this.itemDesc = itemDesc;
         this.buyer = buyer;
     }

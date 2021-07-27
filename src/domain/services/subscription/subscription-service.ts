@@ -24,6 +24,7 @@ import { getNumberProperty } from '../../../application/property-service';
 import { HostedLnd } from '../../model/lnd/hosted/hosted-lnd';
 import { SubscriptionStatus } from '../../model/subscription/subscription-status';
 import { SubscriptionPlan } from '../../model/subscription/subscription-plan';
+import { InvoiceValidityType } from '../../model/payments/invoice-validity-type';
 
 const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE_USD');
 
@@ -38,6 +39,7 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
             new SaveInvoiceDto(
                 invoiceAmount,
                 'USD',
+                InvoiceValidityType.THREE_DAYS,
                 `Bittery LND ${extendSubscriptionDto.subscriptionTimeMonths} months plan`,
                 userEmail));
         await runInTransaction((client) => {

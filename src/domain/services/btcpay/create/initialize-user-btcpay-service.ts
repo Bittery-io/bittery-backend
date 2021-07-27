@@ -151,11 +151,14 @@ const setLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: an
     });
     await label.click();
     await page.waitForSelector('input#ConnectionString');
+    // @ts-ignore
+    // clean the input first
+    await page.evaluate(() => document.getElementById('ConnectionString').value = '');
     await page.type('#ConnectionString', lndBtcpayUrl);
     // await page.waitForSelector('button[type=submit]');
     // await page.screenshot({ path: 'example.png' });
     await page.click('button#save');
-    await page.waitForSelector('input#Id');
+    await page.waitForSelector('div.alert.alert-success.alert-dismissible');
     logInfo(`Added btcpay lnd address for store with id ${storeId}`);
 };
 

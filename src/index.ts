@@ -23,8 +23,8 @@ if (getBooleanProperty('RUN_STATIC_CHANNEL_BACKUP_SCHEDULER')) {
     startStaticChannelBackupScheduler();
 }
 if (getBooleanProperty('RUN_SUBSCRIPTION_DISABLE_SCHEDULER')) {
-    startSubscriptionDisableScheduler();
 }
+// startSubscriptionDisableScheduler();
 if (getBooleanProperty('RUN_SUBSCRIPTION_RENEW_EMAIL_SCHEDULER')) {
     startSubscriptionRenewEmailScheduler();
 }
@@ -33,4 +33,4 @@ app.listen(getNumberProperty('APP_PORT'),   () => {
     logInfo('App is listening on port 3001!');
 });
 exports.express = app;
-// restoreLnd('peerzet3@gmail.com', '31f03c55-b480-4776-81f1-e9e93d3f31e9');
+// restoreLnd('peerzet3@gmail.com', '4f205bb9-7703-4fde-a594-c04a3035d67e');
