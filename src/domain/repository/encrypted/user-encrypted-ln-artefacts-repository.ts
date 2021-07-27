@@ -18,7 +18,7 @@ export const insertUserEncryptedLnArtefacts = async (client: PoolClient, userEnc
         encryptedLnArtefactTypes.push(_.encryptedLnArtefactType);
         encryptedArtefacts.push(_.encryptedArtefact);
     });
-    await dbPool.query(`
+    await client.query(`
         INSERT INTO USER_ENCRYPTED_LN_ARTEFACTS(ID, USER_EMAIL, LND_ID, ENCRYPTED_LN_ARTEFACT_TYPE, ENCRYPTED_ARTEFACT, CREATION_DATE)
         SELECT fs.id, fs.user_email, fs.lnd_id, fs.encrypted_ln_artefact_type, fs.encrypted_artefact, fs.creation_date
         FROM UNNEST($1::uuid[], $2::text[], $3::uuid[], $4::text[], $5::text[], $6::timestamp[])

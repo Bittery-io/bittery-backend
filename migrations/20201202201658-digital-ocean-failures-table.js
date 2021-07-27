@@ -31,7 +31,7 @@ exports.up = function(db) {
         mapping: 'email'
       },
     },
-    droplet_id: { type: 'int', unique: true },
+    droplet_id: { type: 'int', primaryKey: true, unique: true },
     droplet_name: { type: 'string', length: 100 },
     droplet_ip: { type: 'string', length: '20' },
     rtl_one_time_init_password: { type: 'string', length: 100, unique: true },

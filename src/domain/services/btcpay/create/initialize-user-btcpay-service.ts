@@ -15,6 +15,14 @@ const IGNORE_SANDBOX_ERROR = '1';
 const USER_NAME = getProperty('BTCPAY_ADMIN_LOGIN');
 const PASSWORD = getProperty('BTCPAY_ADMIN_PASSWORD');
 
+export const updateLndInStore = async (storeId: string, lndBtcpayUrl: string) => {
+    logInfo(`Updating BTCPay services for user store id ${storeId} - changing LND address in store.`);
+    const browser = await getBrowser();
+    const page = (await browser.pages())[0];
+    await loginToBtcpay(page);
+    await setLndNodeToStore(storeId, lndBtcpayUrl, page);
+};
+
 export const initializeBtcpayServices = async (
         userEmail: string,
         bip49RootPublicKey: string,
@@ -33,7 +41,7 @@ export const initializeBtcpayServices = async (
         lnd.macaroonHex!,
         lnd.tlsCertThumbprint,
     );
-    await addLndNodeToStore(storeId, lndAddress, page);
+    await setLndNodeToStore(storeId, lndAddress, page);
     await setExpirationMinutesToStore(storeId, String(paymentExpirationMinutes), page);
     const pairingCode: string = await getBtcpayPairingCode(storeName, storeId, page);
     const btcpayUserAuthToken: BtcpayUserAuthToken = await generateApiToken(pairingCode);
@@ -136,7 +144,7 @@ const createStore = async (storeName: string, page: any): Promise<string> => {
     return storeId;
 };
 
-const addLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: any): Promise<void> => {
+const setLndNodeToStore = async (storeId: string, lndBtcpayUrl: string, page: any): Promise<void> => {
     await page.goto(`${getProperty('BTCPAY_URL')}/stores/${storeId}/lightning/BTC`);
     const label = await page.evaluateHandle(() => {
         return [...document.querySelectorAll('label')].find(h1 => h1.innerText === 'Use custom node');

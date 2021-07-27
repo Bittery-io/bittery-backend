@@ -13,5 +13,5 @@ rm $PWD/volumes/lnd/tls.key
 mv $PWD/tls.cert $PWD/volumes/lnd/tls.cert
 mv $PWD/tls.key $PWD/volumes/lnd/tls.key
 # 1. Replace externalip= and tlsextraip with new IP addresses
-sed -i "/externalip=/c\externalip=$NEW_IP_ADDRESS:9735"  $PWD/volumes/lnd/lnd.conf
-sed -i "/tlsextraip=/c\tlsextraip=$NEW_IP_ADDRESS"  $PWD/volumes/lnd/lnd.conf
+sed -i "/externalip=/c\externalip=$NEW_IP_ADDRESS:9735" $PWD/volumes/lnd/lnd.conf
+sed -i "/tlsextraip=/c\tlsextraip=$NEW_IP_ADDRESS" $PWD/volumes/lnd/lnd.conf

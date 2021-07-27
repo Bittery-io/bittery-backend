@@ -20,15 +20,15 @@ const schedule = require('node-schedule');
 let nextSchedulerDateEpoch: number;
 
 export const startSubscriptionRenewEmailScheduler = () => {
-    logInfo('Setting up BITTERY SUBSCRIPTION RENEW SCHEDULER invoices check every 12h scheduler');
+    logInfo('Setting up BITTERY SUBSCRIPTION RENEW EMAIL SCHEDULER invoices check every 12h scheduler');
     // every 12 hours
     // schedule.scheduleJob('0 */12 * * *', async () => {
     schedule.scheduleJob('* * * * *', async () => {
-        logInfo(`[SUBSCRIPTION RENEW SCHEDULER] 1/3 Starting at ${formatDateWithTime(new Date().getTime())}`);
+        logInfo(`[SUBSCRIPTION RENEW EMAIL SCHEDULER] 1/3 Starting at ${formatDateWithTime(new Date().getTime())}`);
         nextSchedulerDateEpoch = addHoursGetDate(new Date().getTime(), 12);
         const paidBillingsForValidSubscription: LndBilling[] = await findBillingsWithStatusWherePaidToDateIsInFuture(BillingStatus.PAID);
         // tslint:disable-next-line:max-line-length
-        logInfo(`[SUBSCRIPTION RENEW SCHEDULER] 2/3 Found all paid billings for valid subscription in db: ${paidBillingsForValidSubscription.length}`);
+        logInfo(`[SUBSCRIPTION RENEW EMAIL SCHEDULER] 2/3 Found all paid billings for valid subscription in db: ${paidBillingsForValidSubscription.length}`);
         for (const billing of paidBillingsForValidSubscription) {
             if (isNowPlusGivenDaysAfterGivenDate(new Date(billing.paidToDate).getTime(), 3)) {
                 await sendEmailNotificationIfNotYetSend(billing, NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_3_DAYS);
@@ -36,7 +36,7 @@ export const startSubscriptionRenewEmailScheduler = () => {
                 await sendEmailNotificationIfNotYetSend(billing, NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_7_DAYS);
             }
         }
-        logInfo(`[SUBSCRIPTION RENEW SCHEDULER] 1/3 Finished at ${formatDateWithTime(new Date().getTime())}`);
+        logInfo(`[SUBSCRIPTION RENEW EMAIL SCHEDULER] 1/3 Finished at ${formatDateWithTime(new Date().getTime())}`);
     });
 };
 
@@ -45,10 +45,10 @@ export const sendEmailNotificationIfNotYetSend = async (billing: LndBilling, not
         let messageId: string | undefined = undefined;
         switch (notificationReasonEnum) {
             case NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_3_DAYS:
-                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 3);
+                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 3, new Date(billing.paidToDate));
                 break;
             case NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_7_DAYS:
-                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 7);
+                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 7, new Date(billing.paidToDate));
                 break;
             case NotificationReasonEnum.SUBSCRIPTION_ENDED:
                 messageId = await subscriptionEndedEmail(billing.userEmail);

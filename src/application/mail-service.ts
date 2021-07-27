@@ -119,7 +119,7 @@ export const sendSetupLndFailedForUserEmail = async (
     const body: string = `
     <html>
     <body>
-    <h3>Użytkownik ${failedForUserEmail} nie zarejestrował się. Błąd: ${deploymentStage}.<h3>
+    <h3>Użytkownik ${failedForUserEmail} tworzył droplet, ale nie udało się. Błąd: ${deploymentStage}.<h3>
     <h3>Godzina: ${formatDateWithTime(new Date().getTime())}<h3>
     <h3>Szczegóły błędu: ${errorMessage ?? 'brak'}<h3>
     <br><br>
@@ -128,15 +128,15 @@ export const sendSetupLndFailedForUserEmail = async (
     const data = {
         from: 'Bittery.io <notifications@mail.bittery.io>',
         to: getProperty('EMAIL_FOR_ADMIN_NOTIFICATIONS'),
-        subject: 'Błąd rejestracji użytkownika w Bittery.io',
+        subject: 'Tworzenie dropletu nie udało się Bittery.io',
         html: body,
     };
     try {
         const sendResponse = await mg.messages().send(data);
-        logInfo('Sent user registration failed mail');
+        logInfo('Droplet provision failed mail sent');
         return sendResponse.id;
     } catch (err) {
-        logError(`User registration fail mail send failed`, err);
+        logError(`Droplet provision mail send failed`, err);
         return undefined;
     }
 };
@@ -162,25 +162,25 @@ export const sendDisablingSubscriptionFailed = async (
     };
     try {
         const sendResponse = await mg.messages().send(data);
-        logInfo('Sent user registration failed mail');
+        logInfo('Sent disable user subscription failed mail');
         return sendResponse.id;
     } catch (err) {
-        logError(`User registration fail mail send failed`, err);
+        logError(`Disable user subscription mail send failed`, err);
         return undefined;
     }
 };
 
-export const sendSubscriptionEndsSoonEmail = async (toEmail: string, subscriptionDaysLeft: number): Promise<string | undefined> => {
+// tslint:disable-next-line:max-line-length
+export const sendSubscriptionEndsSoonEmail = async (toEmail: string, subscriptionDaysLeft: number, subscriptionEndDate: Date): Promise<string | undefined> => {
     const url = `${getProperty('CLIENT_URL_ADDRESS')}/account`;
     const body: string = `
     <html>
     <body>
-    <h2>Bittery.io - better Bitcoin payments subscription ends soon</h2>
-    <br>
-    <p>Your Bittery.io subscription ends in <b>${subscriptionDaysLeft} days</b>.</p>
+    <h2>Bittery.io - better Bitcoin payments subscription ends in ${subscriptionDaysLeft} days</h2>
+    <p>Your Bittery.io subscription ends at: <b>${formatDateWithTime(subscriptionEndDate.getTime())}</b></p>
     <p>Please extend your subscription otherwise it will be disabled.</b></p>
-    <p style="color: red">Your personal Lightning Network node will be <b>turned off and archived</b>.</p>
-    <br>
+    <p style="color: red">Your personal Lightning Network node will be <b>turned off and archived</b>. You will not be able to access the node anymore and your payment services will be disabled.</p>
+    <p style="color: red">If you decide not extend subscription - please <b>remove your funds from the node until it is running</b> (close channels and withraw on-chain funds).</p>
     <p>You can <b>extend your subscription</b> here: <a href='${url}'>${url}</a></p>
     <br><br>
     --------------------------------------------------- <br>
@@ -211,10 +211,8 @@ export const subscriptionEndedEmail = async (toEmail: string): Promise<string | 
     <html>
     <body>
     <h2>Bittery.io - better Bitcoin payments subscription just ended</h2>
-    <br>
     <p>Your Bittery.io subscription just ended. You can still sign in but your payment services are now disabled.</p>
-    <p style="color: red">Your personal Lightning Network Node was turned off and archived.</p>
-    <br>
+    <p style="color: red">Your personal Lightning Network Node is turned off and archived.</p>
     <p>You can <b>renew your subscription</b> anytime here: <a href='${url}'>${url}</a></p>
     <br><br>
     --------------------------------------------------- <br>

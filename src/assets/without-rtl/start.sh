@@ -46,7 +46,10 @@ mv $PWD/lnd.conf $PWD/volumes/lnd/lnd.conf
 chmod u+rwx $PWD/docker-compose.yaml
 docker-compose -f $PWD/docker-compose.yaml down
 docker-compose -f $PWD/docker-compose.yaml up -d
-cp $PWD/lnd.nginx.conf $PWD/volumes/nginx/conf/lnd.nginx.conf
 
-sleep 2
+while [ ! -d "$PWD/volumes/nginx/conf" ]
+do
+  sleep 2
+done
+cp $PWD/lnd.nginx.conf $PWD/volumes/nginx/conf/lnd.nginx.conf
 docker exec -t nginx sh -c 'nginx -s reload' 2>&1

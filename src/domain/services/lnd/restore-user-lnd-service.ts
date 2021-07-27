@@ -7,7 +7,7 @@ import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { findUserHostedLnd, insertHostedLnd } from '../../repository/lnd/lnd-hosted-repository';
-import { insertUserRtl } from '../../repository/lnd/rtls-repository';
+import { findRtl, insertUserRtl } from '../../repository/lnd/rtls-repository';
 import {
     findDigitalOceanLndForRestart,
     insertDigitalOceanLnd,
@@ -23,6 +23,8 @@ import {
     insertUserEncryptedLnArtefacts,
 } from '../../repository/encrypted/user-encrypted-ln-artefacts-repository';
 import { UserEncryptedLnArtefact } from '../../model/encrypted/user-encrypted-ln-artefact';
+import { Rtl } from '../../model/lnd/hosted/rtl/rtl';
+import { updateUserBtcStoreWithActiveLnd } from '../btcpay/btcpay-service';
 
 export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Promise<void> => {
     const hostedLnd: HostedLnd | undefined = await findUserHostedLnd(userEmail, lndIdToRestore);
@@ -31,7 +33,8 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
         if (digitalOceanLndForRestart) {
             const digitalOceanArchive: DigitalOceanArchive | undefined = await findDigitalOceanArchive(lndIdToRestore);
             if (digitalOceanArchive) {
-                const newDigitalOceanLndHosting: DigitalOceanLndHosting = await createNewLndBasedOnOldLnd(hostedLnd, userEmail);
+                const rtlForLndToRestore: Rtl | undefined = await findRtl(lndIdToRestore);
+                const newDigitalOceanLndHosting: DigitalOceanLndHosting = await createNewLndBasedOnOldLnd(hostedLnd, userEmail, rtlForLndToRestore);
                 await restoreLndInDroplet(
                     userEmail,
                     newDigitalOceanLndHosting.digitalOceanLnd.dropletIp,
@@ -48,9 +51,19 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
                 // 2. Replace macaroon HEX with previous macaroon LND macaroon hex
                 const macaroonHex: string | undefined = await findLndMacaroonHex(lndIdToRestore, userEmail);
                 await runInTransaction(async (client) => {
+                    await insertLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
+                    if (hostedLnd.hostedLndType === HostedLndType.STANDARD) {
+                        await insertHostedLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
+                        await insertUserRtl(client, newDigitalOceanLndHosting.rtl!);
+                        await insertDigitalOceanLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
+                    } else {
+                        await insertHostedLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
+                        await insertDigitalOceanLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
+                    }
                     await insertUserEncryptedLnArtefacts(client, userEncryptedLnArtefacts);
                     await updateLndSetMacaroonHex(client, newDigitalOceanLndHosting.digitalOceanLnd.lndId, macaroonHex!);
                 });
+                await updateUserBtcStoreWithActiveLnd(userEmail);
                 logInfo(`Successfully restored LND with id ${lndIdToRestore} for user email ${userEmail}. New LND has id: ${newDigitalOceanLndHosting.digitalOceanLnd.lndId}`);
             } else {
                 // tslint:disable-next-line:max-line-length
@@ -63,25 +76,18 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
         throw new Error(`Restore lnd failed: cannot find hosted LND with id ${lndIdToRestore} for user email ${userEmail}`);
     }
 };
-const createNewLndBasedOnOldLnd = async (hostedLnd: HostedLnd, userEmail: string): Promise<DigitalOceanLndHosting> => {
+const createNewLndBasedOnOldLnd = async (hostedLnd: HostedLnd, userEmail: string, rtl?: Rtl): Promise<DigitalOceanLndHosting> => {
     const lndId: string = generateUuid();
-    hostedLnd.lndId = lndId;
-    const digitalOceanLndHosting: DigitalOceanLndHosting | undefined = await provisionDigitalOceanLnd(userEmail, lndId, new CreateLndDto(
-        hostedLnd.hostedLndType,
-        hostedLnd.lnAlias,
-    ));
-    if (digitalOceanLndHosting) {
-        await runInTransaction(async (client: PoolClient) => {
-            await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-            if (hostedLnd.hostedLndType === HostedLndType.STANDARD) {
-                await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                await insertUserRtl(client, digitalOceanLndHosting.rtl!);
-                await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-            } else {
-                await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-            }
-        });
-    }
+    const digitalOceanLndHosting: DigitalOceanLndHosting | undefined = await provisionDigitalOceanLnd(
+        userEmail,
+        lndId,
+        new CreateLndDto(
+            hostedLnd.hostedLndType,
+            hostedLnd.lnAlias,
+        ),
+        hostedLnd.lndVersion,
+        rtl ? rtl.rtlVersion : undefined,
+        rtl ? rtl.rtlOneTimeInitPassword : undefined,
+    );
     return digitalOceanLndHosting!;
 };

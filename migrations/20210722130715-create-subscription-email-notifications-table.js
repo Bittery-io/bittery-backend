@@ -34,6 +34,7 @@ exports.up = function(db) {
     notification_id: {
       type: 'UUID',
       notNull: true,
+      primaryKey: true,
       foreignKey: {
         name: 'subscription_email_notifications_notifications_id_fk',
         table: 'notifications',

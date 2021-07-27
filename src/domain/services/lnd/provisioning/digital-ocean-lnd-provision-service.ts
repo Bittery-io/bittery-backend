@@ -16,12 +16,15 @@ import { insertDigitalOceanFailure } from '../../../repository/lnd/digital-ocean
 export const provisionDigitalOceanLnd = async (
         userEmail: string,
         lndId: string,
-        createLndDto: CreateLndDto): Promise<DigitalOceanLndHosting | undefined> => {
+        createLndDto: CreateLndDto,
+        lndHostedVersion?: string,
+        rtlHostedVersion?: string,
+        rtlOneTimePassword?: string): Promise<DigitalOceanLndHosting | undefined> => {
     const dropletName: string = getMd5(userEmail);
     let dropletCreationInfo: DropletCreationInfo;
     try {
         dropletCreationInfo = await createLndDroplet(dropletName, userEmail, createLndDto.hostedLndType,
-            false, createLndDto.lnAlias);
+            false, createLndDto.lnAlias, lndHostedVersion, rtlHostedVersion);
     } catch (err) {
         logError(`Failed to create Digital Ocean LND for user with email ${userEmail}. 
                           Failed on deployment stage: ${err.failedDeploymentStage}.
