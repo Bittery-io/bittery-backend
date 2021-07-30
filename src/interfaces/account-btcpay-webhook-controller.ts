@@ -11,6 +11,7 @@ import { findUserActiveLnd } from '../domain/repository/lnd/lnds-repository';
 import { Lnd } from '../domain/model/lnd/lnd';
 import { restoreLnd } from '../domain/services/lnd/restore-user-lnd-service';
 import { subscripionRestoredEmail, subscriptionExtendedEmail } from '../application/mail-service';
+import { addMonthsToDate } from '../domain/services/utils/date-service';
 
 @JsonController('/btcpay')
 export class AccountBtcpayWebhookController {
@@ -39,19 +40,19 @@ export class AccountBtcpayWebhookController {
                         // case 'invoice_complete':
                         // todo tylko dla testow zamienione!!!!
                         case 'invoice_expired':
-                            billing.status = BillingStatus.PAID;
                             const lnd: Lnd | undefined = await findUserActiveLnd(invoiceOwnerEmail);
                             if (!lnd) {
                                 // must restore!
                                 // billing has lndIf of latest active lnd so it is the one to restore
                                 await restoreLnd(invoiceOwnerEmail, billing.lndId);
                             }
+                            billing.status = BillingStatus.PAID;
+                            const newPaidToDate: Date = new Date(addMonthsToDate(new Date().getTime(), billing.subscriptionMonths));
+                            billing.paidToDate = newPaidToDate.toISOString();
                             await updateBilling(billing);
                             if (lnd) {
                                 await subscriptionExtendedEmail(invoiceOwnerEmail, 1);
                             } else {
-                            // todo data przedluzenia subskrypcji powinna byc w sumie ustawiona tutaj czyli + 30 dni tutaj
-                            // wiec trzeba do billing tabeli dodać ilosc dni i potem aktualizowac tutaj
                                 await subscripionRestoredEmail(invoiceOwnerEmail, 1);
                             }
                             logInfo(`Successfully updated Bittery subscription invoice as PAID for invoice with id ${btcpayInvoice.id} and user email ${invoiceOwnerEmail}`);

@@ -6,7 +6,7 @@ import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-excep
 import { UserBtcpayErrorType } from '../domain/services/btcpay/user-btcpay-error-type';
 import { CreateUserBtcpayDto } from './dto/create-user-btcpay-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers/index';
 import { ExtendSubscriptionDto } from './dto/account/extend-subscription-dto';
 import {
     extendSubscription,
@@ -16,6 +16,9 @@ import {
 import { SubscriptionDto } from './dto/account/subscription-dto';
 import { ExtendSubscriptionResultDto } from './dto/account/extend-subscription-result-dto';
 import { BillingDto } from './dto/account/billing-dto';
+import { getInvoicePdf } from '../domain/services/payments/invoice-service';
+import { LndCreateException } from '../domain/model/lnd/lnd-create-exception';
+import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-type';
 const crypto = require('crypto');
 
 @JsonController('/account')
@@ -92,4 +95,24 @@ export class AccountController {
         }
     }
 
+    // todo
+    @Get('/pdf/:invoiceId')
+    async getBtcpayInvoicePdfApi(
+        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+        @Param('invoiceId') invoiceId: string,
+        @Res() res: Response): Promise<Response> {
+        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+        try {
+            const pdf: Buffer = await getInvoicePdf(userEmail, invoiceId);
+            res.contentType('application/pdf');
+            return res.status(200).send(pdf);
+        } catch (err) {
+            if (err instanceof LndCreateException) {
+                return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
+            }
+            logError(`Failed to get invoices for user ${userEmail}`, err);
+            return res.status(500).send(new ErrorDto('LND services creation failed',
+                LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
+        }
+    }
 }

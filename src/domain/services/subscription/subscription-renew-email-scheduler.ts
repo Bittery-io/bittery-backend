@@ -30,9 +30,9 @@ export const startSubscriptionRenewEmailScheduler = () => {
         // tslint:disable-next-line:max-line-length
         logInfo(`[SUBSCRIPTION RENEW EMAIL SCHEDULER] 2/3 Found all paid billings for valid subscription in db: ${paidBillingsForValidSubscription.length}`);
         for (const billing of paidBillingsForValidSubscription) {
-            if (isNowPlusGivenDaysAfterGivenDate(new Date(billing.paidToDate).getTime(), 3)) {
+            if (isNowPlusGivenDaysAfterGivenDate(new Date(billing.paidToDate!).getTime(), 3)) {
                 await sendEmailNotificationIfNotYetSend(billing, NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_3_DAYS);
-            } else if (isNowPlusGivenDaysAfterGivenDate(new Date(billing.paidToDate).getTime(), 7)) {
+            } else if (isNowPlusGivenDaysAfterGivenDate(new Date(billing.paidToDate!).getTime(), 7)) {
                 await sendEmailNotificationIfNotYetSend(billing, NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_7_DAYS);
             }
         }
@@ -45,10 +45,10 @@ export const sendEmailNotificationIfNotYetSend = async (billing: LndBilling, not
         let messageId: string | undefined = undefined;
         switch (notificationReasonEnum) {
             case NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_3_DAYS:
-                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 3, new Date(billing.paidToDate));
+                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 3, new Date(billing.paidToDate!));
                 break;
             case NotificationReasonEnum.SUBSCRIPTION_ENDS_IN_7_DAYS:
-                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 7, new Date(billing.paidToDate));
+                messageId = await sendSubscriptionEndsSoonEmail(billing.userEmail, 7, new Date(billing.paidToDate!));
                 break;
             case NotificationReasonEnum.SUBSCRIPTION_ENDED:
                 messageId = await subscriptionEndedEmail(billing.userEmail);

@@ -47,35 +47,38 @@ import { DigitalOceanArchive } from '../../model/lnd/digital-ocean-archive';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
-        if (!(await lndSetupBacklogExists(userEmail))) {
-            await insertLndSetupBacklog(new LndSetupBacklog(userEmail, new Date().toISOString()));
-            const lndId: string = generateUuid();
-            const digitalOceanLndHosting: DigitalOceanLndHosting | undefined = await provisionDigitalOceanLnd(userEmail, lndId, createLndDto);
-            if (digitalOceanLndHosting) {
-                await runInTransaction(async (client: PoolClient) => {
-                    await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                    await insertBilling(client, new LndBilling(
-                        generateUuid(),
-                        userEmail,
-                        lndId,
-                        'PAID_BY_BITTERY',
-                        new Date().toISOString(),
-                        new Date(addDays(new Date().getTime(), 3)).toISOString(),
-                        BillingStatus.PAID));
-                    if (createLndDto.hostedLndType === HostedLndType.STANDARD) {
-                        await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                        await insertUserRtl(client, digitalOceanLndHosting.rtl!);
-                        await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                    } else {
-                        await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                        await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                    }
-                });
-            }
-        } else {
-            logWarn(`Starting LND re-setup for user ${userEmail}`);
-            // todo przywróć poprzedni proces setupu
+        // todo tymczasowo lepiej nie blokowac uzytkownikowi mozliwosci zrobienai gdy cos sie spierdzieli, DODAJ WYSLANIE MAILA DO SIEBIe
+        // if (!(await lndSetupBacklogExists(userEmail))) {
+        // await insertLndSetupBacklog(new LndSetupBacklog(userEmail, new Date().toISOString()));
+        const lndId: string = generateUuid();
+        const digitalOceanLndHosting: DigitalOceanLndHosting | undefined = await provisionDigitalOceanLnd(userEmail, lndId, createLndDto);
+        if (digitalOceanLndHosting) {
+            await runInTransaction(async (client: PoolClient) => {
+                await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                await insertBilling(client, new LndBilling(
+                    generateUuid(),
+                    userEmail,
+                    lndId,
+                    'PAID_BY_BITTERY',
+                    new Date().toISOString(),
+                    BillingStatus.PAID,
+                    0,
+                    new Date(addDays(new Date().getTime(), 3)).toISOString(),
+                ));
+                if (createLndDto.hostedLndType === HostedLndType.STANDARD) {
+                    await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                    await insertUserRtl(client, digitalOceanLndHosting.rtl!);
+                    await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                } else {
+                    await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                    await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                }
+            });
         }
+        // } else {
+        //     logWarn(`Starting LND re-setup for user ${userEmail}`);
+        //     // todo przywróć poprzedni proces setupu
+        // }
     } else {
         throw new LndCreateException(`User ${userEmail} already has LND added!`, LndCreationErrorType.USER_ALREADY_HAS_LND);
     }

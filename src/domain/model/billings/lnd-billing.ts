@@ -6,17 +6,19 @@ export class LndBilling {
     lndId: string;
     invoiceId: string;
     creationDate: string;
-    paidToDate: string;
+    subscriptionMonths: number;
     status: BillingStatus;
+    paidToDate?: string;
 
-    constructor(id: string, userEmail: string, lndId: string, invoiceId: string, creationDate: string, paidToDate: string,
-                status: BillingStatus) {
+    constructor(id: string, userEmail: string, lndId: string, invoiceId: string, creationDate: string,
+                status: BillingStatus, subscriptionMonths: number, paidToDate?: string) {
         this.id = id;
         this.userEmail = userEmail;
         this.lndId = lndId;
         this.invoiceId = invoiceId;
         this.creationDate = creationDate;
-        this.paidToDate = paidToDate;
         this.status = status;
+        this.subscriptionMonths = subscriptionMonths;
+        this.paidToDate = paidToDate;
     }
 }

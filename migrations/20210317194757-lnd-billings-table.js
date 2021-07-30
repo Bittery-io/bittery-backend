@@ -46,7 +46,8 @@ exports.up = function(db) {
     },
     invoice_id: { type: 'string', length: 100, notNull: true },
     creation_date: { type: 'timestamp', timezone: true, notNull: true },
-    paid_to_date: { type: 'timestamp', timezone: true, notNull: true },
+    subscription_months: { type: 'integer', notNull: true },
+    paid_to_date: { type: 'timestamp', timezone: true, notNull: false },
     status: { type: 'string', length: 20, notNull: true },
   });
 };

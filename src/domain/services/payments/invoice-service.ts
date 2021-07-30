@@ -8,10 +8,11 @@ import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
 import { generateInvoicePdf } from '../pdf/invoice-pdf-generator-service';
 import { Invoice } from 'btcpay';
 import { logInfo } from '../../../application/logging-service';
-import { findUserActiveLnd } from '../../repository/lnd/lnds-repository';
+import { findUserActiveLnd, findUserActiveLndAggregate } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { lndGetInfo } from '../lnd/api/lnd-api-service';
 import { LndInfo } from '../../model/lnd/api/lnd-info';
+import { LndAggregate } from '../../model/lnd/lnd-aggregate';
 
 export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<void> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
@@ -37,18 +38,23 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
         const invoice: Invoice = await getBtcpayInvoice(userBtcpayDetails.btcpayUserAuthToken, invoiceId);
-        const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
-        if (lnd) {
-            const lndInfo: LndInfo | undefined = await lndGetInfo(lnd.lndRestAddress, lnd.macaroonHex!);
-            if (lndInfo) {
-                const lndUri: string = lndInfo.uri;
-                return await generateInvoicePdf(invoice, userEmail, lndUri);
+        const lndAggregate: LndAggregate | undefined = await findUserActiveLndAggregate(userEmail);
+        if (lndAggregate) {
+            let lndUri: string;
+            if (lndAggregate.digitalOceanLnd) {
+                lndUri = `${lndAggregate.lnd.publicKey}@${lndAggregate.digitalOceanLnd.dropletIp}:9735`;
             } else {
-                throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND info for ${userEmail} and lnd id ${lnd.lndId}, rest address ${lnd.lndRestAddress}!`,
-                    UserBtcpayErrorType.COULD_NOT_GET_LND_INFO);
+                const lndInfo: LndInfo | undefined = await lndGetInfo(lndAggregate.lnd.lndRestAddress, lndAggregate.lnd.macaroonHex!);
+                if (lndInfo) {
+                    lndUri = lndInfo.uri;
+                } else {
+                    throw new UserBtcpayException(`Cannot get pdf invoice because could not get LND info for ${userEmail} and lnd id ${lndAggregate.lnd.lndId}, rest address ${lndAggregate.lnd.lndRestAddress}!`,
+                        UserBtcpayErrorType.COULD_NOT_GET_LND_INFO);
+                }
             }
+            return await generateInvoicePdf(invoice, userEmail, lndUri);
         } else {
-            throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not LND yet!`,
+            throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not LND yet (or is inactive)!`,
                 UserBtcpayErrorType.USER_HAS_NOT_LND);
         }
     } else {

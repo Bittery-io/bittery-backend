@@ -6,9 +6,9 @@ import { LndBilling } from '../model/billings/lnd-billing';
 
 export const insertBilling = async (client: PoolClient, billing: LndBilling): Promise<void> => {
     await client.query(`
-                INSERT INTO LND_BILLINGS(ID, USER_EMAIL, LND_ID, INVOICE_ID, CREATION_DATE, PAID_TO_DATE, STATUS)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [billing.id, billing.userEmail, billing.lndId, billing.invoiceId, billing.creationDate, billing.paidToDate,
+                INSERT INTO LND_BILLINGS(ID, USER_EMAIL, LND_ID, INVOICE_ID, CREATION_DATE, SUBSCRIPTION_MONTHS, PAID_TO_DATE, STATUS)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [billing.id, billing.userEmail, billing.lndId, billing.invoiceId, billing.creationDate, billing.subscriptionMonths, billing.paidToDate,
             billing.status]);
 };
 
@@ -18,8 +18,8 @@ export const updateBilling = async (billing: LndBilling): Promise<void> => {
 };
 
 export const updateAllBillingsWithGivenStatusSetNewStatus = async (
-        userEmail: string, oldStatus: BillingStatus, newStatus: BillingStatus): Promise<void> => {
-    await dbPool.query(`UPDATE LND_BILLINGS SET STATUS = $1 WHERE USER_EMAIL = $2 AND STATUS = $3`,
+        client: PoolClient, userEmail: string, oldStatus: BillingStatus, newStatus: BillingStatus): Promise<void> => {
+    await client.query(`UPDATE LND_BILLINGS SET STATUS = $1 WHERE USER_EMAIL = $2 AND STATUS = $3`,
         [newStatus, userEmail, oldStatus]);
 };
 
@@ -32,8 +32,9 @@ export const findBilling = async (userEmail: string, invoiceId: string): Promise
         res.rows[0].lnd_id,
         res.rows[0].invoice_id,
         res.rows[0].creation_date,
-        res.rows[0].paid_to_date,
         res.rows[0].status,
+        res.rows[0].subscription_months,
+        res.rows[0].paid_to_date,
     ) : undefined;
 };
 
@@ -46,8 +47,9 @@ export const findBillingsNewestFirst = async (userEmail: string): Promise<LndBil
         row.lnd_id,
         row.invoice_id,
         row.creation_date,
-        row.paid_to_date,
         row.status,
+        row.subscription_months,
+        row.paid_to_date,
     ));
 };
 
@@ -63,8 +65,9 @@ export const findLatestCreatedBillingWithStatus = async (
         res.rows[0].lnd_id,
         res.rows[0].invoice_id,
         res.rows[0].creation_date,
-        res.rows[0].paid_to_date,
         res.rows[0].status,
+        res.rows[0].subscription_months,
+        res.rows[0].paid_to_date,
     ) : undefined;
 };
 
@@ -78,8 +81,9 @@ export const findBillingsWithStatus = async (status: BillingStatus): Promise<Lnd
         row.lnd_id,
         row.invoice_id,
         row.creation_date,
-        row.paid_to_date,
         row.status,
+        row.subscription_months,
+        row.paid_to_date,
     ));
 };
 
@@ -92,14 +96,15 @@ export const findBillingsWithStatusWherePaidToDateIsInFuture = async (status: Bi
         row.lnd_id,
         row.invoice_id,
         row.creation_date,
-        row.paid_to_date,
         row.status,
+        row.subscription_months,
+        row.paid_to_date,
     ));
 };
 
 // todo it calls digital ocean tables... anyway it selects only billings for LND which is not yet archived so is not yet in archives table
 export const findBillingsWithStatusWherePaidToDateIsInPastAndIsNotYetArchived = async (status: BillingStatus): Promise<LndBilling[]> => {
-    const res = await dbPool.query(`SELECT lb.id, lb.user_email, lb.lnd_id, lb.invoice_id, lb.creation_date, lb.paid_to_date, lb.status
+    const res = await dbPool.query(`SELECT lb.id, lb.user_email, lb.lnd_id, lb.invoice_id, lb.creation_date, lb.paid_to_date, lb.status, lb.subscription_months
                                                    FROM LND_BILLINGS lb LEFT JOIN digital_ocean_archives doa
                                                    ON lb.lnd_id = doa.lnd_id
                                                    WHERE lb.STATUS = $1 AND lb.PAID_TO_DATE < now() AND DOA.archive_date IS NULL`,
@@ -110,7 +115,8 @@ export const findBillingsWithStatusWherePaidToDateIsInPastAndIsNotYetArchived = 
         row.lnd_id,
         row.invoice_id,
         row.creation_date,
-        row.paid_to_date,
         row.status,
+        row.subscription_months,
+        row.paid_to_date,
     ));
 };

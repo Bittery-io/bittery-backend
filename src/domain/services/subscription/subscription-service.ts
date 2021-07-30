@@ -30,11 +30,6 @@ const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE
 
 export const extendSubscription = async (userEmail: string, extendSubscriptionDto: ExtendSubscriptionDto): Promise<string | undefined> => {
     const latestPaidUserBilling: LndBilling = (await findLatestCreatedBillingWithStatus(userEmail, BillingStatus.PAID))!;
-    const latestPaidToTime: number = new Date(latestPaidUserBilling.paidToDate).getTime();
-    // jesli to ponizej bylo true - to subskrypcja byla nadal wazna, jesli false to expired - ale nie ma sensu tego sprawdzac
-    // tutaj zawsze tworze billing, a przy przetwarzaniu platnosci za niego moge sprawdzic czyto bylo dla expired - bo nie ma lnd wtedy aktywnego
-    // if (isFirstDateAfterSecond(latestPaidToTime, new Date().getTime())) {
-    const newPaidToDate: Date = new Date(addMonthsToDate(latestPaidToTime, extendSubscriptionDto.subscriptionTimeMonths));
     const invoiceAmount: string = Number(BITTERY_SUBSCRIPTION_PRICE_USD * extendSubscriptionDto.subscriptionTimeMonths *
         getDiscountMultiplier(extendSubscriptionDto.subscriptionTimeMonths)).toFixed(2);
     const btcpayInvoice: BtcpayInvoice = await saveBitteryInvoice(userEmail,
@@ -45,15 +40,16 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
             `Bittery LND ${extendSubscriptionDto.subscriptionTimeMonths} months plan`,
             userEmail));
     await runInTransaction((client) => {
-        updateAllBillingsWithGivenStatusSetNewStatus(userEmail, BillingStatus.PENDING, BillingStatus.REPLACED_BY_NEWER);
+        updateAllBillingsWithGivenStatusSetNewStatus(client, userEmail, BillingStatus.PENDING, BillingStatus.REPLACED_BY_NEWER);
         insertBilling(client, new LndBilling(
             generateUuid(),
             userEmail,
             latestPaidUserBilling.lndId,
             btcpayInvoice.id,
             new Date().toISOString(),
-            newPaidToDate.toISOString(),
             BillingStatus.PENDING,
+            extendSubscriptionDto.subscriptionTimeMonths,
+            undefined,
         ));
     });
     logInfo(`Successfully created subscription billing for user ${userEmail} for ${extendSubscriptionDto.subscriptionTimeMonths} months`);
@@ -66,12 +62,12 @@ export const getUserSubscription = async (userEmail: string): Promise<Subscripti
         // todo currently only for single LND per user
         const hostedLnd: HostedLnd = hostedLnds[0];
         const latestPaidUserBilling: LndBilling = (await findLatestCreatedBillingWithStatus(userEmail, BillingStatus.PAID))!;
-        const latestPaidToTime: number = new Date(latestPaidUserBilling.paidToDate).getTime();
+        const latestPaidToTime: number = new Date(latestPaidUserBilling.paidToDate!).getTime();
         const subscriptionStatus: SubscriptionStatus = isFirstDateAfterSecond(latestPaidToTime, new Date().getTime()) ?
             SubscriptionStatus.ACTIVE : SubscriptionStatus.EXPIRED;
         return new SubscriptionDto(
             subscriptionStatus,
-            new Date(latestPaidUserBilling.paidToDate).getTime(),
+            new Date(latestPaidUserBilling.paidToDate!).getTime(),
             getSubscriptionPlan(hostedLnd.hostedLndType),
             BITTERY_SUBSCRIPTION_PRICE_USD.toFixed(2),
             [],
@@ -98,7 +94,7 @@ export const getUserSubscriptionBillingInvoices = async (userEmail: string): Pro
                 bitteryInvoice.itemDesc!,
                 Product.LND,
                 billing.invoiceId,
-                new Date(billing.paidToDate).getTime(),
+                new Date(billing.paidToDate!).getTime(),
                 billing.status,
                 bitteryInvoice.btcPrice,
                 bitteryInvoice.btcPaid,
