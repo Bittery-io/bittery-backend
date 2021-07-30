@@ -70,11 +70,11 @@ export const findUserEncryptedLnArtefacts = async (userEmail: string, lndId: str
     ));
 };
 
-// todo IT WILL WORK UNTIL THERE IS SINGLE LND PER USER
-export const findLnSeedMnemonicEncryptedArtefact = async (userEmail: string): Promise<string | undefined> => {
-    const result = await dbPool.query(`SELECT ENCRYPTED_ARTEFACT FROM USER_ENCRYPTED_LN_ARTEFACTS
-                            WHERE USER_EMAIL = $1
-                            AND ENCRYPTED_LN_ARTEFACT_TYPE = $2`,
+export const findLnSeedMnemonicEncryptedArtefactForActiveLnd = async (userEmail: string): Promise<string | undefined> => {
+    const result = await dbPool.query(`
+                            SELECT uela.ENCRYPTED_ARTEFACT FROM USER_ENCRYPTED_LN_ARTEFACTS uela
+                            JOIN LNDS l ON uela.LND_ID = l.LND_ID
+                            WHERE l.USER_EMAIL = $1 AND l.IS_ACTIVE = true AND uela.ENCRYPTED_LN_ARTEFACT_TYPE = $2 `,
         [userEmail, EncryptedLnArtefactType.LN_SEED_MNEMONIC]);
     return result.rows.length === 1 ? result.rows[0].encrypted_artefact : undefined;
 };

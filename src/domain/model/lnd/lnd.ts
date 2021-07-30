@@ -10,11 +10,12 @@ export class Lnd {
     lndType: LndType;
     creationDate: string;
     isActive: boolean;
+    publicKey: string;
     macaroonHex?: string;
 
     constructor(lndId: string, userEmail: string, lndRestAddress: string,
                 tlsCert: string, tlsCertThumbprint: string, lndVersion: string, lndType: LndType, creationDate: string,
-                isActive: boolean, macaroonHex?: string) {
+                isActive: boolean, publicKey: string, macaroonHex?: string) {
         this.lndId = lndId;
         this.userEmail = userEmail;
         this.lndRestAddress = lndRestAddress;
@@ -24,6 +25,7 @@ export class Lnd {
         this.lndType = lndType;
         this.creationDate = creationDate;
         this.isActive = isActive;
+        this.publicKey = publicKey;
         this.macaroonHex = macaroonHex;
     }
 }

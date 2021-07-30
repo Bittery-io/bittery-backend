@@ -64,6 +64,8 @@ export const createBtcpayInvoiceForBitterySubscription = async (
         notificationURL: `http://172.18.0.1:3001/btcpay/billing/invoice/${getProperty('BTCPAY_WEBHOOK_SECRET_KEY')}/${invoiceOwnerEmailBase64}`,
         // za 60 sekund!!!
         expirationTime: new Date().getTime() + 1000 * 60,
+        // todo tylko dla testow zamienione!!!
+        // expirationTime: getInvoiceValidityInMillisecs(saveInvoiceDto.invoiceValidity),
     });
     return new BtcpayInvoice(res.id, res.url);
 };

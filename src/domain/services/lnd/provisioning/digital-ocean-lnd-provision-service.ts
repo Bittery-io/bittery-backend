@@ -62,6 +62,8 @@ export const provisionDigitalOceanLnd = async (
             new Date().toISOString(),
             false,
             true,
+            // todo at beginning it is not initialized
+            '',
             createLndDto.lnAlias,
             undefined,
         );

@@ -31,6 +31,7 @@ exports.up = function(db) {
         mapping: 'email'
       },
     },
+    public_key: { type: 'string', length: 100, notNull: true },
     lnd_rest_address: { type: 'string', length: 200, notNull: true },
     macaroon_hex: { type: 'string', length: 1000 },
     tls_cert: { type: 'string', length: 2000, notNull: true },

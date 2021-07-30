@@ -236,3 +236,67 @@ export const subscriptionEndedEmail = async (toEmail: string): Promise<string | 
         return undefined;
     }
 };
+
+export const subscripionRestoredEmail = async (toEmail: string, months: number): Promise<string | undefined> => {
+    const url = `${getProperty('CLIENT_URL_ADDRESS')}/ln/overview`;
+    const body: string = `
+    <html>
+    <body>
+    <h2>Bittery.io - better Bitcoin payments subscription is restored</h2>
+    <p>We received your subscription payment. Your Bittery.io subscription has been just restored and is valid for next ${months > 1 ? `${months} months` : `1 month`}.</p>
+    <p>Your personal Lightning Network node is restored and online.</p>
+    <p>Check your new node details here: <a href='${url}'>${url}</a></p>
+    <p><b>Thank you for using Bittery.io</b></p>
+    <br><br>
+    --------------------------------------------------- <br>
+      Bittery.io<br>
+      Website: <a href='https://bittery.io'> https://bittery.io </a> <br>
+      E-mail: bitteryio@protonmail.com <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: toEmail,
+        subject: `Your Bittery.io subscription restored for ${months > 1 ? `${months} months` : `1 month`}`,
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo(`Successfully sent subscription restored email to ${toEmail}. ${sendResponse}`);
+        return sendResponse.id;
+    } catch (err) {
+        logError(`Sending subscription restored email to ${toEmail} failed`, err);
+        return undefined;
+    }
+};
+
+export const subscriptionExtendedEmail = async (toEmail: string, months: number): Promise<string | undefined> => {
+    const url = `${getProperty('CLIENT_URL_ADDRESS')}/ln/overview`;
+    const body: string = `
+    <html>
+    <body>
+    <h2>Bittery.io - better Bitcoin payments subscription was extended</h2>
+    <p>We received your subscription payment. Your Bittery.io subscription has been extended and is valid for next ${months > 1 ? `${months} months` : `1 month`}.</p>
+    <p><b>Thank you for using Bittery.io</b></p>
+    <br><br>
+    --------------------------------------------------- <br>
+      Bittery.io<br>
+      Website: <a href='https://bittery.io'> https://bittery.io </a> <br>
+      E-mail: bitteryio@protonmail.com <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: toEmail,
+        subject: `Your Bittery.io subscription extended for ${months > 1 ? `${months} months` : `1 month`}`,
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo(`Successfully sent subscription extended email to ${toEmail}. ${sendResponse}`);
+        return sendResponse.id;
+    } catch (err) {
+        logError(`Sending subscription extended email to ${toEmail} failed`, err);
+        return undefined;
+    }
+};

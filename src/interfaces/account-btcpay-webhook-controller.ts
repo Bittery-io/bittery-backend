@@ -7,6 +7,10 @@ import { Invoice } from 'btcpay';
 import { findBilling, updateBilling } from '../domain/repository/lnd-billings-repository';
 import { LndBilling } from '../domain/model/billings/lnd-billing';
 import { BillingStatus } from '../domain/model/billings/billing-status';
+import { findUserActiveLnd } from '../domain/repository/lnd/lnds-repository';
+import { Lnd } from '../domain/model/lnd/lnd';
+import { restoreLnd } from '../domain/services/lnd/restore-user-lnd-service';
+import { subscripionRestoredEmail, subscriptionExtendedEmail } from '../application/mail-service';
 
 @JsonController('/btcpay')
 export class AccountBtcpayWebhookController {
@@ -26,14 +30,30 @@ export class AccountBtcpayWebhookController {
                 const billing: LndBilling | undefined = await findBilling(invoiceOwnerEmail, btcpayInvoice.id);
                 if (billing) {
                     switch (eventName) {
+                        // case 'invoice_expired':
+                        //     billing.status = BillingStatus.EXPIRED;
+                        //     await updateBilling(billing);
+                        //     logInfo(`Successfully updated Bitte
+                        //     ry subscription invoice as EXPIRED for invoice with id ${btcpayInvoice.id} and user email ${invoiceOwnerEmail}`);
+                        //     break;
+                        // case 'invoice_complete':
+                        // todo tylko dla testow zamienione!!!!
                         case 'invoice_expired':
-                            billing.status = BillingStatus.EXPIRED;
-                            await updateBilling(billing);
-                            logInfo(`Successfully updated Bittery subscription invoice as EXPIRED for invoice with id ${btcpayInvoice.id} and user email ${invoiceOwnerEmail}`);
-                            break;
-                        case 'invoice_complete':
                             billing.status = BillingStatus.PAID;
+                            const lnd: Lnd | undefined = await findUserActiveLnd(invoiceOwnerEmail);
+                            if (!lnd) {
+                                // must restore!
+                                // billing has lndIf of latest active lnd so it is the one to restore
+                                await restoreLnd(invoiceOwnerEmail, billing.lndId);
+                            }
                             await updateBilling(billing);
+                            if (lnd) {
+                                await subscriptionExtendedEmail(invoiceOwnerEmail, 1);
+                            } else {
+                            // todo data przedluzenia subskrypcji powinna byc w sumie ustawiona tutaj czyli + 30 dni tutaj
+                            // wiec trzeba do billing tabeli dodać ilosc dni i potem aktualizowac tutaj
+                                await subscripionRestoredEmail(invoiceOwnerEmail, 1);
+                            }
                             logInfo(`Successfully updated Bittery subscription invoice as PAID for invoice with id ${btcpayInvoice.id} and user email ${invoiceOwnerEmail}`);
                     }
                 }

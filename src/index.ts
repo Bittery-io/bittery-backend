@@ -4,12 +4,9 @@ import { getBooleanProperty, getNumberProperty } from './application/property-se
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
 import 'ts-replace-all';
-import { restoreLnd } from './domain/services/lnd/restore-user-lnd-service';
-import { restoreLndInDroplet } from './domain/services/lnd/provisioning/digital-ocean-restore-lnd-service';
 import { startSubscriptionDisableScheduler } from './domain/services/subscription/subscription-disabler-scheduler';
 import { startSubscriptionRenewEmailScheduler } from './domain/services/subscription/subscription-renew-email-scheduler';
 import { startStaticChannelBackupScheduler } from './domain/services/lnd/static-channel-backup/static-channel-backup-scheduler-service';
-import { updateUserBtcStoreWithActiveLnd } from './domain/services/btcpay/btcpay-service';
 
 // Create a new express app instance
 export const routingControllersOptions = {
@@ -24,7 +21,8 @@ if (getBooleanProperty('RUN_STATIC_CHANNEL_BACKUP_SCHEDULER')) {
 }
 if (getBooleanProperty('RUN_SUBSCRIPTION_DISABLE_SCHEDULER')) {
 }
-// startSubscriptionDisableScheduler();
+startSubscriptionDisableScheduler();
+startStaticChannelBackupScheduler();
 if (getBooleanProperty('RUN_SUBSCRIPTION_RENEW_EMAIL_SCHEDULER')) {
     startSubscriptionRenewEmailScheduler();
 }

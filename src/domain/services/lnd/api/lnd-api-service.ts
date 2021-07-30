@@ -6,8 +6,9 @@ import { LndInitWalletDto } from '../../../../interfaces/dto/lnd/lnd-init-wallet
 import { LndLockedException } from '../../../model/lnd/api/lnd-locked-exception';
 import { LndInfo } from '../../../model/lnd/api/lnd-info';
 
-// 5 secs
+// 3.5 secs
 const LND_TIMEOUT = 3500;
+const LND_LONGER_TIMEOUT = 10000;
 export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string): Promise<LndInfo | undefined> => {
     const source = axios.CancelToken.source();
     const timeout = setTimeout(() => {
@@ -144,17 +145,25 @@ export const lndUnlockWallet = async (lndRestAddress: string, walletPassword: st
 
 // returns base64 string
 export const getAllStaticChannelBackupBase64 = async (lndRestAddress: string, macaroonHex: string): Promise<string> => {
+    const source = axios.CancelToken.source();
+    const timeout = setTimeout(() => {
+        source.cancel();
+        // Timeout Logic
+    }, LND_LONGER_TIMEOUT);
     try {
         const res = await axios.get(`${lndRestAddress}/v1/channels/backup`, {
             httpsAgent: new https.Agent({
                 rejectUnauthorized: false,
             }),
+            cancelToken: source.token,
             headers: {
                 'Grpc-Metadata-macaroon': macaroonHex,
             },
         });
+        clearTimeout(timeout);
         return Buffer.from(JSON.stringify(res.data.multi_chan_backup)).toString('base64');
     } catch (err) {
+        clearTimeout(timeout);
         logError(`Getting static channel backup for LND with address ${lndRestAddress} failed!`, err.message);
         throw err;
     }

@@ -1,7 +1,7 @@
-import { LndStatusEnum } from '../../domain/model/lnd/lnd-status-enum';
-import { LndType } from '../../domain/model/lnd/lnd-type';
-import { HostedLndType } from '../../domain/model/lnd/hosted/hosted-lnd-type';
-import { LndInfo } from '../../domain/model/lnd/api/lnd-info';
+import { LndStatusEnum } from '../../../domain/model/lnd/lnd-status-enum';
+import { LndType } from '../../../domain/model/lnd/lnd-type';
+import { HostedLndType } from '../../../domain/model/lnd/hosted/hosted-lnd-type';
+import { LndInfo } from '../../../domain/model/lnd/api/lnd-info';
 
 export class UserLndDto {
     lndId: string;

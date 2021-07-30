@@ -25,6 +25,7 @@ export const findUserHostedLnds = async (userEmail: string): Promise<HostedLnd[]
         row.creation_date,
         row.wumbo_channels,
         row.is_active,
+        row.public_key,
         row.ln_alias,
         row.macaroon_hex,
     ));
@@ -46,6 +47,7 @@ export const findUserHostedLnd = async (userEmail: string, lndId: string): Promi
         result.rows[0].creation_date,
         result.rows[0].wumbo_channels,
         result.rows[0].is_active,
+        result.rows[0].public_key,
         result.rows[0].ln_alias,
         result.rows[0].macaroon_hex,
     ) : undefined;

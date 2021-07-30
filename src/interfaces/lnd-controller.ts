@@ -2,14 +2,11 @@ import { Response } from 'express-serve-static-core';
 import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { LndCreateException } from '../domain/model/lnd/lnd-create-exception';
 import { ErrorDto } from './dto/error-dto';
-import { UserLndDto } from './dto/user-lnd-dto';
 import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-type';
 import {
-    addExternalLnd,
     createLnd,
-    getUserLnd, getUserLndConnectUriDetails,
+    getUserLnds, getUserLndConnectUriDetails,
 } from '../domain/services/lnd/create-user-lnd-service';
-import { SaveExternalLndDto } from './dto/save-external-lnd-dto';
 import { logError, logInfo } from '../application/logging-service';
 import { Authorized, Body, Get, HeaderParam, JsonController, Post, QueryParam, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
@@ -24,7 +21,7 @@ import { SaveEncryptedAdminMacaroonDto } from './dto/lnd/save-encrypted-admin-ma
 import {
     findAdminMacaroonHexEncryptedArtefact,
     findLnPasswordEncryptedArtefact,
-    findLnSeedMnemonicEncryptedArtefact,
+    findLnSeedMnemonicEncryptedArtefactForActiveLnd,
     updateAdminMacaroonHexEncryptedArtefact,
 } from '../domain/repository/encrypted/user-encrypted-ln-artefacts-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';
@@ -36,6 +33,7 @@ import { getMillisecondsToNextStaticChannekBackup } from '../domain/services/lnd
 import { getLnFullBackup } from '../domain/services/lnd/backup/ln-backup-service';
 import { LndFullBackupDto } from './dto/lnd/backup/lnd-full-backup-dto';
 import { LndConnectUriDto } from './dto/lnd/lnd-connect-uri-dto';
+import { UserLndsDto } from './dto/lnd/user-lnds-dto';
 
 @JsonController('/lnd')
 @Authorized()
@@ -51,23 +49,23 @@ export class LndController {
             await createLnd(userEmail, createLndDto);
             return res.status(200).send();
         } catch (err) {
+            logError('Failed to add user LND services', err);
             if (err instanceof LndCreateException) {
                 return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
             }
-            logError('Failed to add user LND services', err);
             return res.status(500).send(new ErrorDto('LND services creation failed',
                 LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
         }
     }
 
     @Get('/user')
-    async getUserLndApi(
+    async getUserLndsApi(
             @HeaderParam('authorization', { required: true }) authorizationHeader: string,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        const userLndDto: UserLndDto | undefined = await getUserLnd(userEmail);
-        if (userLndDto) {
-            return res.send(userLndDto);
+        const userLndsDto: UserLndsDto | undefined = await getUserLnds(userEmail);
+        if (userLndsDto) {
+            return res.send(userLndsDto);
         } else {
             return res.status(404).send();
         }
@@ -214,7 +212,7 @@ export class LndController {
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
-            const encryptedLnNodeWalletSeed: string | undefined = await findLnSeedMnemonicEncryptedArtefact(userEmail);
+            const encryptedLnNodeWalletSeed: string | undefined = await findLnSeedMnemonicEncryptedArtefactForActiveLnd(userEmail);
             if (encryptedLnNodeWalletSeed) {
                 logInfo(`Successfully returned default encrypted LN node wallet seed for email ${userEmail}`);
                 return res.status(200).send(new EncryptedArtefactDto(encryptedLnNodeWalletSeed));

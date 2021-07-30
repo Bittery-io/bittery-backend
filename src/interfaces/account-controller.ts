@@ -24,9 +24,9 @@ export class AccountController {
 
     @Get('/billing')
     async getBillingDetails(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Res() res: Response,
-        @Body({ required: true }) createUserBtcpayDto: CreateUserBtcpayDto) {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Res() res: Response,
+            @Body({ required: true }) createUserBtcpayDto: CreateUserBtcpayDto) {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
             logInfo(`Starting creating BTCPAY user services for email ${userEmail}`);

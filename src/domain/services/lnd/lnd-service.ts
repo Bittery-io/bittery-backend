@@ -1,5 +1,15 @@
-import { findLndRestAddress, updateLndSetMacaroonHex } from '../../repository/lnd/lnds-repository';
-import { lndBakeMacaroonForBtcPay, lndGenSeed, lndInitWallet, lndUnlockWallet } from './api/lnd-api-service';
+import {
+    findLndRestAddress,
+    updateLndSetMacaroonHex,
+    updateLndSetPublicKey,
+} from '../../repository/lnd/lnds-repository';
+import {
+    lndBakeMacaroonForBtcPay,
+    lndGenSeed,
+    lndGetInfo,
+    lndInitWallet,
+    lndUnlockWallet,
+} from './api/lnd-api-service';
 import { logError, logInfo } from '../../../application/logging-service';
 import { LndInitWalletDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-dto';
 import { LndInitWalletResponseDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-response-dto';
@@ -11,6 +21,7 @@ import { UserEncryptedLnArtefact } from '../../model/encrypted/user-encrypted-ln
 import { generateUuid } from '../utils/id-generator-service';
 import { EncryptedLnArtefactType } from '../../model/encrypted/encrypted-ln-artefact-type';
 import { findDropletIp } from '../../repository/lnd/digital-ocean/digital-ocean-lnds-repository';
+import { LndInfo } from '../../model/lnd/api/lnd-info';
 
 export const generateLndSeed = async (userEmail: string, lndId: string): Promise<string[] | undefined> => {
     const lndRestAddress: string | undefined = await findLndRestAddress(lndId, userEmail);
@@ -41,6 +52,7 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
         await sleep(5000);
         const adminMacaroonHex: string = Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
         const bitteryBakedMacaroonHex: string | undefined = await lndBakeMacaroonForBtcPay(lndRestAddress, adminMacaroonHex);
+        const lndInfo: LndInfo | undefined = await lndGetInfo(lndRestAddress, bitteryBakedMacaroonHex!);
         await runInTransaction(async (client) => {
             // todo this is kind of hack of pushing adminMacaroon not encrypted - it will be saved again client side encrypted
             // todo after this call ends however I do it here for being sure it's saved... to be fixed/done better rather
@@ -75,6 +87,14 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
             if (bitteryBakedMacaroonHex) {
                 await updateLndSetMacaroonHex(client, lndId, bitteryBakedMacaroonHex);
                 logInfo(`Updated Bittery permissions baked macaroon hex for LND with id ${lndId} for user ${userEmail}`);
+            } else {
+                logError(`Fatal: could not update Bittery permissions baked macaroon hex for LND with id ${lndId} for user ${userEmail} because is undefined of some reason!`);
+            }
+            if (lndInfo) {
+                await updateLndSetPublicKey(client, lndId, lndInfo.publicKey);
+                logInfo(`Updated public key for LND with id ${lndId} for user ${userEmail}`);
+            } else {
+                logError(`Fatal: could not update public key for LND with id ${lndId} for user ${userEmail} because is undefined of some reason!`);
             }
         });
         return new LndInitWalletResponseDto(adminMacaroonHex);
