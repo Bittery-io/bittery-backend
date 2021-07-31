@@ -11,7 +11,7 @@ import { logError, logInfo } from '../application/logging-service';
 import { Authorized, Body, Get, HeaderParam, JsonController, Post, QueryParam, Res } from 'routing-controllers/index';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
 import { Param } from 'routing-controllers';
-import { generateLndSeed, initLndWallet, unlockLnd } from '../domain/services/lnd/lnd-service';
+import { generateLndSeed, initLndWallet, unlockLndAndTryToRestoreFailedInitIfNeeded } from '../domain/services/lnd/lnd-service';
 import { LndInitWalletDto } from './dto/lnd/lnd-init-wallet-dto';
 import { LndInitWalletResponseDto } from './dto/lnd/lnd-init-wallet-response-dto';
 import { UnlockLndDto } from './dto/lnd/unlock-lnd-dto';
@@ -120,11 +120,11 @@ export class LndController {
             @Body({ required: true }) unlockLndDto: UnlockLndDto,
             @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        const unlocked: boolean = await unlockLnd(userEmail, lndId, unlockLndDto.password);
+        const unlocked: boolean = await unlockLndAndTryToRestoreFailedInitIfNeeded(userEmail, lndId, unlockLndDto.password);
         if (unlocked) {
             return res.sendStatus(200);
         } else {
-            return res.status(400).send();
+            return res.sendStatus(400);
         }
     }
 

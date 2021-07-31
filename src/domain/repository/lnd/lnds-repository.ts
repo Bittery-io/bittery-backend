@@ -242,13 +242,13 @@ export const findUserLndAggregatesNewestFirst = async (userEmail: string): Promi
     return lndAggregates;
 };
 
-export const updateLndSetMacaroonHex = async (client: PoolClient, lndId: string, macaroonHex: string): Promise<void> => {
-    await client.query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
+export const updateLndSetMacaroonHex = async (lndId: string, macaroonHex: string, client?: PoolClient): Promise<void> => {
+    await (client ?? dbPool).query('UPDATE LNDS SET MACAROON_HEX = $1 WHERE LND_ID = $2',
         [macaroonHex, lndId]);
 };
 
-export const updateLndSetPublicKey = async (client: PoolClient, lndId: string, publicKey: string): Promise<void> => {
-    await client.query('UPDATE LNDS SET PUBLIC_KEY = $1 WHERE LND_ID = $2',
+export const updateLndSetPublicKey = async (lndId: string, publicKey: string, client?: PoolClient): Promise<void> => {
+    await (client ?? dbPool).query('UPDATE LNDS SET PUBLIC_KEY = $1 WHERE LND_ID = $2',
         [publicKey, lndId]);
 };
 

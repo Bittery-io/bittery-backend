@@ -10,7 +10,7 @@ export const readAdminMacaroonBase64FromLnd = async (userEmail: string, dropletI
     const ssh: any = await connectSshToNode(userEmail, dropletIp);
     const admianMacaroonTmpName: string = `${userEmail}.${dropletIp}.admin.macaroon`;
     const filePath: string = `${getProperty('LND_HOSTED_FILE_FOLDER_PATH')}/${admianMacaroonTmpName}`;
-    await ssh.getFile(filePath, '/lnd/data/chain/bitcoin/mainnet');
+    await ssh.getFile(filePath, '/lnd/data/chain/bitcoin/testnet');
     const base64AdminMacaroon: string = (await readFile(filePath)).toString('base64');
     await removeFile(filePath);
     return base64AdminMacaroon;

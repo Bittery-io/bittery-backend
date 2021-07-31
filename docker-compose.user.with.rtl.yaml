@@ -10,7 +10,7 @@ services:
     container_name: lnd_bitcoin
     restart: unless-stopped
     entrypoint: "lnd --bitcoin.active \
-                     --bitcoin.mainnet \
+                     --bitcoin.testnet \
                      --bitcoin.node=bitcoind \
                      --rpclisten=0.0.0.0:10009 \
                      --bitcoind.rpcuser=${BITCOIND_RPC_USER} \
@@ -39,7 +39,7 @@ services:
     environment:
       - RTL_CONFIG_PATH=/config
     volumes:
-      - ./volumes/lnd/data/chain/bitcoin/mainnet:/data/macaroon:ro
+      - ./volumes/lnd/data/chain/bitcoin/testnet:/data/macaroon:ro
       - ./volumes/rtl/channel_backup:/data/channel_backup
       - ./volumes/rtl/config:/config
     networks:

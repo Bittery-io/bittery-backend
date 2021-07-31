@@ -68,6 +68,7 @@ export const lndGenSeed = async (lndRestAddress: string): Promise<string[] | und
     }
 };
 
+// throw error!
 export const lndInitWallet = async (lndRestAddress: string, lndInitWalletDto: LndInitWalletDto): Promise<string | undefined> => {
     try {
         const res = await axios.post(`${lndRestAddress}/v1/initwallet`, {
@@ -78,10 +79,11 @@ export const lndInitWallet = async (lndRestAddress: string, lndInitWalletDto: Ln
                 rejectUnauthorized: false,
             }),
         });
+        // will be undefined if not stateless init (set in lnd.conf)
         return res.data.admin_macaroon;
     } catch (err) {
         logError(`Init for LND with address ${lndRestAddress} failed!`, err.message);
-        return undefined;
+        throw err;
     }
 };
 
@@ -114,7 +116,7 @@ export const lndUnlockWallet = async (lndRestAddress: string, walletPassword: st
     const timeout = setTimeout(() => {
         source.cancel();
         // Timeout Logic
-    }, LND_TIMEOUT);
+    }, LND_LONGER_TIMEOUT);
     try {
         await axios.post(`${lndRestAddress}/v1/unlockwallet`, {
             wallet_password: Buffer.from(walletPassword).toString('base64'),

@@ -26,7 +26,7 @@ services:
     environment:
       - RTL_CONFIG_PATH=/config
     volumes:
-      - ./volumes/lnd/data/chain/bitcoin/mainnet:/data/macaroon:ro
+      - ./volumes/lnd/data/chain/bitcoin/testnet:/data/macaroon:ro
       - ./volumes/rtl/channel_backup:/data/channel_backup
       - ./volumes/rtl/config:/config
     networks:

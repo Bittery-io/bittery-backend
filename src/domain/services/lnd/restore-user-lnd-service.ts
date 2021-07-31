@@ -61,7 +61,7 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
                         await insertDigitalOceanLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
                     }
                     await insertUserEncryptedLnArtefacts(client, userEncryptedLnArtefacts);
-                    await updateLndSetMacaroonHex(client, newDigitalOceanLndHosting.digitalOceanLnd.lndId, macaroonHex!);
+                    await updateLndSetMacaroonHex(newDigitalOceanLndHosting.digitalOceanLnd.lndId, macaroonHex!, client);
                 });
                 await updateUserBtcStoreWithActiveLnd(userEmail);
                 logInfo(`Successfully restored LND with id ${lndIdToRestore} for user email ${userEmail}. New LND has id: ${newDigitalOceanLndHosting.digitalOceanLnd.lndId}`);
