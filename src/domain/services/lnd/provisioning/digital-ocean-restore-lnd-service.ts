@@ -1,15 +1,21 @@
 import { connectSshToNode } from './lnd-droplet-digital-ocean-provision-service';
 import { getProperty } from '../../../../application/property-service';
-import { logInfo } from '../../../../application/logging-service';
+import { logError, logInfo } from '../../../../application/logging-service';
 
 export const restoreLndInDroplet = async (
-        userEmail: string, dropletIp: string, dropletId: number, oldDropletId: number, backupFileNameWithExtension: string) => {
-    const ssh: any = await connectSshToNode(userEmail, dropletIp, dropletId);
-    await executePrepareForRestoreLndInDroplet(ssh);
-    // just for restarting all setup, not need of backup
-    await uploadOldLndFolderToDroplet(ssh, oldDropletId, backupFileNameWithExtension);
-    await executeRestoreLndInDroplet(ssh, backupFileNameWithExtension, dropletIp);
-    logInfo('Restore process done');
+        userEmail: string, dropletIp: string, dropletId: number, oldDropletId: number, backupFileNameWithExtension: string): Promise<boolean> => {
+    try {
+        const ssh: any = await connectSshToNode(userEmail, dropletIp, dropletId);
+        await executePrepareForRestoreLndInDroplet(ssh);
+        // just for restarting all setup, not need of backup
+        await uploadOldLndFolderToDroplet(ssh, oldDropletId, backupFileNameWithExtension);
+        await executeRestoreLndInDroplet(ssh, backupFileNameWithExtension, dropletIp);
+        logInfo('Restore process done');
+        return true;
+    } catch (err) {
+        logError('Restore LND in droplet failed with err.', err);
+        throw false;
+    }
 };
 
 export const executePrepareForRestoreLndInDroplet = async (ssh: any): Promise<void> => {

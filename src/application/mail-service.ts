@@ -141,6 +141,31 @@ export const sendSetupLndFailedForUserEmail = async (
     }
 };
 
+export const sendErrorOccurredEmailToAdmin = async (message: string): Promise<string | undefined> => {
+    const body: string = `
+    <html>
+    <body>
+    <p>${message}</p>
+    <h3>Godzina: ${formatDateWithTime(new Date().getTime())}<h3>
+    <br><br>
+    </body>
+    </html>`;
+    const data = {
+        from: 'Bittery.io <notifications@mail.bittery.io>',
+        to: getProperty('EMAIL_FOR_ADMIN_NOTIFICATIONS'),
+        subject: 'Bittery poważny błąd',
+        html: body,
+    };
+    try {
+        const sendResponse = await mg.messages().send(data);
+        logInfo('Error occurred to admin successfully mail sent');
+        return sendResponse.id;
+    } catch (err) {
+        logError(`Error occurred to admin mail failed to be sent`, err);
+        return undefined;
+    }
+};
+
 export const sendDisablingSubscriptionFailed = async (
         failedForUserEmail: string,
         failedForLndId: string,

@@ -10,7 +10,7 @@ const writeFile = util.promisify(fs.writeFile);
 // setup
 const BTCPAY_URL: string = 'http://localhost';
 // setup
-const PAIRCODE: string = 'i9iMxWq';
+const PAIRCODE: string = 'bU5TgsB';
 
 if (BTCPAY_URL === 'todo' || PAIRCODE === 'todo') {
     console.log('Fill url and paircode!');
@@ -27,7 +27,7 @@ Private key hex: ${keyPair.getPrivate().toString('hex')}
 ########################
 To export:
 BTCPAY_BITTERY_MERCHANT_TOKEN=${rest.merchant}
-BTCPAY_BITTERY_PRIVATE_KEY=${rest.merchant}
+BTCPAY_BITTERY_PRIVATE_KEY=${keyPair.getPrivate().toString('hex')}
 `, 'utf8'));
     console.log('Done! File saved: bittery-api-token.txt');
 };

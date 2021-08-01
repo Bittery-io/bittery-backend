@@ -66,3 +66,15 @@ export const addMonthsToDate = (date: number, months: number): number => {
 export const isNowPlusGivenDaysAfterGivenDate = (date: number, days: number): boolean => {
     return !dayjs().add(days, 'day').isBefore(dayjs(date));
 };
+
+export const getDaysBetween = (dateFrom: number, dateTo: number): number => {
+    return dayjs(dateFrom).diff(dayjs(dateTo), 'day');
+};
+
+export const getHoursBetween = (dateFrom: number, dateTo: number): number => {
+    return dayjs(dateFrom).diff(dayjs(dateTo), 'hour');
+};
+
+export const getMinutesBetween = (dateFrom: number, dateTo: number): number => {
+    return dayjs(dateFrom).diff(dayjs(dateTo), 'minute');
+};

@@ -89,7 +89,7 @@ export const findUserActiveLndAggregate = async (userEmail: string): Promise<Lnd
                             FROM LNDS l LEFT JOIN HOSTED_LNDS hl on l.LND_ID = hl.LND_ID
                                         LEFT JOIN DIGITAL_OCEAN_LNDS dol on l.LND_ID = dol.LND_ID
                                         LEFT JOIN RTLS r on l.LND_ID = r.LND_ID
-                            WHERE USER_EMAIL = $1 AND IS_ACTIVE = true`,
+                            WHERE l.USER_EMAIL = $1 AND l.IS_ACTIVE = true`,
         [userEmail]);
     const foundRow = result.rows[0];
     if (foundRow) {
@@ -171,7 +171,7 @@ export const findUserLndAggregatesNewestFirst = async (userEmail: string): Promi
                             FROM LNDS l LEFT JOIN HOSTED_LNDS hl on l.LND_ID = hl.LND_ID
                                         LEFT JOIN DIGITAL_OCEAN_LNDS dol on l.LND_ID = dol.LND_ID
                                         LEFT JOIN RTLS r on l.LND_ID = r.LND_ID
-                            WHERE USER_EMAIL = $1 ORDER BY CREATION_DATE DESC`,
+                            WHERE l.USER_EMAIL = $1 ORDER BY l.CREATION_DATE DESC`,
         [userEmail]);
     const lndAggregates: LndAggregate[] = [];
     for (const foundRow of result.rows) {

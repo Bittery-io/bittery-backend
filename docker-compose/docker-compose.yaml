@@ -16,7 +16,6 @@ services:
       - DB_DATABASE=bitteryio
       - DB_PASSWORD=ofpuppets
       - DB_PORT=5432
-      - BITTERY_INFRASTRUCTURE_PATH=/bittery-infrastructure
       - ENCRYPTION_PASSWORD_SALT_ROUNDS=8
       - OAUTH2_TOKEN_CLIENT_SECRET=u8eFLaz_oXsB
       - SESSION_EXPIRES_IN_HOURS=1

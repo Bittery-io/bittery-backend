@@ -4,7 +4,6 @@ export DB_PASSWORD=ofpuppets
 export DB_HOST=localhost
 export DB_PORT=5431
 export DB_DATABASE=bitteryio
-export BITTERY_INFRASTRUCTURE_PATH=/home/peer/Programowanie/bittery/bittery-infrastructure
 export ENCRYPTION_PASSWORD_SALT_ROUNDS=8
 export OAUTH2_TOKEN_CLIENT_SECRET=u8eFLaz_oXsB
 export SESSION_EXPIRES_IN_HOURS=1

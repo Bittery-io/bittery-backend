@@ -24,7 +24,7 @@ export const provisionDigitalOceanLnd = async (
     let dropletCreationInfo: DropletCreationInfo;
     try {
         dropletCreationInfo = await createLndDroplet(dropletName, userEmail, createLndDto.hostedLndType,
-            false, createLndDto.lnAlias, lndHostedVersion, rtlHostedVersion);
+            false, createLndDto.lnAlias, lndHostedVersion, rtlHostedVersion, rtlOneTimePassword);
     } catch (err) {
         logError(`Failed to create Digital Ocean LND for user with email ${userEmail}. 
                           Failed on deployment stage: ${err.failedDeploymentStage}.

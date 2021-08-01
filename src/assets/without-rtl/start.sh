@@ -13,8 +13,8 @@ WUMBO_CHANNELS="$8"
 # create lnd.conf
 export BITCOIND_RPC_HOST=bittery.io
 echo '[Bitcoin]' > lnd.conf
-echo 'bitcoin.active=1' >> lnd.conf
-echo 'bitcoin.testnet=1' >> lnd.conf
+echo 'bitcoin.active=true' >> lnd.conf
+echo 'bitcoin.testnet=true' >> lnd.conf
 echo 'bitcoin.node=bitcoind' >> lnd.conf
 echo '[Bitcoind]' >> lnd.conf
 echo 'bitcoind.rpcuser='${BITCOIND_RPC_USER} >> lnd.conf

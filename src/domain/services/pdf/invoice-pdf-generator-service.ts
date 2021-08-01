@@ -3,7 +3,12 @@ import * as path from 'path';
 const fs = require('fs');
 import * as pdf from 'pdfjs';
 import { Invoice } from 'btcpay';
-import { addMinutes, formatDateWithTime, minutesToDays } from '../utils/date-service';
+import {
+    formatDateWithTime,
+    getDaysBetween,
+    getHoursBetween,
+    getMinutesBetween,
+} from '../utils/date-service';
 import { getNumberProperty, getProperty } from '../../../application/property-service';
 const logoSrc = fs.readFileSync(path.resolve(__dirname, 'BITTERY.jpg'));
 const font = fs.readFileSync(path.resolve(__dirname, 'Lato-Regular.ttf'));
@@ -27,9 +32,22 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
 
     doc.cell().text({ textAlign: 'left' }).add(`Invoice: ${invoice.id}`);
     doc.cell().text(`Invoice date: ${formatDateWithTime(invoice.invoiceTime)}`);
-    const btcpayPaymentExpirationMinutes: number = getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES');
-    doc.cell().text(`Payment due date : ${formatDateWithTime(addMinutes(invoice.invoiceTime, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES')))}`);
-    doc.cell({ paddingBottom: 0.5 * pdf.cm }).text(`Valid: ${minutesToDays(btcpayPaymentExpirationMinutes)} days`);
+    doc.cell().text(`Payment due date : ${formatDateWithTime(invoice.expirationTime)}`);
+
+    let validText: string;
+    const invoiceDaysValid: string = getDaysBetween(invoice.expirationTime, invoice.invoiceTime).toFixed(0);
+    if (invoiceDaysValid === '0') {
+        const invoiceHoursValid: string = getHoursBetween(invoice.expirationTime, invoice.invoiceTime).toFixed(0);
+        if (invoiceHoursValid === '0') {
+            const invoiceMinutesValid: string = getMinutesBetween(invoice.expirationTime, invoice.invoiceTime).toFixed(0);
+            validText = `Valid: ${invoiceMinutesValid} minutes`;
+        } else {
+            validText = `Valid: ${invoiceHoursValid} hours`;
+        }
+    } else {
+        validText = `Valid: ${invoiceDaysValid} days`;
+    }
+    doc.cell({ paddingBottom: 0.5 * pdf.cm }).text(validText);
 
     const partiesTable = doc.table({
         widths: [5 * pdf.cm, 9 * pdf.cm, 5 * pdf.cm],

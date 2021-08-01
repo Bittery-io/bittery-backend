@@ -8,7 +8,6 @@ export DB_DATABASE=bitteryio
 # CHANGE IT
 export DB_PASSWORD=ofpuppets
 export DB_PORT=5431
-export BITTERY_INFRASTRUCTURE_PATH=/home/pzet/bittery-infrastructure
 export ENCRYPTION_PASSWORD_SALT_ROUNDS=8
 # CHANGE IT
 export OAUTH2_TOKEN_CLIENT_SECRET=1bdb8fba-2088-4cac-b44f-e7089d717419

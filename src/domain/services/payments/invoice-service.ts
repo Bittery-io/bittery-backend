@@ -13,6 +13,8 @@ import { Lnd } from '../../model/lnd/lnd';
 import { lndGetInfo } from '../lnd/api/lnd-api-service';
 import { LndInfo } from '../../model/lnd/api/lnd-info';
 import { LndAggregate } from '../../model/lnd/lnd-aggregate';
+import { getBitteryInvoice } from './bittery-invoice-service';
+import { getProperty } from '../../../application/property-service';
 
 export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<void> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
@@ -60,5 +62,15 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
     } else {
         throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not btcpay yet!`,
             UserBtcpayErrorType.USER_HAS_NOT_BTCPAY);
+    }
+};
+
+export const getBitteryInvoicePdf = async (userEmail: string, invoiceId: string): Promise<Buffer> => {
+    const invoice: Invoice = await getBitteryInvoice(invoiceId);
+    if (invoice.buyer.name === userEmail) {
+        return await generateInvoicePdf(invoice, userEmail, getProperty('BITTERY_NODE_FOR_SUBSCRIPTION_URI'));
+    } else {
+        throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not LND yet (or is inactive)!`,
+            UserBtcpayErrorType.USER_HAS_NOT_LND);
     }
 };

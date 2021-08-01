@@ -30,7 +30,7 @@ exports.up = function(db) {
         mapping: 'lnd_id'
       },
     },
-    rtl_one_time_init_password: { type: 'string', length: 100, notNull: true, unique: true },
+    rtl_one_time_init_password: { type: 'string', length: 100, notNull: true },
     rtl_version: { type: 'string', length: 20, notNull: true }
   });
 };

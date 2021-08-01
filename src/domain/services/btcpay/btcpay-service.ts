@@ -19,6 +19,7 @@ import { findUserActiveLnd } from '../../repository/lnd/lnds-repository';
 import { Lnd } from '../../model/lnd/lnd';
 import { insertStandardWalletSeedEncryptedArtefact } from '../../repository/encrypted/user-encrypted-store-artefacts-repository';
 import { generateBtcPayCustomLndAddress } from '../lnd/lnd-btcpay-address-generator-service';
+import { sendErrorOccurredEmailToAdmin } from '../../../application/mail-service';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -64,22 +65,23 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
     }
 };
 
-export const updateUserBtcStoreWithActiveLnd = async (userEmail: string): Promise<void> => {
+export const updateUserBtcStoreWithActiveLnd = async (
+        userEmail: string,
+        lndRestAddress: string,
+        macaroonHex: string,
+        tlsCertThumbprint: string): Promise<void> => {
     const userBtcpayDetails: UserBtcpayDetails | undefined = await findUserBtcpayDetails(userEmail);
     if (userBtcpayDetails) {
-        const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
-        if (lnd) {
-            const lndAddress: string = generateBtcPayCustomLndAddress(
-                lnd.lndRestAddress,
-                lnd.macaroonHex!,
-                lnd.tlsCertThumbprint,
-            );
-            await updateLndInStore(userBtcpayDetails.storeId!, lndAddress);
-            logInfo(`Successfully updated LND address in BTCPAY services for active LND for user with email ${userEmail}`);
-        } else {
-            throw new Error(`Failed to update user ${userEmail} BTCPAY store with new lnd: active lnd not found for this user.`);
-        }
+        const lndAddress: string = generateBtcPayCustomLndAddress(
+            lndRestAddress,
+            macaroonHex,
+            tlsCertThumbprint,
+        );
+        await updateLndInStore(userBtcpayDetails.storeId!, lndAddress);
+        logInfo(`Successfully updated LND address in BTCPAY services for active LND for user with email ${userEmail}`);
     } else {
-        logWarn(`Failed to update user ${userEmail} BTCPAY store with new lnd: no BTCPAY found for this user. It's not error - user simply had no BTCPAY.`);
+        const message: string = `Failed to update user ${userEmail} BTCPAY store with new lnd: no BTCPAY found for this user. It's not error - user simply had no BTCPAY.`;
+        await sendErrorOccurredEmailToAdmin(message);
+        logWarn(message);
     }
 };
