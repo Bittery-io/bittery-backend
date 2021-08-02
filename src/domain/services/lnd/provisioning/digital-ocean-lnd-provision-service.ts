@@ -20,10 +20,9 @@ export const provisionDigitalOceanLnd = async (
         lndHostedVersion?: string,
         rtlHostedVersion?: string,
         rtlOneTimePassword?: string): Promise<DigitalOceanLndHosting | undefined> => {
-    const dropletName: string = getMd5(userEmail);
     let dropletCreationInfo: DropletCreationInfo;
     try {
-        dropletCreationInfo = await createLndDroplet(dropletName, userEmail, createLndDto.hostedLndType,
+        dropletCreationInfo = await createLndDroplet(lndId, userEmail, createLndDto.hostedLndType,
             false, createLndDto.lnAlias, lndHostedVersion, rtlHostedVersion, rtlOneTimePassword);
     } catch (err) {
         logError(`Failed to create Digital Ocean LND for user with email ${userEmail}. 

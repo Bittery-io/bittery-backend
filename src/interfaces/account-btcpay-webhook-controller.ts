@@ -4,14 +4,18 @@ import { Param } from 'routing-controllers';
 import { getProperty } from '../application/property-service';
 import { logError, logInfo, logWarn } from '../application/logging-service';
 import { Invoice } from 'btcpay';
-import { findBilling, updateBilling } from '../domain/repository/lnd-billings-repository';
+import {
+    findBilling,
+    findLatestCreatedBillingWithStatus,
+    updateBilling,
+} from '../domain/repository/lnd-billings-repository';
 import { LndBilling } from '../domain/model/billings/lnd-billing';
 import { BillingStatus } from '../domain/model/billings/billing-status';
 import { findUserActiveLnd } from '../domain/repository/lnd/lnds-repository';
 import { Lnd } from '../domain/model/lnd/lnd';
 import { restoreLnd } from '../domain/services/lnd/restore-user-lnd-service';
 import { subscripionRestoredEmail, subscriptionExtendedEmail } from '../application/mail-service';
-import { addMonthsToDate } from '../domain/services/utils/date-service';
+import { addMonthsToDate, isFirstDateAfterSecond } from '../domain/services/utils/date-service';
 
 @JsonController('/btcpay')
 export class AccountBtcpayWebhookController {
@@ -46,14 +50,34 @@ export class AccountBtcpayWebhookController {
                                 // billing has lndIf of latest active lnd so it is the one to restore
                                 await restoreLnd(invoiceOwnerEmail, billing.lndId);
                             }
+                            // Paid to date must take into consideration already paid invoices
+                            // Because user can still have valid account when he pays for new invoice
+                            // In that case it must extend the subscription for already valid days + new days
+                            let newPaidToDate: Date | undefined;
+                            const latestPaidBilling: LndBilling | undefined =
+                                await findLatestCreatedBillingWithStatus(invoiceOwnerEmail, BillingStatus.PAID);
+                            if (latestPaidBilling) {
+                                const latestBillingPaidToDate: string | undefined = latestPaidBilling.paidToDate;
+                                if (latestBillingPaidToDate) {
+                                    const latestBillingPaidToDateTimestamp: number = new Date(latestBillingPaidToDate).getTime();
+                                    const isLatestBillingPaidToDateInFuture: boolean =
+                                        isFirstDateAfterSecond(latestBillingPaidToDateTimestamp, new Date().getTime());
+                                    if (isLatestBillingPaidToDateInFuture) {
+                                        newPaidToDate = new Date(addMonthsToDate(latestBillingPaidToDateTimestamp, billing.subscriptionMonths));
+                                    }
+                                }
+                            }
+                            if (!newPaidToDate) {
+                                newPaidToDate = new Date(addMonthsToDate(new Date().getTime(), billing.subscriptionMonths));
+                            }
+
                             billing.status = BillingStatus.PAID;
-                            const newPaidToDate: Date = new Date(addMonthsToDate(new Date().getTime(), billing.subscriptionMonths));
                             billing.paidToDate = newPaidToDate.toISOString();
                             await updateBilling(billing);
                             if (lnd) {
-                                await subscriptionExtendedEmail(invoiceOwnerEmail, 1);
+                                await subscriptionExtendedEmail(invoiceOwnerEmail, billing.subscriptionMonths, newPaidToDate.getTime());
                             } else {
-                                await subscripionRestoredEmail(invoiceOwnerEmail, 1);
+                                await subscripionRestoredEmail(invoiceOwnerEmail, billing.subscriptionMonths, newPaidToDate.getTime());
                             }
                             logInfo(`Successfully updated Bittery subscription invoice as PAID for invoice with id ${btcpayInvoice.id} and user email ${invoiceOwnerEmail}`);
                     }

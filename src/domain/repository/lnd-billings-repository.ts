@@ -1,6 +1,5 @@
 import { PoolClient } from 'pg';
 import { dbPool } from '../../application/db/db';
-import { Product } from '../model/billings/product';
 import { BillingStatus } from '../model/billings/billing-status';
 import { LndBilling } from '../model/billings/lnd-billing';
 

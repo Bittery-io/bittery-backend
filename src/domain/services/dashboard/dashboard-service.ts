@@ -39,6 +39,8 @@ export const getDashboardInfo = async (userEmail: string, dashboardTimeframeType
 const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
                                           dashboardTimeframeType: DashboardTimeframeType): DashboardInfoDto => {
     const invoicesQuantity: number =  invoices.length;
+    let totalReceivedViaTransactions: number = 0;
+    let totalReceivedViaLightning: number = 0;
     let totalReceivedPaymentsBtc: number = 0;
     let totalInvoicedAmountBtc: number = 0;
     let newInvoicedAmountBtc: number = 0;
@@ -54,6 +56,8 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
     const expiredInvoicesQuantityTimeframesValues: number[] = [];
 
     const nowTime: number = new Date().getTime();
+    // it is because there are duplicates in cryptoInfo.payments for BTCLike and LightningLike
+    const paymentsDoneSet = new Set();
     switch (dashboardTimeframeType) {
         case DashboardTimeframeType.LAST_30_DAYS:
             let timeUpFrame: number = getEpochLastSecondOfToday();
@@ -105,6 +109,14 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
             break;
     }
     invoices.forEach((invoice) => {
+        invoice.cryptoInfo.forEach((_) => {
+            // unfortunatelly adding objects is making duplicates
+            _.payments.forEach(payment => paymentsDoneSet.add(JSON.stringify({
+                id: payment.id,
+                value: payment.value,
+                type: payment.paymentType,
+            })));
+        });
         totalReceivedPaymentsBtc += Number(invoice.btcPaid);
         totalInvoicedAmountBtc += Number(invoice.btcPrice);
         switch (invoice.status) {
@@ -126,6 +138,14 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
                 logError(`Dashboard unexpected invoice status: ${invoice.status}. DID not count to anything.`);
         }
     });
+    Array.from(paymentsDoneSet).forEach((paymentInfo: any) => {
+        const info: any = JSON.parse(paymentInfo);
+        if (info.type.toLowerCase() === 'lightninglike') {
+            totalReceivedViaLightning += info.value;
+        } else if (info.type.toLowerCase() === 'btclike') {
+            totalReceivedViaTransactions += info.value;
+        }
+    });
     return new DashboardInfoDto(
         totalReceivedPaymentsBtc,
         totalInvoicedAmountBtc,
@@ -142,5 +162,7 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
         paidInvoicesQuantityTimeframesValues,
         expiredInvoicesQuantityTimeframesValues,
         invoices,
+        totalReceivedViaLightning.toFixed(8),
+        totalReceivedViaTransactions.toFixed(8),
     );
 };

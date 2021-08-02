@@ -55,8 +55,8 @@ const addCustomLogoAndCssToStorePaymentWidget = async (page: any, storeId: strin
     await page.waitForSelector('input#CustomLogo');
     await page.type('#CustomLogo', `${getProperty('CLIENT_URL_ADDRESS')}/statics/bittery-glow-last.svg`);
     await page.type('#CustomCSS', `${getProperty('CLIENT_URL_ADDRESS')}/statics/checkout.css`);
-    await page.waitForSelector('button[type="submit"]');
-    await page.click('[type="submit"]');
+    await page.waitForSelector('button[name="command"]');
+    await page.click('button[name="command"]');
     await page.waitForSelector('div.alert.alert-success.alert-dismissible');
     logInfo(`Successfully set custom logo and checkout CSS to store with id ${storeId}`);
 };
@@ -103,9 +103,9 @@ const getBtcpayPairingCode = async (storeName: string, storeId: string, page: an
     await page.waitForSelector('input#Label');
     await page.waitForSelector('[type="submit"]');
     await page.type('#Label', tokenName);
-    await page.click('[type="submit"]');
+    await page.click('input[type="submit"]');
     await page.waitForSelector('button[type="submit"]');
-    await page.click('[type="submit"]');
+    await page.click('button#ApprovePairing');
     await page.waitForSelector('div.alert.alert-success.alert-dismissible');
     const contents = await page.evaluate(() => {
         const el = document.querySelector(
@@ -134,9 +134,9 @@ const createStore = async (storeName: string, page: any): Promise<string> => {
     // await page.click('button');
     // await page.waitForSelector('button#ApprovePairing');
     // await page.click('button#ApprovePairing');
-    await page.click('[type="submit"]');
-    await page.waitForSelector('button[type="submit"]');
-    await page.click('[type="submit"]');
+    await page.click('input[type="submit"]');
+    // await page.waitForSelector('button[type="submit"]');
+    // await page.click('input[type="submit"]');
     await page.waitForSelector('input#Id');
     const element = await page.$('#Id');
     const storeId = await page.evaluate((element: any) => element.value, element);

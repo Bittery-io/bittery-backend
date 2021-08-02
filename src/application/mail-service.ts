@@ -262,13 +262,14 @@ export const subscriptionEndedEmail = async (toEmail: string): Promise<string | 
     }
 };
 
-export const subscripionRestoredEmail = async (toEmail: string, months: number): Promise<string | undefined> => {
+export const subscripionRestoredEmail = async (toEmail: string, months: number, paidToDate: number): Promise<string | undefined> => {
     const url = `${getProperty('CLIENT_URL_ADDRESS')}/ln/overview`;
     const body: string = `
     <html>
     <body>
     <h2>Bittery.io - better Bitcoin payments subscription is restored</h2>
     <p>We received your subscription payment. Your Bittery.io subscription has been just restored and is valid for next ${months > 1 ? `${months} months` : `1 month`}.</p>
+    <p>Your subscription is valid until: <b>${formatDateWithTime(paidToDate)}</b></p>
     <p>Your personal Lightning Network node is restored and online.</p>
     <p>Check your new node details here: <a href='${url}'>${url}</a></p>
     <p><b>Thank you for using Bittery.io</b></p>
@@ -295,13 +296,13 @@ export const subscripionRestoredEmail = async (toEmail: string, months: number):
     }
 };
 
-export const subscriptionExtendedEmail = async (toEmail: string, months: number): Promise<string | undefined> => {
-    const url = `${getProperty('CLIENT_URL_ADDRESS')}/ln/overview`;
+export const subscriptionExtendedEmail = async (toEmail: string, months: number, paidToDate: number): Promise<string | undefined> => {
     const body: string = `
     <html>
     <body>
     <h2>Bittery.io - better Bitcoin payments subscription was extended</h2>
     <p>We received your subscription payment. Your Bittery.io subscription has been extended and is valid for next ${months > 1 ? `${months} months` : `1 month`}.</p>
+    <p>Your subscription is valid until: <b>${formatDateWithTime(paidToDate)}</b></p>
     <p><b>Thank you for using Bittery.io</b></p>
     <br><br>
     --------------------------------------------------- <br>

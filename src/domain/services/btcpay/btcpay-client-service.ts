@@ -4,6 +4,7 @@ import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
 import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
 import { Invoice } from 'btcpay';
 import { InvoiceValidityType } from '../../model/payments/invoice-validity-type';
+import { generateUuid } from '../utils/id-generator-service';
 
 const btcpay = require('btcpay');
 
@@ -11,13 +12,15 @@ export const createBtcpayInvoice = async (saveInvoiceDto: SaveInvoiceDto, btcpay
     const keyPair = btcpay.crypto.load_keypair(Buffer.from(btcpayUserAuthToken.privateKey, 'hex'));
     const clientFinal = new btcpay.BTCPayClient(getProperty('BTCPAY_URL'),
         keyPair, { merchant: btcpayUserAuthToken.merchantToken });
+    const priceStringWithReplacesComas: string = saveInvoiceDto.amount.replace(',', '.');
     const res = await clientFinal.create_invoice({
         currency: saveInvoiceDto.currency,
-        price: saveInvoiceDto.amount,
+        price: Number(priceStringWithReplacesComas),
         itemDesc: saveInvoiceDto.itemDesc,
         buyer: {
             name: saveInvoiceDto.buyer,
         },
+        orderId: generateUuid(),
         expirationTime: getInvoiceValidityInMillisecs(saveInvoiceDto.invoiceValidity),
     });
     return new BtcpayInvoice(res.id, res.url);

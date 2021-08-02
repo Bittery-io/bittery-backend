@@ -25,26 +25,26 @@ const crypto = require('crypto');
 @Authorized()
 export class AccountController {
 
-    @Get('/billing')
-    async getBillingDetails(
-            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-            @Res() res: Response,
-            @Body({ required: true }) createUserBtcpayDto: CreateUserBtcpayDto) {
-        const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
-        try {
-            logInfo(`Starting creating BTCPAY user services for email ${userEmail}`);
-            await createUserBtcpayServices(userEmail, createUserBtcpayDto);
-            logInfo(`Successfully created user BTCPAY services for email ${userEmail}`);
-            return res.status(200).send();
-        } catch (err) {
-            if (err instanceof UserBtcpayException) {
-                return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
-            }
-            logError('Failed to add user BTCPAY services services', err);
-            return res.status(500).send(new ErrorDto('LND services creation failed',
-                UserBtcpayErrorType.BTCPAY_INIT_FAILED_SERVER_ERROR));
-        }
-    }
+    // @Get('/billing')
+    // async getBillingDetails(
+    //         @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+    //         @Res() res: Response,
+    //         @Body({ required: true }) createUserBtcpayDto: CreateUserBtcpayDto) {
+    //     const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
+    //     try {
+    //         logInfo(`Starting creating BTCPAY user services for email ${userEmail}`);
+    //         await createUserBtcpayServices(userEmail, createUserBtcpayDto);
+    //         logInfo(`Successfully created user BTCPAY services for email ${userEmail}`);
+    //         return res.status(200).send();
+    //     } catch (err) {
+    //         if (err instanceof UserBtcpayException) {
+    //             return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
+    //         }
+    //         logError('Failed to add user BTCPAY services services', err);
+    //         return res.status(500).send(new ErrorDto('LND services creation failed',
+    //             UserBtcpayErrorType.BTCPAY_INIT_FAILED_SERVER_ERROR));
+    //     }
+    // }
 
     @Post('/subscription')
     async subscribeApi(

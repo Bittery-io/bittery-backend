@@ -131,6 +131,8 @@ const tryToRestoreProcessWhichFailedPreviously = async (lndAggregate: LndAggrega
     let macaroonHex: string | undefined;
     // if macaroonHex is set by artificial (with BITTERY string) then bake custom
     if (lndAggregate.lnd.macaroonHex?.startsWith('BITTERY')) {
+        // if unlocked previously lets wait until it starts
+        await sleep(5000);
         const adminMacaroonHex: string = lndAggregate.lnd.macaroonHex?.slice('BITTERY'.length, lndAggregate.lnd.macaroonHex?.length);
         const bitteryBakedMacaroonHex: string | undefined = await lndBakeMacaroonForBtcPay(lndAggregate.lnd.lndRestAddress, adminMacaroonHex);
         if (bitteryBakedMacaroonHex) {
@@ -143,6 +145,7 @@ const tryToRestoreProcessWhichFailedPreviously = async (lndAggregate: LndAggrega
     }
     // if no public key but (macaroonHex is set in step above or is already good macaroon in db)
     if (!lndAggregate.lnd.publicKey && (macaroonHex || !lndAggregate.lnd.macaroonHex?.startsWith('BITTERY'))) {
+        await sleep(5000);
         if (!macaroonHex) {
             if (lndAggregate.lnd.macaroonHex?.startsWith('BITTERY')) {
                 macaroonHex = lndAggregate.lnd.macaroonHex?.slice('BITTERY'.length, lndAggregate.lnd.macaroonHex?.length);

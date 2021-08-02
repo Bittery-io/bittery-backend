@@ -16,6 +16,8 @@ export class DashboardInfoDto {
     paidInvoicesQuantityTimeframesValues: number[];
     expiredInvoicesQuantityTimeframesValues: number[];
     invoices: object[];
+    totalReceivedViaLightning: string;
+    totalReceivedViaTransactions: string;
     constructor(totalReceivedPaymentsBtc: number,
                 totalInvoicedAmountBtc: number,
                 newInvoicedAmountBtc: number,
@@ -30,7 +32,9 @@ export class DashboardInfoDto {
                 newInvoicesQuantityTimeframesValues: number[],
                 paidInvoicesQuantityTimeframesValues: number[],
                 expiredInvoicesQuantityTimeframesValues: number[],
-                invoices: object[]) {
+                invoices: object[],
+                totalReceivedViaLightning: string,
+                totalReceivedViaTransactions: string) {
         this.totalReceivedPaymentsBtc = totalReceivedPaymentsBtc;
         this.totalInvoicedAmountBtc = totalInvoicedAmountBtc;
         this.newInvoicedAmountBtc = newInvoicedAmountBtc;
@@ -46,5 +50,7 @@ export class DashboardInfoDto {
         this.paidInvoicesQuantityTimeframesValues = paidInvoicesQuantityTimeframesValues;
         this.expiredInvoicesQuantityTimeframesValues = expiredInvoicesQuantityTimeframesValues;
         this.invoices = invoices;
+        this.totalReceivedViaLightning = totalReceivedViaLightning;
+        this.totalReceivedViaTransactions = totalReceivedViaTransactions;
     }
 }

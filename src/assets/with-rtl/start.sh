@@ -54,6 +54,9 @@ if [ -f "$PWD/RTL-Config.json" ]; then
 fi
 
 chmod u+rwx $PWD/docker-compose.yaml
+# Sometimes due to probably race conditions (restarted 2 time very fast) - 2 networks are created
+# it should not cause problems until there is single docker-compose.yaml
+docker network prune --force
 docker-compose -f $PWD/docker-compose.yaml down
 docker-compose -f $PWD/docker-compose.yaml up -d
 

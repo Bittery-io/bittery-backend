@@ -91,16 +91,12 @@ export const getUserSubscriptionBillingInvoices = async (userEmail: string): Pro
             const bitteryInvoice: Invoice =  await getBitteryInvoice(billing.invoiceId);
             billingDtos.push(new BillingDto(
                 new Date(billing.creationDate).getTime(),
-                bitteryInvoice.itemDesc!,
                 Product.LND,
                 billing.invoiceId,
                 new Date(billing.paidToDate!).getTime(),
                 billing.status,
-                bitteryInvoice.btcPrice,
-                bitteryInvoice.btcPaid,
-                bitteryInvoice.currency,
-                bitteryInvoice.price,
                 billing.lndId,
+                bitteryInvoice,
             ));
         }
     }

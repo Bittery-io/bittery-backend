@@ -17,12 +17,12 @@ export const routingControllersOptions = {
 const app = createExpressServer(routingControllersOptions);
 
 if (getBooleanProperty('RUN_STATIC_CHANNEL_BACKUP_SCHEDULER')) {
-    startStaticChannelBackupScheduler();
+    // startStaticChannelBackupScheduler();
 }
 if (getBooleanProperty('RUN_SUBSCRIPTION_DISABLE_SCHEDULER')) {
 }
 startSubscriptionDisableScheduler();
-startStaticChannelBackupScheduler();
+// startStaticChannelBackupScheduler();
 if (getBooleanProperty('RUN_SUBSCRIPTION_RENEW_EMAIL_SCHEDULER')) {
     startSubscriptionRenewEmailScheduler();
 }

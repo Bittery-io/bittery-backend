@@ -37,15 +37,16 @@ import { sendErrorOccurredEmailToAdmin } from '../../../application/mail-service
  */
 export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Promise<void> => {
     logInfo(`[RESTORE LND] Started restore LND process for LND to restore with id ${lndIdToRestore} for user email ${userEmail}.`);
-    const hostedLnd: HostedLnd | undefined = await findUserHostedLnd(userEmail, lndIdToRestore);
-    if (hostedLnd) {
-        const digitalOceanLndForRestart: DigitalOceanLndForRestart | undefined = await findDigitalOceanLndForRestart(hostedLnd.lndId, userEmail);
+    const hostedLndToRestore: HostedLnd | undefined = await findUserHostedLnd(userEmail, lndIdToRestore);
+    if (hostedLndToRestore) {
+        const digitalOceanLndForRestart: DigitalOceanLndForRestart | undefined =
+            await findDigitalOceanLndForRestart(hostedLndToRestore.lndId, userEmail);
         if (digitalOceanLndForRestart) {
             const digitalOceanArchive: DigitalOceanArchive | undefined = await findDigitalOceanArchive(lndIdToRestore);
             if (digitalOceanArchive) {
                 const rtlForLndToRestore: Rtl | undefined = await findRtl(lndIdToRestore);
                 const newDigitalOceanLndHosting: DigitalOceanLndHosting | undefined =
-                    await createNewLndBasedOnOldLnd(hostedLnd, userEmail, rtlForLndToRestore);
+                    await createNewLndBasedOnOldLnd(hostedLndToRestore, userEmail, rtlForLndToRestore);
                 if (!newDigitalOceanLndHosting) {
                     const message: string = `[RESTORE LND] Restore lnd failed: creating new LND based on old LND in digital ocean failed with error for LND to restore ${lndIdToRestore} for user email ${userEmail}`;
                     await sendErrorOccurredEmailToAdmin(message);
@@ -70,11 +71,13 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
                     _.lndId = newDigitalOceanLndHosting.digitalOceanLnd.lndId;
                 });
                 // 2. Replace macaroon HEX with previous macaroon LND macaroon hex
-                const macaroonHex: string | undefined = await findLndMacaroonHex(lndIdToRestore, userEmail);
+                newDigitalOceanLndHosting.digitalOceanLnd.macaroonHex = hostedLndToRestore.macaroonHex;
+                // 3. Replace public key with previous public key
+                newDigitalOceanLndHosting.digitalOceanLnd.publicKey = hostedLndToRestore.publicKey;
                 try {
                     await runInTransaction(async (client) => {
                         await insertLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
-                        if (hostedLnd.hostedLndType === HostedLndType.STANDARD) {
+                        if (hostedLndToRestore.hostedLndType === HostedLndType.STANDARD) {
                             await insertHostedLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
                             await insertUserRtl(client, newDigitalOceanLndHosting.rtl!);
                             await insertDigitalOceanLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
@@ -83,7 +86,6 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
                             await insertDigitalOceanLnd(client, newDigitalOceanLndHosting.digitalOceanLnd);
                         }
                         await insertUserEncryptedLnArtefacts(client, userEncryptedLnArtefacts);
-                        await updateLndSetMacaroonHex(newDigitalOceanLndHosting.digitalOceanLnd.lndId, macaroonHex!, client);
                     });
                 } catch (err) {
                     const message: string = `[RESTORE LND] Restore lnd failed: DB transaction error during restore ${lndIdToRestore} for user email ${userEmail}. New LND (probably to remove): ${newDigitalOceanLndHosting.digitalOceanLnd.lndId}, droplet IP: ${newDigitalOceanLndHosting.digitalOceanLnd.dropletIp}. Db error: ${err.message}`;
@@ -95,7 +97,7 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
                     newDigitalOceanLndHosting.digitalOceanLnd.lndRestAddress,
                     // When LND is provisioned it has macaroon set as empty
                     // When restoring - old macaroons are used anyway, so in this case old LND macaroon can be used.
-                    hostedLnd.macaroonHex!,
+                    hostedLndToRestore.macaroonHex!,
                     newDigitalOceanLndHosting.digitalOceanLnd.tlsCertThumbprint);
                 logInfo(`Successfully restored LND with id ${lndIdToRestore} for user email ${userEmail}. New LND has id: ${newDigitalOceanLndHosting.digitalOceanLnd.lndId}`);
             } else {

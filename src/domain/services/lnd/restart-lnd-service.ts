@@ -27,7 +27,8 @@ export const restartLnd = async (lndId: string, userEmail: string): Promise<void
             getProperty('BITCOIND_RPC_HOST'),
             getProperty('BITCOIND_RPC_USER'),
             getProperty('BITCOIND_RPC_PASSWORD'),
-            getProperty('LND_HOSTED_VERSION'),
+            // getProperty('LND_HOSTED_VERSION'),
+            'v0.13.1-beta',
             getProperty('RTL_HOSTED_VERSION'),
             // no need to pass rtl one time password again it will have no effect cause its already set
             undefined,
