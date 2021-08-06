@@ -103,10 +103,12 @@ export const findBillingsWithStatusWherePaidToDateIsInFuture = async (status: Bi
 
 // todo it calls digital ocean tables... anyway it selects only billings for LND which is not yet archived so is not yet in archives table
 export const findBillingsWithStatusWherePaidToDateIsInPastAndIsNotYetArchived = async (status: BillingStatus): Promise<LndBilling[]> => {
-    const res = await dbPool.query(`SELECT lb.id, lb.user_email, lb.lnd_id, lb.invoice_id, lb.creation_date, lb.paid_to_date, lb.status, lb.subscription_months
-                                                   FROM LND_BILLINGS lb LEFT JOIN digital_ocean_archives doa
-                                                   ON lb.lnd_id = doa.lnd_id
-                                                   WHERE lb.STATUS = $1 AND lb.PAID_TO_DATE < now() AND DOA.archive_date IS NULL`,
+    const res = await dbPool.query(`SELECT * FROM LND_BILLINGS WHERE ID IN 
+                                                        (SELECT lb.id
+                                                         FROM LND_BILLINGS lb LEFT JOIN digital_ocean_archives doa
+                                                         ON lb.lnd_id = doa.lnd_id
+                                                         WHERE lb.STATUS = $1 AND lb.PAID_TO_DATE < now() AND DOA.archive_date IS NULL)
+                                                    ORDER BY CREATION_DATE DESC LIMIT 1;`,
         [status]);
     return res.rows.map(row => new LndBilling(
         row.id,
