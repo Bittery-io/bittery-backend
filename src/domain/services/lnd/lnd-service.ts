@@ -14,7 +14,6 @@ import { logError, logInfo, logWarn } from '../../../application/logging-service
 import { LndInitWalletDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-dto';
 import { LndInitWalletResponseDto } from '../../../interfaces/dto/lnd/lnd-init-wallet-response-dto';
 import { sleep } from '../utils/sleep-service';
-import { readAdminMacaroonBase64FromLnd } from './lnd-files-service';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { insertUserEncryptedLnArtefacts } from '../../repository/encrypted/user-encrypted-ln-artefacts-repository';
 import { UserEncryptedLnArtefact } from '../../model/encrypted/user-encrypted-ln-artefact';
@@ -60,18 +59,19 @@ export const initLndWallet = async (userEmail: string, lndId: string, lndInitWal
             logError(`[INIT WALLET] Init LND wallet for lnd ${lndId} and user email ${userEmail} failed! Stopping init wallet as failed - wallet will have to be init again later.`);
             return undefined;
         }
-        if (!adminMacaroonBase64) {
-            try {
-                // otherwise it must be downloaded
-                const dropletIp: string = await findDropletIp(lndId, userEmail);
-                adminMacaroonBase64 = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
-            } catch (err) {
-                logError(`[INIT WALLET] Reading admin macaroon base64 for lnd ${lndId} and user email ${userEmail} failed. Wallet is init but not having admin.macaroon.`);
-                return undefined;
-            }
-        }
+        // if (!adminMacaroonBase64) {
+        //     try {
+        //         // otherwise it must be downloaded
+        //         const dropletIp: string = await findDropletIp(lndId, userEmail);
+        //         adminMacaroonBase64 = await readAdminMacaroonBase64FromLnd(userEmail, dropletIp);
+        //     } catch (err) {
+        //         logError(`[INIT WALLET] Reading admin macaroon base64 for lnd ${lndId} and user
+        //         email ${userEmail} failed. Wallet is init but not having admin.macaroon.`);
+        //         return undefined;
+        //     }
+        // }
         await sleep(5000);
-        const adminMacaroonHex: string = Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
+        const adminMacaroonHex: string = Buffer.from(adminMacaroonBase64!, 'base64').toString('hex');
         const bitteryBakedMacaroonHex: string | undefined = await lndBakeMacaroonForBtcPay(lndRestAddress, adminMacaroonHex);
         const lndInfo: LndInfo | undefined = await lndGetInfo(lndRestAddress, bitteryBakedMacaroonHex!);
         await runInTransaction(async (client) => {
