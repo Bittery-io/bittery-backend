@@ -27,6 +27,7 @@ import { LndWalletNotInitException } from '../../model/lnd/api/lnd-wallet-not-in
 import { LndLockedException } from '../../model/lnd/api/lnd-locked-exception';
 import { LndInfo } from '../../model/lnd/api/lnd-info';
 import {
+    deleteLndSetupBacklog,
     insertLndSetupBacklog,
     lndSetupBacklogExists,
 } from '../../repository/lnd/setup-backlog/lnd-setup-backlog-repository';
@@ -47,38 +48,40 @@ import { DigitalOceanArchive } from '../../model/lnd/digital-ocean-archive';
 
 export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): Promise<void> => {
     if (!(await userHasLnd(userEmail))) {
-        // todo tymczasowo lepiej nie blokowac uzytkownikowi mozliwosci zrobienai gdy cos sie spierdzieli, DODAJ WYSLANIE MAILA DO SIEBIe
-        // if (!(await lndSetupBacklogExists(userEmail))) {
-        // await insertLndSetupBacklog(new LndSetupBacklog(userEmail, new Date().toISOString()));
-        const lndId: string = generateUuid();
-        const digitalOceanLndHosting: DigitalOceanLndHosting | undefined = await provisionDigitalOceanLnd(userEmail, lndId, createLndDto);
-        if (digitalOceanLndHosting) {
-            await runInTransaction(async (client: PoolClient) => {
-                await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                await insertBilling(client, new LndBilling(
-                    generateUuid(),
-                    userEmail,
-                    lndId,
-                    'PAID_BY_BITTERY',
-                    new Date().toISOString(),
-                    BillingStatus.PAID,
-                    0,
-                    new Date(addDays(new Date().getTime(), 3)).toISOString(),
-                ));
-                if (createLndDto.hostedLndType === HostedLndType.STANDARD) {
-                    await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                    await insertUserRtl(client, digitalOceanLndHosting.rtl!);
-                    await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                } else {
-                    await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                    await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
-                }
-            });
+        if (!(await lndSetupBacklogExists(userEmail))) {
+            await insertLndSetupBacklog(new LndSetupBacklog(userEmail, new Date().toISOString()));
+            const lndId: string = generateUuid();
+            const digitalOceanLndHosting: DigitalOceanLndHosting | undefined = await provisionDigitalOceanLnd(userEmail, lndId, createLndDto);
+            if (digitalOceanLndHosting) {
+                await runInTransaction(async (client: PoolClient) => {
+                    await deleteLndSetupBacklog(userEmail, client);
+                    await insertLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                    await insertBilling(client, new LndBilling(
+                        generateUuid(),
+                        userEmail,
+                        lndId,
+                        'PAID_BY_BITTERY',
+                        new Date().toISOString(),
+                        BillingStatus.PAID,
+                        0,
+                        new Date(addDays(new Date().getTime(), 3)).toISOString(),
+                    ));
+                    if (createLndDto.hostedLndType === HostedLndType.STANDARD) {
+                        await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                        await insertUserRtl(client, digitalOceanLndHosting.rtl!);
+                        await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                    } else {
+                        await insertHostedLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                        await insertDigitalOceanLnd(client, digitalOceanLndHosting.digitalOceanLnd);
+                    }
+                });
+            } else {
+                logWarn(`Create LND for user ${userEmail} failed - no digital ocean LND. Removing SETUP BACKLOG entry for user.`);
+                await deleteLndSetupBacklog(userEmail);
+            }
+        } else {
+            logError(`Oops user ${userEmail} request another CREATE LN while current is already running - so returning error (ignoring)`);
         }
-        // } else {
-        //     logWarn(`Starting LND re-setup for user ${userEmail}`);
-        //     // todo przywróć poprzedni proces setupu
-        // }
     } else {
         throw new LndCreateException(`User ${userEmail} already has LND added!`, LndCreationErrorType.USER_ALREADY_HAS_LND);
     }
