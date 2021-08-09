@@ -6,7 +6,7 @@ import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-excep
 import { UserBtcpayErrorType } from '../domain/services/btcpay/user-btcpay-error-type';
 import { CreateUserBtcpayDto } from './dto/create-user-btcpay-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, HeaderParam, JsonController, Post, Res } from 'routing-controllers';
 
 @JsonController('/btcpay')
 @Authorized()

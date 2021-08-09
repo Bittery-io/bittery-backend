@@ -1,6 +1,6 @@
 import { getAccessTokenFromAuthorizationHeader } from './token-extractor-service';
 import { verifyUserTokenAndGetUserEmailAndPasswordProof } from '../jwt/session-token-service';
-import { Action } from 'routing-controllers/Action';
+import { Action } from 'routing-controllers';
 
 export const authorizeRequest = async (action: Action, roles: string[]) => {
     const authorizationHeader: string = action.request.headers['authorization'];

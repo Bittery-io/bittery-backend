@@ -15,7 +15,7 @@ import { refreshToken } from '../domain/services/user/refresh-token-service';
 import { getAccessTokenFromAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { getBooleanProperty, getNumberProperty } from '../application/property-service';
 import { logError, logInfo } from '../application/logging-service';
-import { Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers';
 import { countUsers } from '../domain/repository/user-repository';
 import { sendUserRegisterMail } from '../application/mail-service';
 import { RefreshTokenDto } from './dto/refresh-token-dto';

@@ -6,7 +6,7 @@ import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-typ
 import { addExternalLnd } from '../domain/services/lnd/create-user-lnd-service';
 import { SaveExternalLndDto } from './dto/save-external-lnd-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers';
 import { Param } from 'routing-controllers';
 import { findLndMacaroonHex } from '../domain/repository/lnd/lnds-repository';
 import { EncryptedArtefactDto } from './dto/encrypted-artefact-dto';

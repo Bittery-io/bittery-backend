@@ -1,5 +1,5 @@
 import { Response } from 'express-serve-static-core';
-import { Body, JsonController, Post, Res } from 'routing-controllers/index';
+import { Body, JsonController, Post, Res } from 'routing-controllers';
 import { Param } from 'routing-controllers';
 import { getProperty } from '../application/property-service';
 import { logError, logInfo, logWarn } from '../application/logging-service';

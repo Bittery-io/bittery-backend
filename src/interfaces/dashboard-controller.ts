@@ -3,7 +3,7 @@ import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/serv
 import { ErrorDto } from './dto/error-dto';
 import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-exception';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Get, HeaderParam, JsonController, Res } from 'routing-controllers/index';
+import { Authorized, Get, HeaderParam, JsonController, Res } from 'routing-controllers';
 import { getDashboardInfo } from '../domain/services/dashboard/dashboard-service';
 import { DashboardTimeframeType } from '../domain/model/dashboard/dashboard-timeframe-type';
 import { DashboardInfoDto } from './dto/dashboard/dashboard-info-dto';

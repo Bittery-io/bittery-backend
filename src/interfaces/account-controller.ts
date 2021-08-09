@@ -1,12 +1,8 @@
 import { Response } from 'express-serve-static-core';
-import { createUserBtcpayServices } from '../domain/services/btcpay/btcpay-service';
 import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { ErrorDto } from './dto/error-dto';
-import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-exception';
-import { UserBtcpayErrorType } from '../domain/services/btcpay/user-btcpay-error-type';
-import { CreateUserBtcpayDto } from './dto/create-user-btcpay-dto';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers';
 import { ExtendSubscriptionDto } from './dto/account/extend-subscription-dto';
 import {
     extendSubscription,
@@ -16,9 +12,10 @@ import {
 import { SubscriptionDto } from './dto/account/subscription-dto';
 import { ExtendSubscriptionResultDto } from './dto/account/extend-subscription-result-dto';
 import { BillingDto } from './dto/account/billing-dto';
-import { getBitteryInvoicePdf, getInvoicePdf } from '../domain/services/payments/invoice-service';
+import { getBitteryInvoicePdf } from '../domain/services/payments/invoice-service';
 import { LndCreateException } from '../domain/model/lnd/lnd-create-exception';
 import { LndCreationErrorType } from '../domain/model/lnd/lnd-creation-error-type';
+
 const crypto = require('crypto');
 
 @JsonController('/account')

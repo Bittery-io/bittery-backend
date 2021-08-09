@@ -1,5 +1,5 @@
 import { Response } from 'express-serve-static-core';
-import { Authorized, Get, JsonController, Res } from 'routing-controllers/index';
+import { Authorized, Get, JsonController, Res } from 'routing-controllers';
 
 @JsonController('/health')
 export class HealthController {

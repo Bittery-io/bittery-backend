@@ -1,6 +1,6 @@
 import { Response } from 'express-serve-static-core';
 import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
-import { Authorized, Body, HeaderParam, JsonController, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, HeaderParam, JsonController, Post, Res } from 'routing-controllers';
 import { SetupMasterPasswordDto } from './dto/master-password/setup-master-password-dto';
 import { insertUserPasswordProof } from '../domain/repository/user-password-proofs-repository';
 import { UserPasswordProof } from '../domain/model/artefacts/user-password-proof';

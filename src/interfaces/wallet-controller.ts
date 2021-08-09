@@ -1,7 +1,7 @@
 import { Response } from 'express-serve-static-core';
 import { getUserEmailFromAccessTokenInAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { getUserBtcWallet } from '../domain/services/btc/user-btc-wallet-service';
-import { Authorized, Get, HeaderParam, JsonController, Res } from 'routing-controllers/index';
+import { Authorized, Get, HeaderParam, JsonController, Res } from 'routing-controllers';
 import { logError, logInfo } from '../application/logging-service';
 import { StandardWalletSeedDto } from './dto/wallet/standard-wallet-seed-dto';
 import { UserBtcWalletDto } from './dto/wallet/user-btc-wallet-dto';

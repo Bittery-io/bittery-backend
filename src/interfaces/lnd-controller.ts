@@ -8,7 +8,7 @@ import {
     getUserLnds, getUserLndConnectUriDetails,
 } from '../domain/services/lnd/create-user-lnd-service';
 import { logError, logInfo } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Post, QueryParam, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Post, QueryParam, Res } from 'routing-controllers';
 import { CreateLndDto } from './dto/lnd/create-lnd-dto';
 import { Param } from 'routing-controllers';
 import { generateLndSeed, initLndWallet, unlockLndAndTryToRestoreFailedInitIfNeeded } from '../domain/services/lnd/lnd-service';

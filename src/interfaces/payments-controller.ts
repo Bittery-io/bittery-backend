@@ -8,7 +8,7 @@ import { getInvoicePdf, getInvoices, saveInvoice } from '../domain/services/paym
 import { UserBtcpayException } from '../domain/services/btcpay/user-btcpay-exception';
 import { getBooleanProperty } from '../application/property-service';
 import { logError } from '../application/logging-service';
-import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers/index';
+import { Authorized, Body, Get, HeaderParam, JsonController, Param, Post, Res } from 'routing-controllers';
 import { Invoice } from 'btcpay';
 
 @JsonController('/payments')
