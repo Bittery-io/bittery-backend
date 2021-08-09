@@ -1,4 +1,5 @@
 export enum LndStaticChannelBackupType {
     SCHEDULED = 'SCHEDULED',
     USER_REQUESTED = 'USER_REQUESTED',
+    BEFORE_LND_DISABLE = 'BEFORE_LND_DISABLE',
 }

@@ -12,10 +12,17 @@ import { DigitalOceanArchive } from '../../model/lnd/digital-ocean-archive';
 import { findDigitalOceanLndForRestart } from '../../repository/lnd/digital-ocean/digital-ocean-lnds-repository';
 import { sendEmailNotificationIfNotYetSend } from './subscription-renew-email-scheduler';
 import { runInTransaction } from '../../../application/db/db-transaction';
-import { updateLndSetIsActive } from '../../repository/lnd/lnds-repository';
+import { findUserLndAggregatesNewestFirst, updateLndSetIsActive } from '../../repository/lnd/lnds-repository';
 import { DisableSubscriptionException } from '../../model/subscription/disable-subscription-exception';
 import { DisableSubscriptionStageErrorType } from '../../model/subscription/disable-subscription-stage-error-type';
 import { sendDisablingSubscriptionFailed } from '../../../application/mail-service';
+import { getAllStaticChannelBackupBase64 } from '../lnd/api/lnd-api-service';
+import { LndAggregate } from '../../model/lnd/lnd-aggregate';
+import { LndStaticChannelBackup } from '../../model/lnd/static-channel-backup/lnd-static-channel-backup';
+import { generateUuid } from '../utils/id-generator-service';
+import { LndStaticChannelBackupType } from '../../model/lnd/static-channel-backup/lnd-static-channel-backup-type';
+import { LndStaticChannelBackupStatus } from '../../model/lnd/static-channel-backup/lnd-static-channel-backup-status';
+import { insertLndStaticChannelBackups } from '../../repository/lnd/static-channel-backup/lnd-static-channek-backup-repository';
 
 const schedule = require('node-schedule');
 let nextSchedulerDateEpoch: number;
@@ -35,6 +42,7 @@ export const startSubscriptionDisableScheduler = () => {
         const total: number = paidBillingsForLndsWhichShouldBeDisabled.length;
         for (const billing of paidBillingsForLndsWhichShouldBeDisabled) {
             try {
+                await executeStaticChannelBackupOnLnd(billing);
                 const backupNameWithExtension: string = await backupLndAndGetBackupName(billing);
                 await deleteDroplet(billing);
                 await updateDatabaseAfterSubscriptionDisable(backupNameWithExtension, billing);
@@ -51,6 +59,36 @@ export const startSubscriptionDisableScheduler = () => {
         }
         logInfo(`[SUBSCRIPTION DISABLE SCHEDULER] 3/3 Ending at ${formatDateWithTime(new Date().getTime())}. Processed, success ${success}/${total}, failed ${failed}/${total}`);
     });
+};
+
+const executeStaticChannelBackupOnLnd = async (billing: LndBilling) => {
+    const userActiveLndAggregates: LndAggregate[] = await findUserLndAggregatesNewestFirst(billing.userEmail);
+    const matchingUserActiveLndAggregate: LndAggregate = userActiveLndAggregates.filter(_ => _.lnd.lndId === billing.lndId)[0];
+    try {
+        const backupBase64: string = await getAllStaticChannelBackupBase64(
+            matchingUserActiveLndAggregate.lnd.lndRestAddress,
+            matchingUserActiveLndAggregate.lnd.macaroonHex!);
+        await insertLndStaticChannelBackups([new LndStaticChannelBackup(
+            generateUuid(),
+            matchingUserActiveLndAggregate.lnd.lndId,
+            new Date().toISOString(),
+            LndStaticChannelBackupType.BEFORE_LND_DISABLE,
+            LndStaticChannelBackupStatus.SUCCESS,
+            backupBase64,
+            undefined,
+        )]);
+    } catch (err) {
+        await insertLndStaticChannelBackups([new LndStaticChannelBackup(
+            generateUuid(),
+            matchingUserActiveLndAggregate.lnd.lndId,
+            new Date().toISOString(),
+            LndStaticChannelBackupType.BEFORE_LND_DISABLE,
+            LndStaticChannelBackupStatus.FAILURE,
+            undefined,
+            err.message.substr(0, 300),
+        )]);
+        throw new DisableSubscriptionException(err.message, DisableSubscriptionStageErrorType.STATIC_CHANNEL_BACKUP_ERROR);
+    }
 };
 
 const backupLndAndGetBackupName = async (lndBilling: LndBilling) => {

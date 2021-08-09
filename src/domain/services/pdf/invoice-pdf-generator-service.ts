@@ -129,6 +129,7 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         doc.cell('Lightning Node address', {
             fontSize: 12,
             paddingLeft: 0.5 * pdf.cm,
+            link: undefined,
         });
 
         doc.cell(lndAddress, { fontSize: 10, paddingLeft: 0.5 * pdf.cm });
@@ -146,7 +147,7 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         textAlign: 'left',
         paddingLeft: 0.5 * pdf.cm,
     });
-    doc.footer().pageNumber((curr: any, total: any) => `${curr}/${total}`, { textAlign: 'center' });
+    doc.footer().pageNumber((curr: any, total: any) => `${curr}/${total}`, { textAlign: 'center', fontSize: 16 });
     // doc.pipe(fs.createWriteStream('output.pdf'));
     // await doc.end();
     return await doc.asBuffer();

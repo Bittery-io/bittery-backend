@@ -19,7 +19,6 @@ services:
       - ENCRYPTION_PASSWORD_SALT_ROUNDS=8
       - OAUTH2_TOKEN_CLIENT_SECRET=u8eFLaz_oXsB
       - SESSION_EXPIRES_IN_HOURS=1
-      - AUTH_EXCLUDED_URLS=["/user/refreshToken","/user/register","/user/register/confirm","/user/login","/public", "/user/password/reset", "/user/password/reset/confirm"]
       - RTL_URL=/rtl
       - BTCPAY_URL=http://btcpayserver:49392
       - CLIENT_URL_ADDRESS=http://bittery.io:8080
