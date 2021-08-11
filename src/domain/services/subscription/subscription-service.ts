@@ -7,24 +7,24 @@ import {
 import { Product } from '../../model/billings/product';
 import { LndBilling } from '../../model/billings/lnd-billing';
 import { BillingStatus } from '../../model/billings/billing-status';
-import { addMonthsToDate, isFirstDateAfterSecond } from '../utils/date-service';
-import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
+import { isFirstDateAfterSecond } from '../utils/date-service';
 import { getBitteryInvoice, saveBitteryInvoice } from '../payments/bittery-invoice-service';
 import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { generateUuid } from '../utils/id-generator-service';
-import { logError, logInfo } from '../../../application/logging-service';
+import { logInfo } from '../../../application/logging-service';
 import { SubscriptionDto } from '../../../interfaces/dto/account/subscription-dto';
 import { findUserHostedLnds } from '../../repository/lnd/lnd-hosted-repository';
 import { HostedLndType } from '../../model/lnd/hosted/hosted-lnd-type';
 import { ExtendSubscriptionDto } from '../../../interfaces/dto/account/extend-subscription-dto';
 import { BillingDto } from '../../../interfaces/dto/account/billing-dto';
-import { Invoice } from 'btcpay';
 import { getNumberProperty } from '../../../application/property-service';
 import { HostedLnd } from '../../model/lnd/hosted/hosted-lnd';
 import { SubscriptionStatus } from '../../model/subscription/subscription-status';
 import { SubscriptionPlan } from '../../model/subscription/subscription-plan';
 import { InvoiceValidityType } from '../../model/payments/invoice-validity-type';
+import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
+import { InvoiceData } from 'btcpay-greenfield-node-client';
 
 const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE_USD');
 
@@ -32,7 +32,7 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
     const latestPaidUserBilling: LndBilling = (await findLatestCreatedBillingWithStatus(userEmail, BillingStatus.PAID))!;
     const invoiceAmount: string = Number(BITTERY_SUBSCRIPTION_PRICE_USD * extendSubscriptionDto.subscriptionTimeMonths *
         getDiscountMultiplier(extendSubscriptionDto.subscriptionTimeMonths)).toFixed(2);
-    const btcpayInvoice: BtcpayInvoice = await saveBitteryInvoice(userEmail,
+    const invoiceData: InvoiceData = await saveBitteryInvoice(userEmail,
         new SaveInvoiceDto(
             invoiceAmount,
             'USD',
@@ -45,7 +45,7 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
             generateUuid(),
             userEmail,
             latestPaidUserBilling.lndId,
-            btcpayInvoice.id,
+            invoiceData.id!,
             new Date().toISOString(),
             BillingStatus.PENDING,
             extendSubscriptionDto.subscriptionTimeMonths,
@@ -53,7 +53,7 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
         ));
     });
     logInfo(`Successfully created subscription billing for user ${userEmail} for ${extendSubscriptionDto.subscriptionTimeMonths} months`);
-    return btcpayInvoice.id;
+    return invoiceData.id;
 };
 
 export const getUserSubscription = async (userEmail: string): Promise<SubscriptionDto> => {
@@ -88,7 +88,7 @@ export const getUserSubscriptionBillingInvoices = async (userEmail: string): Pro
     const userBillings: LndBilling[] = await findBillingsNewestFirst(userEmail);
     for (const billing of userBillings) {
         if (billing.invoiceId !== 'PAID_BY_BITTERY') {
-            const bitteryInvoice: Invoice =  await getBitteryInvoice(billing.invoiceId);
+            const bitteryInvoice: BtcpayInvoice =  await getBitteryInvoice(billing.invoiceId);
             billingDtos.push(new BillingDto(
                 new Date(billing.creationDate).getTime(),
                 Product.LND,

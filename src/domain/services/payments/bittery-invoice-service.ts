@@ -1,22 +1,24 @@
 import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
-import { createBtcpayInvoiceForBitterySubscription, getBtcpayInvoice } from '../btcpay/btcpay-client-service';
-import { BtcpayInvoice } from '../../model/btcpay/btcpay-invoice';
-import { Invoice } from 'btcpay';
-import { BtcpayUserAuthToken } from '../../model/btcpay/btcpay-user-auth-token';
+import { createBtcpayInvoice, getBtcpayInvoice } from '../btcpay/btcpay-client-service';
 import { getProperty } from '../../../application/property-service';
 import { logInfo } from '../../../application/logging-service';
+import { UserBtcpayDetails } from '../../model/btcpay/user-btcpay-details';
+import { InvoiceData } from 'btcpay-greenfield-node-client';
+import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
 
-export const BTCPAY_BITTERY_USER_AUTH_TOKEN = new BtcpayUserAuthToken(
-    getProperty('BTCPAY_BITTERY_MERCHANT_TOKEN'),
-    getProperty('BTCPAY_BITTERY_PRIVATE_KEY'),
+export const BITTERY_USER_BTCPAY_DETAILS: UserBtcpayDetails = new UserBtcpayDetails(
+// @ts-ignore
+    undefined,
+    getProperty('BITTERY_SUBSCRIPTION_PAYMENTS_STORE_ID'),
+    getProperty('BTCPAY_ADMIN_API_KEY'),
 );
 
-export const saveBitteryInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<BtcpayInvoice> => {
-    const invoice: BtcpayInvoice = await createBtcpayInvoiceForBitterySubscription(saveInvoiceDto, BTCPAY_BITTERY_USER_AUTH_TOKEN, userEmail);
-    logInfo(`Saved Bittery product invoice with id ${invoice.id} for user email ${userEmail}`);
-    return invoice;
+export const saveBitteryInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<InvoiceData> => {
+    const invoiceData: InvoiceData = await createBtcpayInvoice(saveInvoiceDto, BITTERY_USER_BTCPAY_DETAILS);
+    logInfo(`Saved Bittery product invoice with id ${invoiceData.id} for user email ${userEmail}`);
+    return invoiceData;
 };
 
-export const getBitteryInvoice = async (invoiceId: string): Promise<Invoice> => {
-    return await getBtcpayInvoice(BTCPAY_BITTERY_USER_AUTH_TOKEN, invoiceId);
+export const getBitteryInvoice = async (invoiceId: string): Promise<BtcpayInvoice> => {
+    return await getBtcpayInvoice(BITTERY_USER_BTCPAY_DETAILS, invoiceId);
 };

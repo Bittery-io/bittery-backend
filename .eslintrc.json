@@ -1,0 +1,42 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "airbnb-typescript",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 12,
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "max-line-length": [1, 150],
+        "indent": [2, 4],
+        "ter-indent": [2, 4, {
+            // disable that for switch "case" section
+            "SwitchCase": 1
+        }],
+//        "linebreak-style": [2,"LF"],
+        "quotemark": [2, "single"],
+        "semicolon": [2,"always"],
+        "no-else-after-return": 0,
+        "no-console": 0,
+        "curly": 2,
+        "triple-equals": 2,
+        "no-string-throw": 2,
+        "no-var-keyword": 2,
+        "no-trailing-whitespace": 0,
+        "variable-name": 0,
+        "object-literal-key-quotes": [2,"as-needed"],
+        "import-name": [0], //so far it causes problems
+        "no-increment-decrement": 0,
+        "align": 0
+    }
+}

@@ -1,4 +1,3 @@
-import { initializeBtcpayServices, updateLndInStore } from './create/initialize-user-btcpay-service';
 import { UserBtcpayDetails } from '../../model/btcpay/user-btcpay-details';
 import {
     findUserBtcpayDetails,
@@ -11,7 +10,6 @@ import { CreateUserBtcpayDto } from '../../../interfaces/dto/create-user-btcpay-
 import { insertUserBitcoinWallet } from '../../repository/user-bitcoin-wallets-repository';
 import { UserBitcoinWallet } from '../../model/btc/user-bitcoin-wallet';
 import { UserBitcoinWalletTypeEnum } from '../../model/btc/user-bitcoin-wallet-type-enum';
-import { getNumberProperty } from '../../../application/property-service';
 import { runInTransaction } from '../../../application/db/db-transaction';
 import { PoolClient } from 'pg';
 import { logError, logInfo, logWarn } from '../../../application/logging-service';
@@ -20,6 +18,7 @@ import { Lnd } from '../../model/lnd/lnd';
 import { insertStandardWalletSeedEncryptedArtefact } from '../../repository/encrypted/user-encrypted-store-artefacts-repository';
 import { generateBtcPayCustomLndAddress } from '../lnd/lnd-btcpay-address-generator-service';
 import { sendErrorOccurredEmailToAdmin } from '../../../application/mail-service';
+import { initializeBtcpayServices, updateLndInStore } from './create/create-user-btcpay-service-greenfield';
 
 export const createUserBtcpayServices = async (userEmail: string, createUserBtcpayDto: CreateUserBtcpayDto): Promise<void> => {
     if (!await userHasBtcpayServices(userEmail)) {
@@ -39,7 +38,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
             UserBitcoinWalletTypeEnum.BIP_49 :
             UserBitcoinWalletTypeEnum.ELECTRUM;
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
-            userEmail, masterPublicKey, getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'), lnd);
+            userEmail, masterPublicKey, lnd);
         await runInTransaction(async (client: PoolClient) => {
             await insertUserBtcpayDetails(client, userBtcpayDetails);
             await insertUserBitcoinWallet(client, new UserBitcoinWallet(

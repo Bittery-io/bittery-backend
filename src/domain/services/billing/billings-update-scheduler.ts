@@ -3,8 +3,9 @@ import { addHoursGetDate, formatDateWithTime } from '../utils/date-service';
 import { LndBilling } from '../../model/billings/lnd-billing';
 import { findBillingsWithStatus, updateBilling } from '../../repository/lnd-billings-repository';
 import { BillingStatus } from '../../model/billings/billing-status';
-import { Invoice } from 'btcpay';
 import { getBitteryInvoice } from '../payments/bittery-invoice-service';
+import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
+import { InvoiceStatus } from 'btcpay-greenfield-node-client';
 
 const schedule = require('node-schedule');
 let nextSchedulerDateEpoch: number;
@@ -19,14 +20,14 @@ export const startBillingsUpdateScheduler = () => {
         const pendingBillings: LndBilling[] = await findBillingsWithStatus(BillingStatus.PENDING);
         logInfo(`[Billings scheduler] 2/3 Found all pending billings in db: ${pendingBillings.length}`);
         pendingBillings.map(async (_) => {
-            const invoice: Invoice = await getBitteryInvoice(_.invoiceId);
-            if (invoice.status.toLowerCase() === 'invoice_complete') {
+            const invoice: BtcpayInvoice = await getBitteryInvoice(_.invoiceId);
+            if (invoice.invoiceData.status! === InvoiceStatus.SETTLED) {
                 _.status = BillingStatus.PAID;
                 await updateBilling(_);
-                logInfo(`[Billings scheduler] 2.1/3 Invoice with id ${invoice.id} is updated as PAID!`);
-            } else if (invoice.status.toLowerCase() === 'invoice_expired') {
+                logInfo(`[Billings scheduler] 2.1/3 Invoice with id ${invoice.invoiceData.id} is updated as PAID!`);
+            } else if (invoice.invoiceData.status! === InvoiceStatus.EXPIRED) {
                 _.status = BillingStatus.EXPIRED;
-                logInfo(`[Billings scheduler] 2.1/3 Invoice with id ${invoice.id} is updated as EXPIRED!`);
+                logInfo(`[Billings scheduler] 2.1/3 Invoice with id ${invoice.invoiceData.id} is updated as EXPIRED!`);
                 await updateBilling(_);
             }
         });

@@ -2,18 +2,20 @@ import * as path from 'path';
 
 const fs = require('fs');
 import * as pdf from 'pdfjs';
-import { Invoice } from 'btcpay';
 import {
     formatDateWithTime,
     getDaysBetween,
     getHoursBetween,
     getMinutesBetween,
 } from '../utils/date-service';
-import { getNumberProperty, getProperty } from '../../../application/property-service';
+import { getProperty } from '../../../application/property-service';
+import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
+import { InvoicePaymentMethodDataModel } from 'btcpay-greenfield-node-client';
+import { BTC_PAYMENTS_DONE_TYPE, LN_PAYMENTS_DONE_TYPE } from '../btcpay/btcpay-client-service';
 const logoSrc = fs.readFileSync(path.resolve(__dirname, 'BITTERY.jpg'));
 const font = fs.readFileSync(path.resolve(__dirname, 'Lato-Regular.ttf'));
 // @ts-ignore
-export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, lndAddress: string): Promise<Buffer> => {
+export const generateInvoicePdf = async (invoice: BtcpayInvoice, userEmail: string, lndAddress: string): Promise<Buffer> => {
     // keep 19 cm width
     const logo = new pdf.Image(logoSrc);
     const doc = new pdf.Document({
@@ -30,16 +32,16 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         fontSize: 18,
     }).add('- better Bitcoin payments');
 
-    doc.cell().text({ textAlign: 'left' }).add(`Invoice: ${invoice.id}`);
-    doc.cell().text(`Invoice date: ${formatDateWithTime(invoice.invoiceTime)}`);
-    doc.cell().text(`Payment due date : ${formatDateWithTime(invoice.expirationTime)}`);
+    doc.cell().text({ textAlign: 'left' }).add(`Invoice ID: ${invoice.invoiceData.id}`);
+    doc.cell().text(`Invoice date: ${formatDateWithTime(invoice.invoiceData.createdTime!)}`);
+    doc.cell().text(`Payment due date : ${formatDateWithTime(invoice.invoiceData.expirationTime!)}`);
 
     let validText: string;
-    const invoiceDaysValid: string = getDaysBetween(invoice.expirationTime, invoice.invoiceTime).toFixed(0);
+    const invoiceDaysValid: string = getDaysBetween(invoice.invoiceData.expirationTime!, invoice.invoiceData.createdTime!).toFixed(0);
     if (invoiceDaysValid === '0') {
-        const invoiceHoursValid: string = getHoursBetween(invoice.expirationTime, invoice.invoiceTime).toFixed(0);
+        const invoiceHoursValid: string = getHoursBetween(invoice.invoiceData.expirationTime!, invoice.invoiceData.createdTime!).toFixed(0);
         if (invoiceHoursValid === '0') {
-            const invoiceMinutesValid: string = getMinutesBetween(invoice.expirationTime, invoice.invoiceTime).toFixed(0);
+            const invoiceMinutesValid: string = getMinutesBetween(invoice.invoiceData.expirationTime!, invoice.invoiceData.createdTime!).toFixed(0);
             validText = `Valid: ${invoiceMinutesValid} minutes`;
         } else {
             validText = `Valid: ${invoiceHoursValid} hours`;
@@ -57,15 +59,15 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         const row1 = partiesTable.row();
         row1.cell('Seller', { fontSize: 16 });
         row1.cell('');
-        if (invoice.buyer.name) {
+        if (invoice.invoiceData.metadata.name) {
             row1.cell('Buyer', { fontSize: 16 });
         }
 
         const row2 = partiesTable.row();
         row2.cell(`Email: ${userEmail}`, { fontSize: 10 });
         row2.cell('');
-        if (invoice.buyer.name) {
-            row2.cell(invoice.buyer.name, { fontSize: 10 }!);
+        if (invoice.invoiceData.metadata.buyerName) {
+            row2.cell(invoice.invoiceData.metadata.buyerName, { fontSize: 10 }!);
         }
     };
     addParties();
@@ -83,7 +85,7 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
     const itemsTableHeader = itemsTable.header({ borderBottomWidth: 1.5 });
     itemsTableHeader.cell('#');
     itemsTableHeader.cell('Item description');
-    itemsTableHeader.cell(`Price ${invoice.currency}`, { textAlign: 'right' });
+    itemsTableHeader.cell(`Price ${invoice.invoiceData.currency}`, { textAlign: 'right' });
     itemsTableHeader.cell('Price BTC', { textAlign: 'right' });
 
     function addRow(qty: number, itemDescription: string, price: string, btcPrice: string) {
@@ -94,8 +96,8 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         itemsTableRow.cell(price, { textAlign: 'right' });
         itemsTableRow.cell(btcPrice, { textAlign: 'right' });
     }
-    const description: string = invoice.itemDesc ? invoice.itemDesc! : '';
-    addRow(1, description, invoice.price.toFixed(2), invoice.btcPrice);
+    const description: string = invoice.invoiceData.metadata.itemDesc ? invoice.invoiceData.metadata.itemDesc! : '';
+    addRow(1, description, Number(invoice.invoiceData.amount!).toFixed(2), invoice.invoicePayments[0].amount!);
 
     doc.cell('Payment methods', {
         fontSize: 16,
@@ -112,8 +114,8 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         fontSize: 12,
         paddingLeft: 0.5 * pdf.cm,
     });
-    doc.cell(invoice.bitcoinAddress, {  fontSize: 10, paddingLeft: 0.5 * pdf.cm });
-    const lightningInfoType = invoice.cryptoInfo.filter(info => info.paymentType === 'LightningLike')[0];
+    doc.cell(invoice.invoicePayments.filter(_ => _.paymentMethod === BTC_PAYMENTS_DONE_TYPE)[0].destination, {  fontSize: 10, paddingLeft: 0.5 * pdf.cm });
+    const lightningInfoType: InvoicePaymentMethodDataModel = invoice.invoicePayments.filter(_ => _.paymentMethod === LN_PAYMENTS_DONE_TYPE)[0];
     if (lightningInfoType) {
         doc.cell('BTC [Lightning Network]', {
             paddingTop: 0.3 * pdf.cm,
@@ -124,7 +126,7 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
             fontSize: 12,
             paddingLeft: 0.5 * pdf.cm,
         });
-        doc.cell(lightningInfoType.address, { fontSize: 10,  paddingLeft: 0.5 * pdf.cm  });
+        doc.cell(lightningInfoType.destination, { fontSize: 10,  paddingLeft: 0.5 * pdf.cm  });
 
         doc.cell('Lightning Node address', {
             fontSize: 12,
@@ -140,8 +142,8 @@ export const generateInvoicePdf = async (invoice: Invoice, userEmail: string, ln
         paddingTop: 0.5 * pdf.cm,
     });
     doc.cell('Direct payment widget URL');
-    doc.cell(`${getProperty('CLIENT_URL_ADDRESS')}/invoices/${invoice.id}`, {
-        link: `${getProperty('CLIENT_URL_ADDRESS')}/invoices/${invoice.id}`,
+    doc.cell(`${getProperty('CLIENT_URL_ADDRESS')}/invoices/${invoice.invoiceData.id}`, {
+        link: `${getProperty('CLIENT_URL_ADDRESS')}/invoices/${invoice.invoiceData.id}`,
         color: 0x0074D9,
         fontSize: 14,
         textAlign: 'left',

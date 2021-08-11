@@ -17,18 +17,20 @@ export const routingControllersOptions = {
 const app = createExpressServer(routingControllersOptions);
 
 if (getBooleanProperty('RUN_STATIC_CHANNEL_BACKUP_SCHEDULER')) {
-    // startStaticChannelBackupScheduler();
+    startStaticChannelBackupScheduler();
 }
+
 if (getBooleanProperty('RUN_SUBSCRIPTION_DISABLE_SCHEDULER')) {
+    startSubscriptionDisableScheduler();
 }
-startSubscriptionDisableScheduler();
-// startStaticChannelBackupScheduler();
+
 if (getBooleanProperty('RUN_SUBSCRIPTION_RENEW_EMAIL_SCHEDULER')) {
     startSubscriptionRenewEmailScheduler();
 }
 
 app.listen(getNumberProperty('APP_PORT'),   () => {
-    logInfo('App is listening on port 3001!');
+    logInfo(`App is listening on port ${getNumberProperty('APP_PORT')}!`);
 });
+// @ts-ignore
 exports.express = app;
 // restoreLnd('peerzet3@gmail.com', '4f205bb9-7703-4fde-a594-c04a3035d67e');

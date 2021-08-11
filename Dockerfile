@@ -8,6 +8,7 @@ ADD package.json /
 ADD tsconfig.json /
 ADD docker/start.sh /
 ADD logs /logs
-RUN apk update && apk add python3 make g++ bash chromium && rm -rf /var/cache/apk/* && npm install
+ADD copy-static-assets.sh /copy-static-assets.sh
+RUN apk update && apk add python3 make g++ bash chromium && rm -rf /var/cache/apk/* && npm install && npm run compile && npm run copy-static-assets
 
 CMD ["sh", "start.sh"]

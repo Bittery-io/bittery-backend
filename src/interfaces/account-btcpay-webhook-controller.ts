@@ -3,7 +3,6 @@ import { Body, JsonController, Post, Res } from 'routing-controllers';
 import { Param } from 'routing-controllers';
 import { getProperty } from '../application/property-service';
 import { logError, logInfo, logWarn } from '../application/logging-service';
-import { Invoice } from 'btcpay';
 import {
     findBilling,
     findLatestCreatedBillingWithStatus,
@@ -16,6 +15,7 @@ import { Lnd } from '../domain/model/lnd/lnd';
 import { restoreLnd } from '../domain/services/lnd/restore-user-lnd-service';
 import { subscripionRestoredEmail, subscriptionExtendedEmail } from '../application/mail-service';
 import { addMonthsToDate, isFirstDateAfterSecond } from '../domain/services/utils/date-service';
+import { BtcpayInvoice } from '../domain/model/btcpay/invoices/btcpay-invoice';
 
 @JsonController('/btcpay')
 export class AccountBtcpayWebhookController {
@@ -30,9 +30,9 @@ export class AccountBtcpayWebhookController {
         const invoiceOwnerEmail: string = Buffer.from(invoiceOwnerEmailBase64, 'base64').toString();
         if (body.event) {
             const eventName: string = body.event!.name;
-            const btcpayInvoice: Invoice = body.data;
+            const btcpayInvoice: BtcpayInvoice = body.data;
             if (btcpayWebhookSecretKey === getProperty('BTCPAY_WEBHOOK_SECRET_KEY')) {
-                const billing: LndBilling | undefined = await findBilling(invoiceOwnerEmail, btcpayInvoice.id);
+                const billing: LndBilling | undefined = await findBilling(invoiceOwnerEmail, btcpayInvoice.invoiceData.id!);
                 if (billing) {
                     switch (eventName) {
                         // case 'invoice_expired':
@@ -79,7 +79,7 @@ export class AccountBtcpayWebhookController {
                             } else {
                                 await subscripionRestoredEmail(invoiceOwnerEmail, billing.subscriptionMonths, newPaidToDate.getTime());
                             }
-                            logInfo(`Successfully updated Bittery subscription invoice as PAID for invoice with id ${btcpayInvoice.id} and user email ${invoiceOwnerEmail}`);
+                            logInfo(`Successfully updated Bittery subscription invoice as PAID for invoice with id ${btcpayInvoice.invoiceData.id} and user email ${invoiceOwnerEmail}`);
                     }
                 }
             } else {

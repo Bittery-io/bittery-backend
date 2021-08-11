@@ -1,19 +1,14 @@
 import { DashboardTimeframeType } from '../../model/dashboard/dashboard-timeframe-type';
-import { getBtcpayInvoicesBetweenDate } from '../btcpay/btcpay-client-service';
-import {
-    getEpochLastSecondOfToday,
-    minusDays,
-    minusDaysGetDay,
-    minusDaysGetMonth,
-    nowepoch,
-} from '../utils/date-service';
+import { getEpochLastSecondOfToday, minusDays, minusDaysGetDay, minusDaysGetMonth, } from '../utils/date-service';
 import { UserBtcpayDetails } from '../../model/btcpay/user-btcpay-details';
 import { findUserBtcpayDetails } from '../../repository/user-btcpay-details-repository';
 import { UserBtcpayException } from '../btcpay/user-btcpay-exception';
 import { UserBtcpayErrorType } from '../btcpay/user-btcpay-error-type';
-import { Invoice } from 'btcpay';
 import { DashboardInfoDto } from '../../../interfaces/dto/dashboard/dashboard-info-dto';
 import { logError } from '../../../application/logging-service';
+import { BTC_PAYMENTS_DONE_TYPE, getBtcpayInvoices, LN_PAYMENTS_DONE_TYPE } from '../btcpay/btcpay-client-service';
+import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
+import { InvoiceStatus } from 'btcpay-greenfield-node-client';
 
 export const getDashboardInfo = async (userEmail: string, dashboardTimeframeType: DashboardTimeframeType):
         Promise<DashboardInfoDto> => {
@@ -27,8 +22,7 @@ export const getDashboardInfo = async (userEmail: string, dashboardTimeframeType
                 beforeDateString = new Date(minusDays(nowDate.getTime(), 30)).toISOString();
                 break;
         }
-        const invoices: Invoice[] = await getBtcpayInvoicesBetweenDate(
-            userBtcpayDetails.btcpayUserAuthToken, beforeDateString, nowDateString);
+        const invoices: BtcpayInvoice[] = await getBtcpayInvoices(userBtcpayDetails, []);
         return mapInvoicesToDashboardInvoiceDto(invoices, dashboardTimeframeType);
     } else {
         throw new UserBtcpayException(`Cannot get dashboard info because user ${userEmail} has not btcpay yet!`,
@@ -36,7 +30,7 @@ export const getDashboardInfo = async (userEmail: string, dashboardTimeframeType
     }
 };
 
-const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
+const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
                                           dashboardTimeframeType: DashboardTimeframeType): DashboardInfoDto => {
     const invoicesQuantity: number =  invoices.length;
     let totalReceivedViaTransactions: number = 0;
@@ -71,29 +65,27 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
                     timeUpFrame = timeDownFrame;
                     timeDownFrame = minusDays(timeUpFrame, 1);
                 }
-                const timeFrameInvoices: Invoice[] = invoices.filter(
-                    invoice => invoice.invoiceTime < timeUpFrame && invoice.invoiceTime > timeDownFrame);
+                const timeFrameInvoices: BtcpayInvoice[] = invoices.filter(
+                    invoice => invoice.invoiceData.createdTime! < timeUpFrame && invoice.invoiceData.createdTime! > timeDownFrame);
                 let paidAmount: number = 0;
 
                 let newInvoicesTimeframeQuantity: number = 0;
                 let paidInvoicesTimeframeQuantity: number = 0;
                 let expiredInvoicesTimeframeQuantity: number = 0;
                 timeFrameInvoices.forEach((invoice) => {
-                    paidAmount += Number(invoice.btcPaid);
-                    switch (invoice.status) {
-                        case 'new':
+                    paidAmount += Number(invoice.invoicePayments[0].totalPaid!);
+                    switch (invoice.invoiceData.status!) {
+                        case InvoiceStatus.NEW:
                             newInvoicesTimeframeQuantity += 1;
                             break;
-                        case 'complete':
-                        case 'paid':
-                        case 'confirmed':
+                        case InvoiceStatus.SETTLED:
                             paidInvoicesTimeframeQuantity += 1;
                             break;
-                        case 'expired':
+                        case InvoiceStatus.EXPIRED:
                             expiredInvoicesTimeframeQuantity += 1;
                             break;
                         default:
-                            logError(`Dashboard unexpected invoice status: ${invoice.status}. DID not count to anything.`);
+                            logError(`Dashboard unexpected invoice status: ${invoice.invoiceData.status!}. DID not count to anything.`);
                     }
                 });
                 paidInvoicesAmountTimeframesValues.push(paidAmount);
@@ -109,40 +101,39 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: Invoice[],
             break;
     }
     invoices.forEach((invoice) => {
-        invoice.cryptoInfo.forEach((_) => {
+        invoice.invoicePayments.forEach((_) => {
             // unfortunatelly adding objects is making duplicates
-            _.payments.forEach(payment => paymentsDoneSet.add(JSON.stringify({
-                id: payment.id,
-                value: payment.value,
-                type: payment.paymentType,
-            })));
+            paymentsDoneSet.add(JSON.stringify({
+                id: invoice.invoiceData.id,
+                value: _.paymentMethodPaid!,
+                type: _.paymentMethod,
+            }));
         });
-        totalReceivedPaymentsBtc += Number(invoice.btcPaid);
-        totalInvoicedAmountBtc += Number(invoice.btcPrice);
-        switch (invoice.status) {
-            case 'new':
-                newInvoicedAmountBtc += Number(invoice.btcPrice);
+        totalReceivedPaymentsBtc += Number(invoice.invoicePayments[0].totalPaid);
+        //todo lepiej to sprawdz bo to samo co wyzej
+        totalInvoicedAmountBtc += Number(invoice.invoicePayments[0].totalPaid);
+        switch (invoice.invoiceData.status) {
+            case InvoiceStatus.NEW:
+                newInvoicedAmountBtc += Number(invoice.invoicePayments[0].amount);
                 newInvoicesQuantity += 1;
                 break;
-            case 'complete':
-            case 'paid':
-            case 'confirmed':
-                paidInvoicedAmountBtc += Number(invoice.btcPrice);
+            case InvoiceStatus.SETTLED:
+                paidInvoicedAmountBtc += Number(invoice.invoicePayments[0].amount);
                 paidInvoicesQuantity += 1;
                 break;
-            case 'expired':
-                expiredInvoicedAmountBtc += Number(invoice.btcPrice);
+            case InvoiceStatus.EXPIRED:
+                expiredInvoicedAmountBtc += Number(invoice.invoicePayments[0].amount);
                 expiredInvoicesQuantity += 1;
                 break;
             default:
-                logError(`Dashboard unexpected invoice status: ${invoice.status}. DID not count to anything.`);
+                logError(`Dashboard unexpected invoice status: ${invoice.invoiceData.status}. DID not count to anything.`);
         }
     });
     Array.from(paymentsDoneSet).forEach((paymentInfo: any) => {
         const info: any = JSON.parse(paymentInfo);
-        if (info.type.toLowerCase() === 'lightninglike') {
+        if (info.type.toLowerCase() === LN_PAYMENTS_DONE_TYPE) {
             totalReceivedViaLightning += info.value;
-        } else if (info.type.toLowerCase() === 'btclike') {
+        } else if (info.type.toLowerCase() === BTC_PAYMENTS_DONE_TYPE) {
             totalReceivedViaTransactions += info.value;
         }
     });
