@@ -80,7 +80,7 @@ export const createLnd = async (userEmail: string, createLndDto: CreateLndDto): 
                 await deleteLndSetupBacklog(userEmail);
             }
         } else {
-            logError(`Oops user ${userEmail} request another CREATE LN while current is already running - so returning error (ignoring)`);
+            logError(`Oops user ${userEmail} request another CREATE LN while setup backlog exists (probably broken LN node setup and should check digital ocean) - so returning error (ignoring)`);
         }
     } else {
         throw new LndCreateException(`User ${userEmail} already has LND added!`, LndCreationErrorType.USER_ALREADY_HAS_LND);

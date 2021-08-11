@@ -21,7 +21,7 @@ export const createBtcpayInvoice = async (saveInvoiceDto: SaveInvoiceDto, userBt
             orderId: generateUuid(),
         },
         checkout: {
-            expirationMinutes: getInvoiceValidityInMinutes(saveInvoiceDto.invoiceValidity),
+            expirationMinutes: 1,
         },
     }, {
         headers: {
