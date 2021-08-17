@@ -1,4 +1,5 @@
 #!/bin/bash
+apt-get update
 apt-get install docker-compose
 # Restart systemd-resolved.service for proper dns
 systemctl stop systemd-resolved.service

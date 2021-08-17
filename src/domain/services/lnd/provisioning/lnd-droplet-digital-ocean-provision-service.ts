@@ -209,7 +209,7 @@ export const startLndInDroplet = async (
         lnAlias?: string): Promise<void> => {
     const wumboChannelsString: string = wumboChannels ? 'true' : 'false';
     const lnAliasString: string = lnAlias ? lnAlias : 'NO_LN_ALIAS';
-    const command: string = `sh /root/start.sh ${bitcoinRpcHost} ${bitcoinRpcUser} ${bitcoinRpcPassword} ${lndHostedVersion} ${rtlHostedVersion} ${dropletPublicIp} \"${lnAliasString}\" ${wumboChannelsString} ${rtlOneTimePassword}`;
+    const command: string = `bash /root/start.sh ${bitcoinRpcHost} ${bitcoinRpcUser} \"${bitcoinRpcPassword}\" ${lndHostedVersion} ${rtlHostedVersion} ${dropletPublicIp} \"${lnAliasString}\" ${wumboChannelsString} ${rtlOneTimePassword}`;
     logInfo(`Start command: ${command}`);
     const res = await ssh.execCommand(command);
     console.log('exec res: ', res);

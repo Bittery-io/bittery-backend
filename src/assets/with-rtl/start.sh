@@ -9,7 +9,6 @@ export LND_IP="$6"
 LN_ALIAS="$7"
 WUMBO_CHANNELS="$8"
 export RTL_INIT_PASSWORD="$9"
-
 ###############################
 # create lnd.conf
 export BITCOIND_RPC_HOST=bittery.io
@@ -60,9 +59,21 @@ docker network prune --force
 docker-compose -f $PWD/docker-compose.yaml down
 docker-compose -f $PWD/docker-compose.yaml up -d
 
+# Is is incorrect docker-compose up handler (no matter what the reason)
+# It will restart docker.service and try to up again
+COUNTER_LIMIT=2
+COUNTER=0
 while [ ! -d "$PWD/volumes/nginx/conf" ]
 do
-  sleep 2
+  sleep 5
+  COUNTER=$((COUNTER+1));
+  if [[ $COUNTER -eq $COUNTER_LIMIT ]]; then
+    systemctl restart docker.service
+    docker-compose -f $PWD/docker-compose.yaml up -d
+    COUNTER=0
+    # counter limit should be now longer
+    COUNTER_LIMIT=$((COUNTER_LIMIT+5))
+  fi
 done
 cp $PWD/lnd.nginx.conf $PWD/volumes/nginx/conf/lnd.nginx.conf
 docker exec -t nginx sh -c 'nginx -s reload' 2>&1
