@@ -1,8 +1,8 @@
 import { logInfo } from '../../../application/logging-service';
 import { connectSshToNode, startLndInDroplet } from './provisioning/lnd-droplet-digital-ocean-provision-service';
-import { DigitalOceanLndForRestart } from '../../model/lnd/hosted/digital_ocean/digital-ocean-lnd-for-restart';
-import { findDigitalOceanLndForRestart } from '../../repository/lnd/digital-ocean/digital-ocean-lnds-repository';
 import { getProperty } from '../../../application/property-service';
+import { findUserLndAggregateByIdAndEmail } from '../../repository/lnd/lnds-repository';
+import { LndAggregate } from '../../model/lnd/lnd-aggregate';
 
 // This will restart user LND
 // Can be used for settings change
@@ -17,22 +17,23 @@ import { getProperty } from '../../../application/property-service';
 // wumboChannels - took from db (can be changed)
 // rtlOneTimePassword is not used because is not possible to change
 export const restartLnd = async (lndId: string, userEmail: string): Promise<void> => {
-    const digitalOceanLndForRestart: DigitalOceanLndForRestart | undefined = await findDigitalOceanLndForRestart(lndId, userEmail);
-    if (digitalOceanLndForRestart) {
-        const ssh: any = await connectSshToNode(userEmail, digitalOceanLndForRestart.dropletIp, digitalOceanLndForRestart.dropletId);
+    const lndAggregate: LndAggregate | undefined = await findUserLndAggregateByIdAndEmail(lndId, userEmail);
+    if (lndAggregate && lndAggregate.digitalOceanLnd) {
+        const ssh: any = await connectSshToNode(userEmail, lndAggregate.digitalOceanLnd.dropletIp, lndAggregate.digitalOceanLnd.dropletId);
         await startLndInDroplet(
             ssh,
-            digitalOceanLndForRestart.dropletIp,
-            digitalOceanLndForRestart.wumboChannels,
+            lndAggregate.digitalOceanLnd.dropletIp,
+            lndAggregate.digitalOceanLnd.wumboChannels,
             getProperty('BITCOIND_RPC_HOST'),
             getProperty('BITCOIND_RPC_USER'),
             getProperty('BITCOIND_RPC_PASSWORD'),
             // getProperty('LND_HOSTED_VERSION'),
-            'v0.13.1-beta',
-            getProperty('RTL_HOSTED_VERSION'),
+            lndAggregate.lnd.lndVersion,
+            // for encrypted LND no matter what value will be passed
+            lndAggregate.rtl ? lndAggregate.rtl.rtlVersion : getProperty('RTL_HOSTED_VERSION'),
             // no need to pass rtl one time password again it will have no effect cause its already set
             undefined,
-            digitalOceanLndForRestart.lnAlias);
+            lndAggregate.digitalOceanLnd.lnAlias);
         logInfo(`Restarting digital ocean LND with id ${lndId} for user ${userEmail} succeed!`);
     } else {
         const message: string = `Cannot restart digital ocean LND with id ${lndId} for user ${userEmail} because such LND was not found!`;

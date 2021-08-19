@@ -35,7 +35,7 @@ import { sendErrorOccurredEmailToAdmin } from '../../../application/mail-service
  *      however restored LND is already working in digital ocean so must be carefully stopped!
  * 4. Update user store with new LND address. If fails: store cannot receive Lightning payments (bad). Must be manually fixed.
  */
-export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Promise<void> => {
+export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Promise<string> => {
     logInfo(`[RESTORE LND] Started restore LND process for LND to restore with id ${lndIdToRestore} for user email ${userEmail}.`);
     const hostedLndToRestore: HostedLnd | undefined = await findUserHostedLnd(userEmail, lndIdToRestore);
     if (hostedLndToRestore) {
@@ -100,6 +100,7 @@ export const restoreLnd = async (userEmail: string, lndIdToRestore: string): Pro
                     hostedLndToRestore.macaroonHex!,
                     newDigitalOceanLndHosting.digitalOceanLnd.tlsCertThumbprint);
                 logInfo(`Successfully restored LND with id ${lndIdToRestore} for user email ${userEmail}. New LND has id: ${newDigitalOceanLndHosting.digitalOceanLnd.lndId}`);
+                return newDigitalOceanLndHosting.digitalOceanLnd.lndId;
             } else {
                 // tslint:disable-next-line:max-line-length
                 throw new Error(`Restore lnd failed: cannot find digital ocean archive for LND with id ${lndIdToRestore} for user email ${userEmail}`);

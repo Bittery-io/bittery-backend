@@ -15,7 +15,7 @@ import { BTC_PAYMENTS_DONE_TYPE, LN_PAYMENTS_DONE_TYPE } from '../btcpay/btcpay-
 const logoSrc = fs.readFileSync(path.resolve(__dirname, 'BITTERY.jpg'));
 const font = fs.readFileSync(path.resolve(__dirname, 'Lato-Regular.ttf'));
 // @ts-ignore
-export const generateInvoicePdf = async (invoice: BtcpayInvoice, userEmail: string, lndAddress: string): Promise<Buffer> => {
+export const generateInvoicePdf = async (invoice: BtcpayInvoice, seller: string, lndAddress: string): Promise<Buffer> => {
     // keep 19 cm width
     const logo = new pdf.Image(logoSrc);
     const doc = new pdf.Document({
@@ -42,14 +42,15 @@ export const generateInvoicePdf = async (invoice: BtcpayInvoice, userEmail: stri
         const invoiceHoursValid: string = getHoursBetween(invoice.invoiceData.expirationTime!, invoice.invoiceData.createdTime!).toFixed(0);
         if (invoiceHoursValid === '0') {
             const invoiceMinutesValid: string = getMinutesBetween(invoice.invoiceData.expirationTime!, invoice.invoiceData.createdTime!).toFixed(0);
-            validText = `Valid: ${invoiceMinutesValid} minutes`;
+            validText = `Validity: ${invoiceMinutesValid} minutes`;
         } else {
-            validText = `Valid: ${invoiceHoursValid} hours`;
+            validText = `Validity: ${invoiceHoursValid} hours`;
         }
     } else {
-        validText = `Valid: ${invoiceDaysValid} days`;
+        validText = `Validity: ${invoiceDaysValid} days`;
     }
-    doc.cell({ paddingBottom: 0.5 * pdf.cm }).text(validText);
+    doc.cell().text(validText);
+    doc.cell({ paddingBottom: 0.5 * pdf.cm }).text(`Status: ${invoice.invoiceData.status}`);
 
     const partiesTable = doc.table({
         widths: [5 * pdf.cm, 9 * pdf.cm, 5 * pdf.cm],
@@ -59,12 +60,12 @@ export const generateInvoicePdf = async (invoice: BtcpayInvoice, userEmail: stri
         const row1 = partiesTable.row();
         row1.cell('Seller', { fontSize: 16 });
         row1.cell('');
-        if (invoice.invoiceData.metadata.name) {
+        if (invoice.invoiceData.metadata.buyerName) {
             row1.cell('Buyer', { fontSize: 16 });
         }
 
         const row2 = partiesTable.row();
-        row2.cell(`Email: ${userEmail}`, { fontSize: 10 });
+        row2.cell(seller, { fontSize: 10 });
         row2.cell('');
         if (invoice.invoiceData.metadata.buyerName) {
             row2.cell(invoice.invoiceData.metadata.buyerName, { fontSize: 10 }!);

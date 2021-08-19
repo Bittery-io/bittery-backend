@@ -65,7 +65,7 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
                         UserBtcpayErrorType.COULD_NOT_GET_LND_INFO);
                 }
             }
-            return await generateInvoicePdf(invoice, userEmail, lndUri);
+            return await generateInvoicePdf(invoice, `Email: ${userEmail}`, lndUri);
         } else {
             throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not LND yet (or is inactive)!`,
                 UserBtcpayErrorType.USER_HAS_NOT_LND);
@@ -79,7 +79,7 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
 export const getBitteryInvoicePdf = async (userEmail: string, invoiceId: string): Promise<Buffer> => {
     const invoice: BtcpayInvoice = await getBitteryInvoice(invoiceId);
     if (invoice.invoiceData.metadata.buyerName === userEmail) {
-        return await generateInvoicePdf(invoice, userEmail, getProperty('BITTERY_NODE_FOR_SUBSCRIPTION_URI'));
+        return await generateInvoicePdf(invoice, 'Bittery.io', getProperty('BITTERY_NODE_FOR_SUBSCRIPTION_URI'));
     } else {
         throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not LND yet (or is inactive)!`,
             UserBtcpayErrorType.USER_HAS_NOT_LND);

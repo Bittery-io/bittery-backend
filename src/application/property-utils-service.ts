@@ -1,6 +1,6 @@
 import { getBooleanProperty, getProperty } from './property-service';
 
-export const isDevelopmentEnv = (): boolean => {
+export const isDevelopment = (): boolean => {
     return getBooleanProperty('IS_DEVELOPMENT_ENV');
 };
 

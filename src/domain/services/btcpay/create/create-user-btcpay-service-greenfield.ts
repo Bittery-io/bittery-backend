@@ -110,11 +110,7 @@ const createNewApiKeyForUser = async (storeId: string): Promise<string> => {
     }
 
 }
-//TODO
+
 export const updateLndInStore = async (storeId: string, lndBtcpayUrl: string) => {
-    // logInfo(`Updating BTCPay services for user store id ${storeId} - changing LND address in store.`);
-    // const browser = await getBrowser();
-    // const page = (await browser.pages())[0];
-    // await loginToBtcpay(page);
-    // await setLndNodeToStore(storeId, lndBtcpayUrl, page);
+    await setLndNodeToStore(storeId, lndBtcpayUrl);
 };

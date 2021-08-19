@@ -25,6 +25,7 @@ import { SubscriptionPlan } from '../../model/subscription/subscription-plan';
 import { InvoiceValidityType } from '../../model/payments/invoice-validity-type';
 import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
 import { InvoiceData } from 'btcpay-greenfield-node-client';
+import { isDevelopment } from '../../../application/property-utils-service';
 
 const BITTERY_SUBSCRIPTION_PRICE_USD = getNumberProperty('LND_SUBSCRIPTION_PRICE_USD');
 
@@ -34,10 +35,11 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
         getDiscountMultiplier(extendSubscriptionDto.subscriptionTimeMonths)).toFixed(2);
     const invoiceData: InvoiceData = await saveBitteryInvoice(userEmail,
         new SaveInvoiceDto(
-            invoiceAmount,
+            isDevelopment() ? '0.01' : invoiceAmount,
             'USD',
             InvoiceValidityType.THREE_DAYS,
             `Bittery LND ${extendSubscriptionDto.subscriptionTimeMonths} months plan`,
+            // MUST BE EMAIL HERE OTHERWISE WEBHOOK MECHANISM WILL BREAK!!!!!!!
             userEmail));
     await runInTransaction((client) => {
         updateAllBillingsWithGivenStatusSetNewStatus(client, userEmail, BillingStatus.PENDING, BillingStatus.REPLACED_BY_NEWER);

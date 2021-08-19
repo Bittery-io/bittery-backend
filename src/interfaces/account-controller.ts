@@ -92,12 +92,11 @@ export class AccountController {
         }
     }
 
-    // todo
     @Get('/subscription/pdf/:invoiceId')
     async getBtcpayInvoicePdfApi(
-        @HeaderParam('authorization', { required: true }) authorizationHeader: string,
-        @Param('invoiceId') invoiceId: string,
-        @Res() res: Response): Promise<Response> {
+            @HeaderParam('authorization', { required: true }) authorizationHeader: string,
+            @Param('invoiceId') invoiceId: string,
+            @Res() res: Response): Promise<Response> {
         const userEmail: string = await getUserEmailFromAccessTokenInAuthorizationHeader(authorizationHeader);
         try {
             const pdf: Buffer = await getBitteryInvoicePdf(userEmail, invoiceId);

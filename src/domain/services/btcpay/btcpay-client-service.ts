@@ -6,6 +6,7 @@ import axios from 'axios';
 import { UserBtcpayDetails } from '../../model/btcpay/user-btcpay-details';
 import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
 import { InvoiceData } from 'btcpay-greenfield-node-client';
+import { isDevelopment } from '../../../application/property-utils-service';
 
 export const BTC_PAYMENTS_DONE_TYPE = 'BTC';
 export const LN_PAYMENTS_DONE_TYPE = 'BTC-LightningNetwork';
@@ -21,7 +22,8 @@ export const createBtcpayInvoice = async (saveInvoiceDto: SaveInvoiceDto, userBt
             orderId: generateUuid(),
         },
         checkout: {
-            expirationMinutes: 1,
+            //in development invoice expires after 1 minute
+            expirationMinutes: isDevelopment() ? 2 : getInvoiceValidityInMinutes(saveInvoiceDto.invoiceValidity),
         },
     }, {
         headers: {

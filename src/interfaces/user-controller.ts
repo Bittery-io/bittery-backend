@@ -19,6 +19,7 @@ import { Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-contr
 import { countUsers } from '../domain/repository/user-repository';
 import { sendUserRegisterMail } from '../application/mail-service';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
+import { isDevelopment } from '../application/property-utils-service';
 
 @JsonController('/user')
 export class UserController {
@@ -32,13 +33,14 @@ export class UserController {
                 await registerNewUser(registerUserDto);
                 logInfo(`User ${registerUserDto.email} registered successfully`);
                 // ### OPTIONAL
-                // try {
-                    // const usersCounter: number = await countUsers();
-                    // await sendUserRegisterMail(usersCounter);
-                // } catch (err) {
-                //     logError('Ups dont know why but sending user registered mail to me failed!', err);
-                // }
-                // ###
+                if (!isDevelopment()) {
+                    try {
+                        const usersCounter: number = await countUsers();
+                        await sendUserRegisterMail(usersCounter);
+                    } catch (err) {
+                        logError('Ups dont know why but sending user registered mail to me failed!', err);
+                    }
+                }
                 return res.sendStatus(204);
             } else {
                 return res.status(500).send(new ErrorDto('Maintenance: Registration currently disabled'));

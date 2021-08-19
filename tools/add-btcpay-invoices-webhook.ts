@@ -1,17 +1,16 @@
 import axios from 'axios';
-import { getProperty } from '../src/application/property-service';
-import crypto from 'crypto';
 import * as util from 'util';
 import * as fs from 'fs';
+
 const writeFile = util.promisify(fs.writeFile);
 
 // const URL = getProperty('BTCPAY_BACKEND_ONLY_URL');
 // const STORE_ID = getProperty('BITTERY_SUBSCRIPTION_PAYMENTS_STORE_ID');
-// const ADMIN_API_KEY = getProperty('BITTERY_SUBSCRIPTION_PAYMENTS_STORE_ID');
-// const WEBHOOK_URL = getProperty('BITTERY_SUBSCRIPT   ION_PAYMENTS_STORE_ID');
+// const ADMIN_API_KEY = getProperty('BTCPAY_ADMIN_API_KEY');
+// const WEBHOOK_URL = getProperty('BTCPAY_FACADE_WEBHOOK_SECRET');
 
 const URL = 'http://localhost';
-const STORE_ID = 'Dzvvpi5AKPBLAcb4DjajaX6EQUy2ZVoFFkvuisscq2Co'
+const STORE_ID = '8pR2S7ZWhfHULfMDixVDXzwVUBeY4FRfLpsnWs3xdY86'
 const ADMIN_API_KEY = '2a4501a4ef6cd7463bff15d2177f38284eac06ff';
 const WEBHOOK_URL = 'http://172.17.0.1:3001/btcpay/billing/invoice';
 

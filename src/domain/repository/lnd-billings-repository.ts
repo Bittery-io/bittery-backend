@@ -12,8 +12,8 @@ export const insertBilling = async (client: PoolClient, billing: LndBilling): Pr
 };
 
 export const updateBilling = async (billing: LndBilling): Promise<void> => {
-    await dbPool.query(`UPDATE LND_BILLINGS SET PAID_TO_DATE = $1, STATUS = $2 WHERE ID = $3`,
-        [billing.paidToDate, billing.status, billing.id]);
+    await dbPool.query(`UPDATE LND_BILLINGS SET PAID_TO_DATE = $1, STATUS = $2, LND_ID = $3 WHERE ID = $4`,
+        [billing.paidToDate, billing.status, billing.lndId, billing.id]);
 };
 
 export const updateAllBillingsWithGivenStatusSetNewStatus = async (
@@ -102,6 +102,7 @@ export const findBillingsWithStatusWherePaidToDateIsInFuture = async (status: Bi
 };
 
 // todo it calls digital ocean tables... anyway it selects only billings for LND which is not yet archived so is not yet in archives table
+// it works well if btcpay webhook updated LND_ID of latest paid being which caused lnd restore
 export const findBillingsWithStatusWherePaidToDateIsInPastAndIsNotYetArchived = async (status: BillingStatus): Promise<LndBilling[]> => {
     const res = await dbPool.query(`SELECT * FROM LND_BILLINGS WHERE ID IN 
                                                         (SELECT lb.id

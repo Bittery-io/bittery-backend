@@ -42,7 +42,11 @@ export const startSubscriptionDisableScheduler = () => {
         const total: number = paidBillingsForLndsWhichShouldBeDisabled.length;
         for (const billing of paidBillingsForLndsWhichShouldBeDisabled) {
             try {
-                await executeStaticChannelBackupOnLnd(billing);
+                try {
+                    await executeStaticChannelBackupOnLnd(billing);
+                } catch (err) {
+                    logError(`[SUBSCRIPTION DISABLE SCHEDULER] 2.1/3 Executing static channel backup on lnd with id ${billing.lndId} failed - probably node is not working. Moving forward...`);
+                }
                 const backupNameWithExtension: string = await backupLndAndGetBackupName(billing);
                 await deleteDroplet(billing);
                 await updateDatabaseAfterSubscriptionDisable(backupNameWithExtension, billing);

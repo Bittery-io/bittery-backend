@@ -79,6 +79,89 @@ export const findUserActiveLnd = async (userEmail: string): Promise<Lnd | undefi
     ) : undefined;
 };
 
+export const findUserLndAggregateByIdAndEmail = async (lndId: string, userEmail: string): Promise<LndAggregate | undefined> => {
+    const result = await dbPool.query(
+        `SELECT l.LND_ID, l.LND_REST_ADDRESS, l.MACAROON_HEX, l.CREATION_DATE,
+                                   l.TLS_CERT, l.TLS_CERT_THUMBPRINT, l.LND_VERSION, l.LND_TYPE, l.IS_ACTIVE, l.public_key,
+                                   hl.hosted_lnd_type, hl.hosted_lnd_provider, hl.wumbo_channels, hl.ln_alias,
+                                   dol.droplet_id, dol.droplet_name, dol.droplet_ip,
+                                   r.rtl_one_time_init_password, r.rtl_version
+                            FROM LNDS l LEFT JOIN HOSTED_LNDS hl on l.LND_ID = hl.LND_ID
+                                        LEFT JOIN DIGITAL_OCEAN_LNDS dol on l.LND_ID = dol.LND_ID
+                                        LEFT JOIN RTLS r on l.LND_ID = r.LND_ID
+                            WHERE l.LND_ID = $1 AND l.USER_EMAIL = $2`,
+        [lndId, userEmail]);
+    const foundRow = result.rows[0];
+    if (foundRow) {
+        const lnd: Lnd = new Lnd(
+            foundRow.lnd_id,
+            userEmail,
+            foundRow.lnd_rest_address,
+            foundRow.tls_cert,
+            foundRow.tls_cert_thumbprint,
+            foundRow.lnd_version,
+            foundRow.lnd_type,
+            foundRow.creation_date,
+            foundRow.is_active,
+            foundRow.public_key,
+            foundRow.macaroon_hex,
+        );
+        let hostedLnd: HostedLnd | undefined;
+        if (foundRow.hosted_lnd_type) {
+            hostedLnd = new HostedLnd(
+                lnd.lndId,
+                userEmail,
+                lnd.lndRestAddress,
+                lnd.tlsCert,
+                lnd.tlsCertThumbprint,
+                lnd.lndVersion,
+                lnd.lndType,
+                foundRow.hosted_lnd_type,
+                foundRow.hosted_lnd_provider,
+                lnd.creationDate,
+                foundRow.wumbo_channels,
+                lnd.isActive,
+                lnd.publicKey,
+                foundRow.ln_alias,
+                lnd.macaroonHex,
+            );
+        }
+        let digitalOceanLnd: DigitalOceanLnd | undefined;
+        if (foundRow.droplet_id) {
+            digitalOceanLnd = new DigitalOceanLnd(
+                userEmail,
+                lnd.lndRestAddress,
+                lnd.tlsCert,
+                lnd.tlsCertThumbprint,
+                lnd.lndVersion,
+                lnd.lndId,
+                foundRow.hosted_lnd_type,
+                foundRow.droplet_id,
+                foundRow.droplet_name,
+                foundRow.droplet_ip,
+                lnd.creationDate,
+                foundRow.wumbo_channels,
+                lnd.isActive,
+                lnd.publicKey,
+                foundRow.ln_alias,
+                lnd.macaroonHex,
+            );
+        }
+        let rtl: Rtl | undefined;
+        if (foundRow.rtl_one_time_init_password) {
+            rtl = new Rtl(
+                lnd.lndId,
+                foundRow.rtl_one_time_init_password,
+                foundRow.rtl_version,
+            );
+        }
+        return new LndAggregate(lnd, hostedLnd, digitalOceanLnd, rtl);
+    } else {
+        return undefined;
+    }
+};
+
+
 export const findUserActiveLndAggregate = async (userEmail: string): Promise<LndAggregate | undefined> => {
     const result = await dbPool.query(
         `SELECT l.LND_ID, l.LND_REST_ADDRESS, l.MACAROON_HEX, l.CREATION_DATE,
