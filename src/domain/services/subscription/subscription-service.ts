@@ -38,7 +38,7 @@ export const extendSubscription = async (userEmail: string, extendSubscriptionDt
             isDevelopment() ? '0.01' : invoiceAmount,
             'USD',
             InvoiceValidityType.THREE_DAYS,
-            `Bittery LND ${extendSubscriptionDto.subscriptionTimeMonths} months plan`,
+            `Bittery pro subscription ${extendSubscriptionDto.subscriptionTimeMonths} months plan`,
             // MUST BE EMAIL HERE OTHERWISE WEBHOOK MECHANISM WILL BREAK!!!!!!!
             userEmail));
     await runInTransaction((client) => {
