@@ -31,7 +31,6 @@ const createStore = async (storeName: string): Promise<string> => {
             customCss: getProperty('CUSTOM_CSS_BTCPAY_URL'),
             defaultPaymentMethod: 'BTC_LightningNetwork',
             speedPolicy: 'MediumSpeed',
-            invoiceExpiration: getNumberProperty('BTCPAY_PAYMENT_EXPIRATION_MINUTES'),
             recommendedFeeBlockTarget: 5,
         }, {
             headers: {
