@@ -1,4 +1,3 @@
-import { formatDateWithTime2 } from '../../utils/date-service';
 import { logError, logInfo } from '../../../../application/logging-service';
 import { getNumberProperty, getProperty } from '../../../../application/property-service';
 import axios from 'axios';
@@ -9,8 +8,8 @@ import { Lnd } from '../../../model/lnd/lnd';
 export const initializeBtcpayServices = async (
         userEmail: string,
         bip49RootPublicKey: string,
-        lnd: Lnd): Promise<UserBtcpayDetails> => {
-    let storeName: string = `${userEmail}-${formatDateWithTime2(new Date().getTime())}`;
+        lnd: Lnd,
+        storeName: string): Promise<UserBtcpayDetails> => {
     logInfo(`Initializing BTCPay services for user LND: ${lnd.lndId}`);
     const storeId: string = await createStore(storeName);
     await addBtcRootPublicKeyToStore(storeId, bip49RootPublicKey);

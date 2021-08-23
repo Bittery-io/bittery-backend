@@ -15,7 +15,7 @@ import { BTC_PAYMENTS_DONE_TYPE, LN_PAYMENTS_DONE_TYPE } from '../btcpay/btcpay-
 const logoSrc = fs.readFileSync(path.resolve(__dirname, 'BITTERY.jpg'));
 const font = fs.readFileSync(path.resolve(__dirname, 'Lato-Regular.ttf'));
 // @ts-ignore
-export const generateInvoicePdf = async (invoice: BtcpayInvoice, seller: string, lndAddress: string): Promise<Buffer> => {
+export const generateInvoicePdf = async (invoice: BtcpayInvoice, sellerStoreName: string, lndAddress: string): Promise<Buffer> => {
     // keep 19 cm width
     const logo = new pdf.Image(logoSrc);
     const doc = new pdf.Document({
@@ -60,12 +60,10 @@ export const generateInvoicePdf = async (invoice: BtcpayInvoice, seller: string,
         const row1 = partiesTable.row();
         row1.cell('Seller', { fontSize: 16 });
         row1.cell('');
-        if (invoice.invoiceData.metadata.buyerName) {
-            row1.cell('Buyer', { fontSize: 16 });
-        }
+        row1.cell('Buyer', { fontSize: 16 });
 
         const row2 = partiesTable.row();
-        row2.cell(seller, { fontSize: 10 });
+        row2.cell(sellerStoreName, { fontSize: 10 });
         row2.cell('');
         if (invoice.invoiceData.metadata.buyerName) {
             row2.cell(invoice.invoiceData.metadata.buyerName, { fontSize: 10 }!);
@@ -148,7 +146,6 @@ export const generateInvoicePdf = async (invoice: BtcpayInvoice, seller: string,
         color: 0x0074D9,
         fontSize: 14,
         textAlign: 'left',
-        paddingLeft: 0.5 * pdf.cm,
     });
     doc.footer().pageNumber((curr: any, total: any) => `${curr}/${total}`, { textAlign: 'center', fontSize: 16 });
     // doc.pipe(fs.createWriteStream('output.pdf'));

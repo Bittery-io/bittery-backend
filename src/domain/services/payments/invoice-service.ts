@@ -1,7 +1,12 @@
 import { SaveInvoiceDto } from '../../../interfaces/dto/save-invoice-dto';
 import { UserBtcpayDetails } from '../../model/btcpay/user-btcpay-details';
 import { findUserBtcpayDetails } from '../../repository/user-btcpay-details-repository';
-import { createBtcpayInvoice, getBtcpayInvoice, getBtcpayInvoices } from '../btcpay/btcpay-client-service';
+import {
+    createBtcpayInvoice,
+    getBtcpayInvoice,
+    getBtcpayInvoices,
+    getBtcpayStoreName
+} from '../btcpay/btcpay-client-service';
 import { UserBtcpayException } from '../btcpay/user-btcpay-exception';
 import { UserBtcpayErrorType } from '../btcpay/user-btcpay-error-type';
 import { generateInvoicePdf } from '../pdf/invoice-pdf-generator-service';
@@ -10,7 +15,7 @@ import { findUserActiveLndAggregate } from '../../repository/lnd/lnds-repository
 import { lndGetInfo } from '../lnd/api/lnd-api-service';
 import { LndInfo } from '../../model/lnd/api/lnd-info';
 import { LndAggregate } from '../../model/lnd/lnd-aggregate';
-import { getBitteryInvoice } from './bittery-invoice-service';
+import { BITTERY_USER_BTCPAY_DETAILS, getBitteryInvoice } from './bittery-invoice-service';
 import { getProperty } from '../../../application/property-service';
 import {
     findStoreInvoicesOrderIdsLimit,
@@ -65,7 +70,8 @@ export const getInvoicePdf = async (userEmail: string, invoiceId: string): Promi
                         UserBtcpayErrorType.COULD_NOT_GET_LND_INFO);
                 }
             }
-            return await generateInvoicePdf(invoice, `Email: ${userEmail}`, lndUri);
+            const storeName: string = await getBtcpayStoreName(BITTERY_USER_BTCPAY_DETAILS, userBtcpayDetails.storeId);
+            return await generateInvoicePdf(invoice, storeName, lndUri);
         } else {
             throw new UserBtcpayException(`Cannot get pdf invoice because user ${userEmail} has not LND yet (or is inactive)!`,
                 UserBtcpayErrorType.USER_HAS_NOT_LND);

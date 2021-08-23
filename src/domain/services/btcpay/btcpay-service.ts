@@ -25,7 +25,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
         const lnd: Lnd | undefined = await findUserActiveLnd(userEmail);
         if (!lnd) {
             // todo obsluga bledu lepsza
-            throw new Error('User has not lnd yet');
+            throw new Error(`User ${userEmail} has not lnd yet`);
         }
         if (!createUserBtcpayDto.bip49RootPublicKey && !createUserBtcpayDto.electrumMasterPublicKey) {
             throw new CreateUserBtcpayException(`Failed to create user ${userEmail} BTCPAY services because no master public key provided`,
@@ -38,7 +38,7 @@ export const createUserBtcpayServices = async (userEmail: string, createUserBtcp
             UserBitcoinWalletTypeEnum.BIP_49 :
             UserBitcoinWalletTypeEnum.ELECTRUM;
         const userBtcpayDetails: UserBtcpayDetails = await initializeBtcpayServices(
-            userEmail, masterPublicKey, lnd);
+            userEmail, masterPublicKey, lnd, createUserBtcpayDto.storeName);
         await runInTransaction(async (client: PoolClient) => {
             await insertUserBtcpayDetails(client, userBtcpayDetails);
             await insertUserBitcoinWallet(client, new UserBitcoinWallet(

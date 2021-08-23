@@ -54,34 +54,6 @@ const getInvoiceValidityInMinutes = (invoiceValidity: InvoiceValidityType): numb
     }
 };
 
-// export const createBtcpayInvoiceForBitterySubscription = async (
-//         saveInvoiceDto: SaveInvoiceDto, use: BtcpayUserAuthToken, invoiceOwnerEmail: string): Promise<BtcpayInvoice> => {
-//
-//     createBtcpayInvoice(saveInvoiceDto, )
-    // const keyPair = btcpay.crypto.load_keypair(Buffer.from(btcpayUserAuthToken.privateKey, 'hex'));
-    // const clientFinal = new btcpay.BTCPayClient(getProperty('BTCPAY_URL'),
-    //     keyPair, { merchant: btcpayUserAuthToken.merchantToken });
-    // const invoiceOwnerEmailBase64: string = Buffer.from(invoiceOwnerEmail).toString('base64');
-    // const res = await clientFinal.create_invoice({
-    //     currency: saveInvoiceDto.currency,
-    //     price: saveInvoiceDto.amount,
-    //     itemDesc: saveInvoiceDto.itemDesc,
-    //     buyer: {
-    //         name: saveInvoiceDto.buyer,
-    //     },
-    //     extendedNotifications: true,
-    //     fullNotifications: true,
-    //     notificationURL: `http://172.18.0.1:3001/btcpay/billing/invoice/${getProperty('BTCPAY_WEBHOOK_SECRET_KEY')}/${invoiceOwnerEmailBase64}`,
-    //     // za 60 sekund!!!
-    //     expirationTime: new Date().getTime() + 1000 * 60,
-    //     // todo tylko dla testow zamienione!!!
-    //     // expirationTime: getInvoiceValidityInMillisecs(saveInvoiceDto.invoiceValidity),
-    // });
-    // return new BtcpayInvoice(res.id, res.url);
-    // @ts-ignore
-    // return undefined;
-// };
-
 // if orderIds not given - will find all
 export const getBtcpayInvoices = async (userBtcpayDetails: UserBtcpayDetails, orderIds: string[]): Promise<BtcpayInvoice[]> => {
     let queryParamPart: string = orderIds.map(_ => `orderId=${_}&`).toString().replaceAll(',', '');
@@ -126,4 +98,13 @@ export const getBtcpayInvoice = async (userBtcpayDetails: UserBtcpayDetails, inv
         },
     });
     return new BtcpayInvoice(res.data, res2.data);
+};
+
+export const getBtcpayStoreName = async (userBtcpayDetails: UserBtcpayDetails, storeId: string): Promise<string> => {
+    const res = await axios.get(`${getProperty('BTCPAY_BACKEND_ONLY_URL')}/api/v1/stores/${storeId}`, {
+        headers: {
+            Authorization: `token ${userBtcpayDetails.apiKey}`
+        },
+    });
+    return res.data.name;
 };
