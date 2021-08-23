@@ -47,11 +47,11 @@ export class PaymentsController {
             const invoices: BtcpayInvoice[] = await getInvoices(userEmail, 50);
             return res.status(200).send(invoices);
         } catch (err) {
+            logError(`Failed to get invoices for user ${userEmail}`, err);
             if (err instanceof UserBtcpayException) {
                 return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
             }
-            logError(`Failed to get invoices for user ${userEmail}`, err);
-            return res.status(500).send(new ErrorDto('LND services creation failed',
+            return res.status(500).send(new ErrorDto('Get invoices failed!',
                 LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
         }
     }

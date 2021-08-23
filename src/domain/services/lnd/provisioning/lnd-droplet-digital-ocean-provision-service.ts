@@ -16,7 +16,7 @@ const readFile = util.promisify(fs.readFile);
 
 const { NodeSSH } = require('node-ssh');
 
-const SSH_PRIV_KEY_PATH_ON_HOST: string = getProperty('SSH_PRIV_KEY_PATH_ON_HOST');
+const SSH_PRIV_KEY_PATH: string = getProperty('SSH_PRIV_KEY_PATH');
 const LND_HOSTED_FILE_FOLDER_PATH: string = getProperty('LND_HOSTED_FILE_FOLDER_PATH');
 const DIGITAL_OCEAN_SSH_KEY_NAME = getProperty('DIGITAL_OCEAN_SSH_KEY_NAME');
 
@@ -165,7 +165,7 @@ export const connectSshToNode = async (userEmail: string, dropletIpPublic: strin
             await ssh.connect({
                 host: dropletIpPublic,
                 username: 'root',
-                privateKey: SSH_PRIV_KEY_PATH_ON_HOST,
+                privateKey: SSH_PRIV_KEY_PATH,
             });
             break;
         } catch (err) {
