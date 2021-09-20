@@ -22,7 +22,7 @@ import {
     insertStoreInvoice
 } from '../../repository/btcpay/store-invoices-repository';
 import { StoreInvoice } from '../btcpay/invoice/store-invoice';
-import { InvoiceData, OpenAPI } from 'btcpay-greenfield-node-client';
+import { InvoiceData } from 'btcpay-greenfield-node-client';
 import { BtcpayInvoice } from '../../model/btcpay/invoices/btcpay-invoice';
 
 export const saveInvoice = async (userEmail: string, saveInvoiceDto: SaveInvoiceDto): Promise<void> => {

@@ -29,10 +29,10 @@ export class PaymentsController {
                 return res.status(500).send(new ErrorDto('Maintenance: Creating invoice feature currently disabled'));
             }
         } catch (err) {
+            logError(`Failed to save invoice for user ${userEmail}`, err);
             if (err instanceof UserBtcpayException) {
                 return res.status(400).send(new ErrorDto(err.message, err.clientErrorCode));
             }
-            logError(`Failed to save invoice for user ${userEmail}`, err);
             return res.status(500).send(new ErrorDto('LND services creation failed',
                 LndCreationErrorType.LND_CREATION_FAILED_SERVER_ERROR));
         }

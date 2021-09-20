@@ -131,10 +131,10 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
     });
     Array.from(paymentsDoneSet).forEach((paymentInfo: any) => {
         const info: any = JSON.parse(paymentInfo);
-        if (info.type.toLowerCase() === LN_PAYMENTS_DONE_TYPE) {
-            totalReceivedViaLightning += info.value;
-        } else if (info.type.toLowerCase() === BTC_PAYMENTS_DONE_TYPE) {
-            totalReceivedViaTransactions += info.value;
+        if (info.type === LN_PAYMENTS_DONE_TYPE) {
+            totalReceivedViaLightning += Number(info.value);
+        } else if (info.type === BTC_PAYMENTS_DONE_TYPE) {
+            totalReceivedViaTransactions += Number(info.value);
         }
     });
     return new DashboardInfoDto(
