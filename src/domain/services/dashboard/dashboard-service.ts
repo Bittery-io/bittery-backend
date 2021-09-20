@@ -76,6 +76,7 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
                     paidAmount += Number(invoice.invoicePayments[0].totalPaid!);
                     switch (invoice.invoiceData.status!) {
                         case InvoiceStatus.NEW:
+                        case InvoiceStatus.PROCESSING:
                             newInvoicesTimeframeQuantity += 1;
                             break;
                         case InvoiceStatus.SETTLED:
@@ -114,11 +115,12 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
         totalInvoicedAmountBtc += Number(invoice.invoicePayments[0].totalPaid);
         switch (invoice.invoiceData.status) {
             case InvoiceStatus.NEW:
-                newInvoicedAmountBtc += Number(invoice.invoicePayments[0].amount);
+            case InvoiceStatus.PROCESSING:
+                newInvoicedAmountBtc += Number(invoice.invoicePayments[0].totalPaid);
                 newInvoicesQuantity += 1;
                 break;
             case InvoiceStatus.SETTLED:
-                paidInvoicedAmountBtc += Number(invoice.invoicePayments[0].amount);
+                paidInvoicedAmountBtc += Number(invoice.invoicePayments[0].totalPaid);
                 paidInvoicesQuantity += 1;
                 break;
             case InvoiceStatus.EXPIRED:
