@@ -11,7 +11,6 @@ WUMBO_CHANNELS="$8"
 
 ###############################
 # create lnd.conf
-export BITCOIND_RPC_HOST=bittery.io
 echo '[Bitcoin]' > lnd.conf
 echo 'bitcoin.active=true' >> lnd.conf
 echo 'bitcoin.testnet=true' >> lnd.conf

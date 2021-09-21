@@ -7,7 +7,7 @@ import { LndAggregate } from '../../model/lnd/lnd-aggregate';
 // This will restart user LND
 // Can be used for settings change
 // Params which are configured:
-// BITCOIND_RPC_HOST - took from ENV var BITCOIND_RPC_HOST
+// BITCOIND_RPC_HOST_FROM_INTERNET - took from ENV var BITCOIND_RPC_HOST_FROM_INTERNET
 // BITCOIND_RPC_USER - took from ENV var BITCOIND_RPC_USER
 // BITCOIND_RPC_PASSWORD - took from ENV var BITCOIND_RPC_PASSWORD
 // LND_HOSTED_VERSION - took from ENV var LND_HOSTED_VERSION
@@ -24,7 +24,7 @@ export const restartLnd = async (lndId: string, userEmail: string): Promise<void
             ssh,
             lndAggregate.digitalOceanLnd.dropletIp,
             lndAggregate.digitalOceanLnd.wumboChannels,
-            getProperty('BITCOIND_RPC_HOST'),
+            getProperty('BITCOIND_RPC_HOST_FROM_INTERNET'),
             getProperty('BITCOIND_RPC_USER'),
             getProperty('BITCOIND_RPC_PASSWORD'),
             // getProperty('LND_HOSTED_VERSION'),

@@ -3,6 +3,8 @@ import * as fs from 'fs';
 const btcpay = require('btcpay');
 const writeFile = util.promisify(fs.writeFile);
 /**
+ * todo THIS IS ALREADY OUTDATED - now with greenfield API it is not usable anymore.
+ *
  * Go to store and select Access Token from menu. Create new token.
  * Provide label. Request pairing.
  * Copy generated (in green bar) pairing code.

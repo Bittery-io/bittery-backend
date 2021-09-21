@@ -73,7 +73,7 @@ export const createLndDroplet = async (
             ssh,
             dropletIpPublic,
             wumboChannels,
-            getProperty('BITCOIND_RPC_HOST'),
+            getProperty('BITCOIND_RPC_HOST_FROM_INTERNET'),
             getProperty('BITCOIND_RPC_USER'),
             getProperty('BITCOIND_RPC_PASSWORD'),
             lndHostedVersionToUse,

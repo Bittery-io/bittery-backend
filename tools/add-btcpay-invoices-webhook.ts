@@ -4,14 +4,14 @@ import * as fs from 'fs';
 
 const writeFile = util.promisify(fs.writeFile);
 
-// const URL = getProperty('BTCPAY_BACKEND_ONLY_URL');
-// const STORE_ID = getProperty('BITTERY_SUBSCRIPTION_PAYMENTS_STORE_ID');
-// const ADMIN_API_KEY = getProperty('BTCPAY_ADMIN_API_KEY');
-// const WEBHOOK_URL = getProperty('BTCPAY_FACADE_WEBHOOK_SECRET');
-
+//TODO for PROD: https://btcpay.bittery.io
 const URL = 'http://localhost';
+//TODO create store and get from btcpay. DO NOT LOSE IT
 const STORE_ID = '8pR2S7ZWhfHULfMDixVDXzwVUBeY4FRfLpsnWs3xdY86'
+//TODO Create in store. Go to btcpay -> click right corner icon of human -> API Keys from list and create one. DO NOT LOSE IT, keep private
 const ADMIN_API_KEY = '2a4501a4ef6cd7463bff15d2177f38284eac06ff';
+//TODO for PROD: https://app.bittery.io/api/btcpay/billing/invoice (inside docker-network)
+//for localhost: 172.17.0.1 is IP of localhost outside docker (btcpay is calling bittery-backend on localhost)
 const WEBHOOK_URL = 'http://172.17.0.1:3001/btcpay/billing/invoice';
 
 export const createBitteryStoreWebhook = async (): Promise<void> => {
@@ -41,12 +41,13 @@ Webhook ID: ${res.data.id}
 Webhook secret: ${res.data.secret}
 ########################
 To export:
-BTCPAY_WEBHOOK_SECRET=${res.data.secret}
+BTCPAY_FACADE_WEBHOOK_SECRET=${res.data.secret}
 `, 'utf8'));
     } catch (err) {
         console.log(err.response);
     }
 };
+// can be also deleted manually from btcpay
 export const deleteBitteryStoreWebhook = async (): Promise<void> => {
     try {
         const res = await axios.delete(`${URL}/api/v1/stores/${STORE_ID}/webhooks/bittery-invoices-webhook`, {
