@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { logError, logInfo } from '../../../../application/logging-service';
+import { logInfo } from '../../../../application/logging-service';
 import path from 'path';
 import * as fs from 'fs';
 import * as util from 'util';
