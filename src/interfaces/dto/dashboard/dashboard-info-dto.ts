@@ -1,5 +1,4 @@
 export class DashboardInfoDto {
-    totalReceivedPaymentsBtc: number;
     totalInvoicedAmountBtc: number;
     newInvoicedAmountBtc: number;
     paidInvoicedAmountBtc: number;
@@ -18,8 +17,7 @@ export class DashboardInfoDto {
     invoices: object[];
     totalReceivedViaLightning: string;
     totalReceivedViaTransactions: string;
-    constructor(totalReceivedPaymentsBtc: number,
-                totalInvoicedAmountBtc: number,
+    constructor(totalInvoicedAmountBtc: number,
                 newInvoicedAmountBtc: number,
                 paidInvoicedAmountBtc: number,
                 expiredInvoicedAmountBtc: number,
@@ -35,7 +33,6 @@ export class DashboardInfoDto {
                 invoices: object[],
                 totalReceivedViaLightning: string,
                 totalReceivedViaTransactions: string) {
-        this.totalReceivedPaymentsBtc = totalReceivedPaymentsBtc;
         this.totalInvoicedAmountBtc = totalInvoicedAmountBtc;
         this.newInvoicedAmountBtc = newInvoicedAmountBtc;
         this.paidInvoicedAmountBtc = paidInvoicedAmountBtc;

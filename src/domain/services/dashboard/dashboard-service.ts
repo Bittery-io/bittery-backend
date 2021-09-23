@@ -35,7 +35,6 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
     const invoicesQuantity: number =  invoices.length;
     let totalReceivedViaTransactions: number = 0;
     let totalReceivedViaLightning: number = 0;
-    let totalReceivedPaymentsBtc: number = 0;
     let totalInvoicedAmountBtc: number = 0;
     let newInvoicedAmountBtc: number = 0;
     let paidInvoicedAmountBtc: number = 0;
@@ -110,13 +109,12 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
                 type: _.paymentMethod,
             }));
         });
-        totalReceivedPaymentsBtc += Number(invoice.invoicePayments[0].totalPaid);
-        //todo lepiej to sprawdz bo to samo co wyzej
-        totalInvoicedAmountBtc += Number(invoice.invoicePayments[0].totalPaid);
+        totalInvoicedAmountBtc += invoice.invoicePayments[0].amount === '0' ? Number(invoice.invoicePayments[0].totalPaid) : Number(invoice.invoicePayments[0].amount);
         switch (invoice.invoiceData.status) {
             case InvoiceStatus.NEW:
             case InvoiceStatus.PROCESSING:
-                newInvoicedAmountBtc += Number(invoice.invoicePayments[0].totalPaid);
+                //todo moze tutaj w przyszlosci w processing trzeba byloby zobaczyc czy to jest amount czy paid, bo jak paid to zle doda
+                newInvoicedAmountBtc += Number(invoice.invoicePayments[0].amount);
                 newInvoicesQuantity += 1;
                 break;
             case InvoiceStatus.SETTLED:
@@ -140,7 +138,6 @@ const mapInvoicesToDashboardInvoiceDto = (invoices: BtcpayInvoice[],
         }
     });
     return new DashboardInfoDto(
-        totalReceivedPaymentsBtc,
         totalInvoicedAmountBtc,
         newInvoicedAmountBtc,
         paidInvoicedAmountBtc,
