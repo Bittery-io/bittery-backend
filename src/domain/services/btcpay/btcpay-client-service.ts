@@ -22,7 +22,7 @@ export const createBtcpayInvoice = async (saveInvoiceDto: SaveInvoiceDto, userBt
             orderId: generateUuid(),
         },
         checkout: {
-            //in development invoice expires after 1 minute
+            //in development invoice expires after 2 minutes
             expirationMinutes: isDevelopment() ? 2 : getInvoiceValidityInMinutes(saveInvoiceDto.invoiceValidity),
         },
     }, {

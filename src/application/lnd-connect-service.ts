@@ -1,6 +1,4 @@
 import { getProperty } from './property-service';
-import { lndGetInfo } from '../domain/services/lnd/api/lnd-api-service';
-import { LndInfo } from '../domain/model/lnd/api/lnd-info';
 
 const fs = require('fs');
 const util = require('util');

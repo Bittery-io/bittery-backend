@@ -106,6 +106,7 @@ export const addExternalLnd = async (userEmail: string, saveUserLndDto: SaveExte
                 LndType.EXTERNAL,
                 new Date().toISOString(),
                 true,
+                lndInfo.publicKey,
                 saveUserLndDto.macaroonHex,
             ));
         });

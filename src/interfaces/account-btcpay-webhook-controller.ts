@@ -22,6 +22,7 @@ import { WebhookInvoiceEvent } from 'btcpay-greenfield-node-client/src/models/We
 import { getBtcpayInvoice } from '../domain/services/btcpay/btcpay-client-service';
 import { BITTERY_USER_BTCPAY_DETAILS } from '../domain/services/payments/bittery-invoice-service';
 import { getProperty } from '../application/property-service';
+import { isDevelopment } from '../application/property-utils-service';
 var crypto = require('crypto');
 
 // RawBodyMiddleware.ts
@@ -88,14 +89,15 @@ export class AccountBtcpayWebhookController {
                 // InvoiceExpired
                 // InvoiceConfirmed
                 // InvoiceInvalid
-                // todo I miss in docs InvoiceSettled which is actually the one I expect
+                // todo there is miss in docs of InvoiceSettled which is actually the one I expect
+                // TODO in development will restore on EXPIRE not on payment
                 switch (webhookInvoiceEvent.type) {
-                    case 'InvoiceExpired':
+                    case isDevelopment() ? 'InvoiceSettled' : 'InvoiceExpired':
                         billing.status = BillingStatus.EXPIRED;
                         await updateBilling(billing);
                         logInfo(`Successfully updated Bittery subscription invoice as EXPIRED for invoice with id ${invoiceId} and user email ${invoiceOwnerEmail}`);
                         break;
-                    case 'InvoiceSettled':
+                    case isDevelopment() ? 'InvoiceExpired' : 'InvoiceSettled':
                         // NO AWAIT IS INTENTIONAL - it took too much time to process
                         this.restoreLnd(invoiceOwnerEmail, billing, invoiceId);
                         break;

@@ -32,7 +32,7 @@ export const lndGetInfo = async (lndRestAddress: string, macaroonHex: string): P
                 'Grpc-Metadata-macaroon': macaroonHex,
             },
             // 10 secs
-            timeout: 2000,
+            timeout: 3000,
         });
         clearTimeout(timeout);
         return new LndInfo(
