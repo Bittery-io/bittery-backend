@@ -15,6 +15,9 @@ echo '[Bitcoin]' > lnd.conf
 echo 'bitcoin.active=true' >> lnd.conf
 echo 'bitcoin.testnet=true' >> lnd.conf
 echo 'bitcoin.node=bitcoind' >> lnd.conf
+# Zeby nie rezerwowal UTXO per kanał, przez to nie moge wyciagnac kasy
+echo '[protocol]' >> lnd.conf
+echo 'protocol.no-anchors=true' >> lnd.conf
 echo '[Bitcoind]' >> lnd.conf
 echo 'bitcoind.rpcuser='${BITCOIND_RPC_USER} >> lnd.conf
 echo 'bitcoind.rpcpass='${BITCOIND_RPC_PASSWORD} >> lnd.conf
