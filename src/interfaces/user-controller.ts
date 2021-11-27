@@ -12,14 +12,18 @@ import { confirmResetPassword, resetPassword } from '../domain/services/user/pas
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm-dto';
 import { PasswordResetDto } from './dto/password-reset-dto';
 import { refreshToken } from '../domain/services/user/refresh-token-service';
-import { getAccessTokenFromAuthorizationHeader } from '../domain/services/auth/token-extractor-service';
 import { getBooleanProperty, getNumberProperty } from '../application/property-service';
-import { logError, logInfo } from '../application/logging-service';
-import { Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers';
+import { logError, logInfo, logWarn } from '../application/logging-service';
+import { Body, Get, JsonController, Post, Res } from 'routing-controllers';
 import { countUsers } from '../domain/repository/user-repository';
 import { sendUserRegisterMail } from '../application/mail-service';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { isDevelopment } from '../application/property-utils-service';
+import { UserRegistrationErrorType } from '../domain/model/user/user-registration-error-type';
+import {
+    countDisabledRegistrationUsers,
+    insertDisabledRegistrationUser
+} from '../domain/repository/disabled-registration-users-repository';
 
 @JsonController('/user')
 export class UserController {
@@ -43,7 +47,19 @@ export class UserController {
                 }
                 return res.sendStatus(204);
             } else {
-                return res.status(500).send(new ErrorDto('Maintenance: Registration currently disabled'));
+                const before: number = await countDisabledRegistrationUsers();
+                await insertDisabledRegistrationUser(
+                    registerUserDto.email,
+                    registerUserDto.password,
+                    new Date().toUTCString(),
+                );
+                const after: number = await countDisabledRegistrationUsers();
+                if (after > before) {
+                    await sendUserRegisterMail(after);
+                }
+                logWarn(`Registration disabled but new email ${registerUserDto.email} registered`);
+                return res.status(400).send(new ErrorDto('Maintenance: Registration currently disabled',
+                    UserRegistrationErrorType.REGISTRATION_TEMPORARY_DISABLED));
             }
         } catch (err) {
             if (err instanceof UserRegisterException) {

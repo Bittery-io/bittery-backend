@@ -29,9 +29,9 @@ let nextSchedulerDateEpoch: number;
 
 export const startSubscriptionDisableScheduler = () => {
     logInfo('Setting up BITTERY DISABLE scheduler check every 12h scheduler');
-    // every 12 hours
-    // schedule.scheduleJob('0 */12 * * *', async () => {
-    schedule.scheduleJob('* * * * *', async () => {
+    // every 2 hours
+    schedule.scheduleJob('0 */2 * * *', async () => {
+    // schedule.scheduleJob('* * * * *', async () => {
         logInfo(`[SUBSCRIPTION DISABLE SCHEDULER] 1/3 Starting at ${formatDateWithTime(new Date().getTime())}`);
         nextSchedulerDateEpoch = addHoursGetDate(new Date().getTime(), 12);
         const paidBillingsForLndsWhichShouldBeDisabled: LndBilling[] =

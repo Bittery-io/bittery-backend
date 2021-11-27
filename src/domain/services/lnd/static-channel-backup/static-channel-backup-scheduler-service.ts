@@ -14,8 +14,8 @@ let nextBackupDateEpoch: number;
 export const startStaticChannelBackupScheduler = () => {
     logInfo('Setting up LNDs SCB (static channel backup) every 12h scheduler');
     // every 12 hours
-    // schedule.scheduleJob('0 */12 * * *', async () => {
-    schedule.scheduleJob('* * * * *', async () => {
+    schedule.scheduleJob('0 */12 * * *', async () => {
+    // schedule.scheduleJob('* * * * *', async () => {
         nextBackupDateEpoch = addHoursGetDate(new Date().getTime(), 12);
         const lndStaticChannelBackups: LndStaticChannelBackup[] = [];
         logInfo(`[LNDs SCB SCHEDULER] 1/3 Starting at ${formatDateWithTime(new Date().getTime())}`);
