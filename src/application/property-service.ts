@@ -1,13 +1,28 @@
 export const getProperty = (propertyName: string): string => {
-    return <string>process.env[`${propertyName}`];
+    try {
+        return <string>process.env[`${propertyName}`];
+    } catch (err) {
+        console.log(`Error on getting string ENV property: ${propertyName}`, err);
+        throw err;
+    }
 };
 
 export const getNumberProperty = (propertyName: string): number => {
-    return Number(process.env[`${propertyName}`]);
+    try {
+        return Number(process.env[`${propertyName}`]);
+    } catch (err) {
+        console.log(`Error on getting number ENV property: ${propertyName}`, err);
+        throw err;
+    }
 };
 
 export const getBooleanProperty = (propertyName: string): boolean => {
-    return JSON.parse(process.env[`${propertyName}`]!);
+    try {
+        return JSON.parse(process.env[`${propertyName}`]!);
+    } catch (err) {
+        console.log(`Error on getting JSON ENV property: ${propertyName}`, err);
+        throw err;
+    }
 };
 
 export const getArrayProperty = (propertyName: string): string[] => {

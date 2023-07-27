@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 set -o errexit
-echo 'Waiting for postgres to wake up 5 secs'
-sleep 5
 echo '###### [%s] Starting bittery-backend 1/3: running database migration started ######\n'
 npm run db-migrate-up
 echo '###### [%s] Starting bittery-backend 1/3: running database migration finished ######\n'

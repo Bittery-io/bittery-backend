@@ -1,10 +1,11 @@
 import { logError } from './logging-service';
+import { getProperty } from './property-service';
 
 const reCAPTCHA = require('recaptcha2');
 
 const recaptcha = new reCAPTCHA({
-    siteKey: '6LdZB6kZAAAAAFOzV7n5GyDE97LZUNp4YNlDKraf',
-    secretKey: '6LdZB6kZAAAAAEsE43-3FFNo4CTtYbbLwIC1d7rK',
+    siteKey: getProperty('RECAPTCHA_SITE_KEY'),
+    secretKey: getProperty('RECAPTCHA_SECRET_KEY'),
     ssl: true,
 });
 

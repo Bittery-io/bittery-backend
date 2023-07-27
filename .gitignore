@@ -36,3 +36,5 @@ local-scripts/db-migrate-down-local.sh
 logs/
 *.log.gz
 *-audit.json
+generated/
+volumes/
